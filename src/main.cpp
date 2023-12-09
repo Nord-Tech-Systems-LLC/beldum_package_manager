@@ -4,6 +4,8 @@
 #include <limits>
 #include <vector>
 
+#include "json_parser.cpp"
+
 bool show_warning() {
     // Display the warning message
     std::cout << "WARNING: This operation may have consequences.\n";
@@ -97,7 +99,7 @@ void check_passed_shell_arguments(PossibleOptions options) {
         case PossibleOptions::INSTALL:
             // Replace the repository URL with the one you want to clone
             repo_name = "cpp_webserver";
-            repository_URL = "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git libs/" + std::string(repo_name);
+            repository_URL = "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git cpp_libs/" + std::string(repo_name);
 
             // using bash to clone the repo
             command = "git clone " + std::string(repository_URL);
@@ -108,15 +110,78 @@ void check_passed_shell_arguments(PossibleOptions options) {
         // clean actions
         case PossibleOptions::CLEAN:
             // using bash to clean the library folder
-            command = "sudo rm -r libs/*";
+            command = "sudo rm -r cpp_libs";
             return_code = system(command.c_str());
             break;
+    }
+}
+
+struct PackageManager {
+    std::string name;
+    std::string version;
+    std::string description;
+};
+
+void printTable(const std::vector<PackageManager>& packageManagers) {
+    // Determine column widths
+    std::vector<size_t> columnWidths = {0, 0, 0};
+
+    for (const auto& pm : packageManagers) {
+        columnWidths[0] = std::max(columnWidths[0], pm.name.length());
+        columnWidths[1] = std::max(columnWidths[1], pm.version.length());
+        columnWidths[2] = std::max(columnWidths[2], pm.description.length());
+    }
+
+    // Print table header
+    std::cout << std::left << std::setw(columnWidths[0] + 2) << "Name"  // Added 2 for padding
+              << std::setw(columnWidths[1] + 4) << "Version"            // Added 4 for padding
+              << std::setw(columnWidths[2] + 2) << "Description"        // Added 2 for padding
+              << std::endl;
+
+    // Print table data
+    for (const auto& pm : packageManagers) {
+        std::cout << std::setw(columnWidths[0] + 2) << pm.name         // Added 2 for padding
+                  << std::setw(columnWidths[1] + 4) << pm.version      // Added 4 for padding
+                  << std::setw(columnWidths[2] + 2) << pm.description  // Added 2 for padding
+                  << std::endl;
     }
 }
 
 int main(int argc, char* argv[]) {
     PossibleOptions option = parse_arguments(argc, argv);
     check_passed_shell_arguments(option);
+
+    // Example data
+    std::vector<PackageManager> packageManagers = {
+        {"PackageManager1", "1.0.0", "Description of PackageManager1"},
+        {"PackageManager2", "2.1.0", "Description of PackageManager2"},
+        {"PackageManager3", "3.2.1", "Description of PackageManager3"}};
+
+    std::string json = R"(
+        {
+            "name": "John",
+            "age": 30,
+            "city": "New York",
+            "isStudent": false,
+            "grades": [90, 85, 92],
+            "address": {
+                "street": "123 Main St",
+                "zip": "10001"
+            },
+            "isNull": null
+        }
+    )";
+
+    JSONParser parser;
+    JSONValue* root = parser.parse(json);
+
+    // Process the parsed JSON data here
+
+    // Clean up memory
+    delete root;
+
+    // Print the table
+    // printTable(packageManagers);
 
     return 0;
 }
