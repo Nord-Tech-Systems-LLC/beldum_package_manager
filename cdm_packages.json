@@ -1,0 +1,24 @@
+{
+    "packages": [
+        {
+            "cpp_webserver": [
+                {
+                    "git_link": "git@github.com:Nord-Tech-Systems-LLC/cpp_dependency_management.git",
+                    "name": "cpp_dependency_management",
+                    "version": "v0.0.0",
+                    "package_rsa": "ssh-rsa blah"
+                }
+            ]
+        },
+        {
+            "json_converter": [
+                {
+                    "git_link": "link",
+                    "name": "testing",
+                    "version": "testing",
+                    "package_rsa": "ssh-rsa blah"
+                }
+            ]
+        }
+    ]
+}
