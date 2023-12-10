@@ -19,7 +19,8 @@ prerequisites:
 	@ mkdir -p $(BuildObjectsDir)
 
 $(BuildBinDir)/$(NewExecutable): \
-		$(BuildObjectsDir)/main.o | prerequisites
+		$(BuildObjectsDir)/main.o \
+		$(BuildObjectsDir)/package_manager.o | prerequisites
 		# $(BuildObjectsDir)/http_server.o \
 		# $(BuildObjectsDir)/server_logging.o \
 		# $(BuildObjectsDir)/route_handler.o | prerequisites
