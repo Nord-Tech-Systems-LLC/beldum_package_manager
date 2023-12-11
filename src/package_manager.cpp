@@ -1,16 +1,27 @@
 #include "headerfiles/package_manager.hpp"
+#include "../cpp_libs/json/single_include/nlohmann/json.hpp"
+#include <fstream>
+#include <algorithm>
 
-// PackageManager::PackageManager() {
-//     static PackageManager instance;
-//     return instance;
-// }
+// #include <nlohmann/json.hpp>
+
+Package individual_package;
 
 void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
-        // read shell arguments passed
+    // read shell arguments passed
     int return_code;
     std::string command;
     std::string repository_URL;
     std::string repo_name;
+
+
+    // std::cout << options << std::endl;
+    // gets list of packages
+    std::ifstream packages_file("cdm_packages.json");
+    using json = nlohmann::json;
+    json data;
+    std::string requested_package = individual_package.name;
+
 
     switch (options) {
         // help actions
@@ -20,12 +31,27 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
         // install actions
         case PossibleOptions::INSTALL:
-            // Replace the repository URL with the one you want to clone
-            repo_name = "cpp_webserver";
-            repository_URL = "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git cpp_libs/" + std::string(repo_name);
+            data = json::parse(packages_file);
+            
+            std::cout << data.dump(4) << std::endl;
+
+            std::cout << "Package: " << individual_package.name << std::endl;
+            for (auto& element : data["packages"]) {
+                
+                // check if package exists
+                if (element.find(requested_package) != element.end()) {
+                    repo_name = element[requested_package][0]["name"];
+                    repository_URL = std::string(element[requested_package][0]["git_link"]) ;
+                    
+                    std::cout << "Element: " << repository_URL << '\n';
+                }
+            }
+
+            // std::cout.flush();
 
             // using bash to clone the repo
-            command = "git clone " + std::string(repository_URL);
+            command = "git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
+            std::cout << "Command: " << command << std::endl;
             return_code = system(command.c_str());
 
             break;
@@ -48,7 +74,15 @@ PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
         if (std::strcmp(arg, "--help") == 0) {
             return PossibleOptions::HELP;
         } else if (std::strcmp(arg, "--install") == 0) {
-            return PossibleOptions::INSTALL;
+            // Check if the next argument exists
+            if (i + 1 < argc) {
+                // Assuming the next argument is the package name
+                individual_package.name = argv[i + 1];
+                return PossibleOptions::INSTALL;
+            } else {
+                std::cerr << "Error: Missing package name after '--install'." << std::endl;
+                return PossibleOptions::NONE;
+            }
         } else if (std::strcmp(arg, "--clean") == 0) {
             // if warning returns true
             if (show_warning()) {

@@ -34,8 +34,8 @@ class PackageManager {
         return instance;
     }
 
-        PossibleOptions parse_arguments(int argc, char* argv[]);
-        void check_passed_shell_arguments(PossibleOptions options);
+    PossibleOptions parse_arguments(int argc, char* argv[]);
+    void check_passed_shell_arguments(PossibleOptions options);
     private:
         PackageManager(){};
         // ~PackageManager();
