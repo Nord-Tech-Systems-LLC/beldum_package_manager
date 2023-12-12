@@ -5,9 +5,10 @@ IncludeDir=$(SrcDir)
 BuildDir = build
 BuildBinDir = $(BuildDir)/bin
 BuildObjectsDir = $(BuildDir)/objects
+LibDir = cpp_libs  # Added library folder
 
 CC = g++
-CFlags = -I $(IncludeDir) -g
+CFlags = -I $(IncludeDir) -I $(LibDir) -g  # Added -I for library folder
 
 # The new executable name
 NewExecutable = cdm_cpp

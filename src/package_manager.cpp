@@ -1,9 +1,9 @@
 #include "headerfiles/package_manager.hpp"
-#include "../cpp_libs/json/single_include/nlohmann/json.hpp"
-#include <fstream>
-#include <algorithm>
 
-// #include <nlohmann/json.hpp>
+#include <algorithm>
+#include <fstream>
+
+#include "../cpp_libs/json/single_include/nlohmann/json.hpp"
 
 Package individual_package;
 
@@ -14,39 +14,35 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     std::string repository_URL;
     std::string repo_name;
 
-
-    // std::cout << options << std::endl;
     // gets list of packages
     std::ifstream packages_file("cdm_packages.json");
+
+    // instantiate json object
     using json = nlohmann::json;
     json data;
+
     std::string requested_package = individual_package.name;
 
-
     switch (options) {
-        // help actions
+        /**
+         * HELP ACTIONS
+         */
         case PossibleOptions::HELP:
             std::cout << "Help printed" << std::endl;
             break;
 
-        // install actions
+        /**
+         * INSTALL ACTIONS
+         */
         case PossibleOptions::INSTALL:
             data = json::parse(packages_file);
-            
+
             std::cout << data.dump(4) << std::endl;
 
-            std::cout << "Package: " << individual_package.name << std::endl;
-            for (auto& element : data["packages"]) {
-                
-                // check if package exists
-                if (element.find(requested_package) != element.end()) {
-                    repo_name = element[requested_package][0]["name"];
-                    repository_URL = std::string(element[requested_package][0]["git_link"]) ;
-                    
-                    std::cout << "Element: " << repository_URL << '\n';
-                }
-            }
+            repo_name = data["packages"][requested_package]["repo_name"];
+            repository_URL = data["packages"][requested_package]["git_link"];
 
+            // unsure if this is needed yet
             // std::cout.flush();
 
             // using bash to clone the repo
@@ -56,7 +52,9 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
             break;
 
-        // clean actions
+        /**
+         * CLEAN ACTIONS
+         */
         case PossibleOptions::CLEAN:
             // using bash to clean the library folder
             command = "sudo rm -r cpp_libs";
@@ -64,7 +62,6 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
             break;
     }
 }
-
 
 // function to parse command line arguments and assign them to the enum
 PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
@@ -109,6 +106,7 @@ PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
 }
 
 bool PackageManager::show_warning() {
+    // TODO: on presssing no, command still runs -- need to fix
     // Display the warning message
     std::cout << "WARNING: This operation may have consequences.\n";
     std::cout << "Do you want to proceed? (y/n): ";
