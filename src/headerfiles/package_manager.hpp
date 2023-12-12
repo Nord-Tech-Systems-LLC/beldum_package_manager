@@ -20,15 +20,14 @@ enum class PossibleOptions {
 };
 
 class Package {
-    public: 
-        std::string name;
-        std::string version;
-        std::string description;
-
+   public:
+    std::string name;
+    std::string version;
+    std::string description;
 };
 
 class PackageManager {
-    public:
+   public:
     static PackageManager& getInstance() {
         static PackageManager instance;
         return instance;
@@ -36,13 +35,13 @@ class PackageManager {
 
     PossibleOptions parse_arguments(int argc, char* argv[]);
     void check_passed_shell_arguments(PossibleOptions options);
-    private:
-        PackageManager(){};
-        // ~PackageManager();
-        
-        bool show_warning();
-        void print_table(const std::vector<Package>& package);
 
+   private:
+    PackageManager(){};
+    // ~PackageManager();
 
+    bool show_warning();
+    void print_help();
+    void print_table(const std::vector<Package>& package);
 };
 #endif

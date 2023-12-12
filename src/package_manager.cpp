@@ -28,7 +28,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
          * HELP ACTIONS
          */
         case PossibleOptions::HELP:
-            std::cout << "Help printed" << std::endl;
+            print_help();
+            // std::cout << "Help printed" << std::endl;
             break;
 
         /**
@@ -153,4 +154,8 @@ void PackageManager::print_table(const std::vector<Package>& package) {
                   << std::setw(column_widths[2] + 2) << pm.description  // Added 2 for padding
                   << std::endl;
     }
+}
+
+void PackageManager::print_help() {
+    std::cout << "Help: " << std::endl;
 }
