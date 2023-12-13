@@ -16,6 +16,11 @@
 /**
  * TODO:
  * - create a script for downloading JSON library dependency
+ * - create package update
+ * - create package remove
+ * - when creating package change the logic for where the cpp_libs file is saved
+ * - need to move folder structure to separate backend / frontend
+ * - need to figure out where to move cpp_libs so it's based on the current directory and not inside the package manager
  * - setup table with commands
  * - create function list of all currently installed packages
  *
@@ -33,26 +38,27 @@ int main(int argc, char* argv[]) {
 
     // creates packages folder if it doesn't exist
     if (!file_exists("cdm_packages.json")) {
+        std::cout << "This printed..." << std::endl;
         std::ofstream output("cdm_packages.json");
     }
     std::ifstream package_list("cdm_packages.json");
 
     // downloads json dependency if it doesn't exist
-    struct stat info;
-    const char* pathname = "cpp_libs/json";
-    if (stat(pathname, &info) != 0) {
-        printf("cannot access %s\n", pathname);
-    } else if (info.st_mode & S_IFDIR) {  // S_ISDIR() doesn't exist on my windows
-        printf("%s is a directory\n", pathname);
-    } else {
-        // std::string = command = "git clone git@github.com:nlohmann/json.git cpp_libs/json";
-        printf("%s is no directory\n", pathname);
-    }
+    // struct stat info;
+    // const char* pathname = "cpp_libs/json";
+    // if (stat(pathname, &info) != 0) {
+    //     printf("cannot access %s\n", pathname);
+    // } else if (info.st_mode & S_IFDIR) {  // S_ISDIR() doesn't exist on my windows
+    //     printf("%s is a directory\n", pathname);
+    // } else {
+    //     // std::string = command = "git clone git@github.com:nlohmann/json.git cpp_libs/json";
+    //     printf("%s is no directory\n", pathname);
+    // }
 
     using json = nlohmann::json;
     json data = json::parse(package_list);
 
-    std::cout << data.dump(4) << std::endl;
+    // std::cout << data.dump(4) << std::endl;
 
     return 0;
 }

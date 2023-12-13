@@ -1,11 +1,13 @@
 #include "headerfiles/package_manager.hpp"
 
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 
 #include "../cpp_libs/json/single_include/nlohmann/json.hpp"
 
 Package individual_package;
+namespace fs = std::filesystem;
 
 void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     // read shell arguments passed
@@ -23,6 +25,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
     std::string requested_package = individual_package.name;
 
+    std::string testing = std::string(fs::current_path());
+    std::string result_string;
     switch (options) {
         /**
          * HELP ACTIONS
@@ -43,11 +47,19 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
             repo_name = data["packages"][requested_package]["repo_name"];
             repository_URL = data["packages"][requested_package]["git_link"];
 
+            // strips quotes from directory
+            for (char c : testing) {
+                if (c != '\"') {
+                    result_string += c;
+                }
+            }
             // unsure if this is needed yet
             // std::cout.flush();
 
+            std::cout
+                << result_string << std::endl;
             // using bash to clone the repo
-            command = "git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
+            command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
             std::cout << "Command: " << command << std::endl;
             return_code = system(command.c_str());
 
@@ -157,5 +169,21 @@ void PackageManager::print_table(const std::vector<Package>& package) {
 }
 
 void PackageManager::print_help() {
-    std::cout << "Help: " << std::endl;
+    // const char* arg0 = "test0";
+    // const char* arg1 = "test1";
+    // const char* arg2 = "test2";
+    // const char* arg3 = "test3";
+    // printf("|%5s|%5s|%5s|%5s|", arg0, arg1, arg2, arg3);
+    std::cout << std::setw(20) << std::left << "COMMAND:";
+    std::cout << std::setw(60) << std::right << "DESCRIPTION:" << std::endl;
+    std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
+    std::cout << std::setw(20) << std::left << "--install";
+    std::cout << std::setw(60) << std::right << "to install packages" << std::endl;
+    std::cout << std::setw(20) << std::left << "--help";
+    std::cout << std::setw(60) << std::right << "to show commands" << std::endl;
+    std::cout << std::setw(20) << std::left << "--clean";
+    std::cout << std::setw(60) << std::right << "to remove contents from cpp_libs folder" << std::endl;
+    std::cout << "\n\n\n\n"
+              << std::endl;
+    // std::cout << "Help: " << std::endl;
 }
