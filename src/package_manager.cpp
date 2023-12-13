@@ -72,7 +72,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
             data = json::parse(packages_file);
 
             // prints header
-            std::cout << std::setw(40) << std::left << "\nPACKAGE:";
+            std::cout << std::setw(40) << std::left << "\n\n\nPACKAGE:";
             std::cout << std::setw(20) << std::right << "VERSION:" << std::endl;
             std::cout << std::setw(80) << std::left << "------------------------------------------------------------" << std::endl;
             for (auto test : data["packages"]) {
@@ -81,7 +81,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                 std::cout << std::setw(20) << std::right << std::string(test["version"]) << std::endl;
             }
             // space at bottom
-            std::cout << "\n\n\n\n\n\n"
+            std::cout << "\n\n\n"
                       << std::endl;
             break;
 
@@ -202,7 +202,7 @@ void PackageManager::print_table(const std::map<std::string, std::string>& packa
 }
 
 void PackageManager::print_help() {
-    std::cout << std::setw(20) << std::left << "\nCOMMAND:";
+    std::cout << std::setw(20) << std::left << "\n\n\nCOMMAND:";
     std::cout << std::setw(60) << std::right << "DESCRIPTION:" << std::endl;
     std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::setw(20) << std::left << "--install";
@@ -211,6 +211,6 @@ void PackageManager::print_help() {
     std::cout << std::setw(60) << std::right << "to show commands" << std::endl;
     std::cout << std::setw(20) << std::left << "--clean";
     std::cout << std::setw(60) << std::right << "to remove contents from cpp_libs folder" << std::endl;
-    std::cout << "\n\n\n\n"
+    std::cout << "\n\n\n"
               << std::endl;
 }
