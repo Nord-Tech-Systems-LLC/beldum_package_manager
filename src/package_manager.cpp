@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <map>
 
 #include "../cpp_libs/json/single_include/nlohmann/json.hpp"
 
@@ -17,14 +18,13 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     std::string repo_name;
 
     // gets list of packages
-    std::ifstream packages_file("cdm_packages.json");
+    std::ifstream packages_file("installed_packages.json");
 
     // instantiate json object
     using json = nlohmann::json;
     json data;
 
     std::string requested_package = individual_package.name;
-
     std::string testing = std::string(fs::current_path());
     std::string result_string;
     switch (options) {
@@ -56,13 +56,33 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
             // unsure if this is needed yet
             // std::cout.flush();
 
-            std::cout
-                << result_string << std::endl;
+            std::cout << result_string << std::endl;
             // using bash to clone the repo
             command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
             std::cout << "Command: " << command << std::endl;
             return_code = system(command.c_str());
 
+            break;
+
+            /**
+             * LIST PACKAGES
+             */
+        case PossibleOptions::LIST_PACKAGES:
+
+            data = json::parse(packages_file);
+
+            // prints header
+            std::cout << std::setw(40) << std::left << "\nPACKAGE:";
+            std::cout << std::setw(20) << std::right << "VERSION:" << std::endl;
+            std::cout << std::setw(80) << std::left << "------------------------------------------------------------" << std::endl;
+            for (auto test : data["packages"]) {
+                // prints all packages
+                std::cout << std::setw(40) << std::left << std::string(test["repo_name"]);
+                std::cout << std::setw(20) << std::right << std::string(test["version"]) << std::endl;
+            }
+            // space at bottom
+            std::cout << "\n\n\n\n\n\n"
+                      << std::endl;
             break;
 
         /**
@@ -108,6 +128,9 @@ PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
         } else if (std::strcmp(arg, "-o") == 0 || std::strcmp(arg, "--output") == 0) {
             // assuming that the next argument is the output file name
             return (i + 1 < argc) ? PossibleOptions::OUTPUT_FILE : PossibleOptions::NONE;
+        } else if (std::strcmp(arg, "--list") == 0) {
+            return PossibleOptions::LIST_PACKAGES;
+
         } else {
             std::cerr << "Error: Unknown option '" << arg << "'." << std::endl;
             return PossibleOptions::NONE;
@@ -143,38 +166,43 @@ bool PackageManager::show_warning() {
     }
 }
 
-void PackageManager::print_table(const std::vector<Package>& package) {
+void PackageManager::print_table(const std::map<std::string, std::string>& package) {
     // Determine column widths
     std::vector<size_t> column_widths = {0, 0, 0};
 
-    for (const auto& pm : package) {
-        column_widths[0] = std::max(column_widths[0], pm.name.length());
-        column_widths[1] = std::max(column_widths[1], pm.version.length());
-        column_widths[2] = std::max(column_widths[2], pm.description.length());
+    // Print the contents of the map using iterators
+    for (auto it = package.begin(); it != package.end(); ++it) {
+        std::cout << it->first << ": " << it->second << std::endl;
     }
 
-    // Print table header
-    std::cout << std::left << std::setw(column_widths[0] + 2) << "Name"  // Added 2 for padding
-              << std::setw(column_widths[1] + 4) << "Version"            // Added 4 for padding
-              << std::setw(column_widths[2] + 2) << "Description"        // Added 2 for padding
-              << std::endl;
+    // for (int i = 0; i < package.size(); i++) {
+    //     const Package testing = package[i];
 
-    // Print table data
-    for (const auto& pm : package) {
-        std::cout << std::setw(column_widths[0] + 2) << pm.name         // Added 2 for padding
-                  << std::setw(column_widths[1] + 4) << pm.version      // Added 4 for padding
-                  << std::setw(column_widths[2] + 2) << pm.description  // Added 2 for padding
-                  << std::endl;
-    }
+    //     std::cout << &testing << std::endl;
+    // }
+    // for (const auto& pm : package) {
+    //     column_widths[0] = std::max(column_widths[0], pm.name.length());
+    //     column_widths[1] = std::max(column_widths[1], pm.version.length());
+    //     column_widths[2] = std::max(column_widths[2], pm.description.length());
+    // }
+
+    // // Print table header
+    // std::cout << std::left << std::setw(column_widths[0] + 2) << "Name"  // Added 2 for padding
+    //           << std::setw(column_widths[1] + 4) << "Version"            // Added 4 for padding
+    //           << std::setw(column_widths[2] + 2) << "Description"        // Added 2 for padding
+    //           << std::endl;
+
+    // // Print table data
+    // for (const auto& pm : package) {
+    //     std::cout << std::setw(column_widths[0] + 2) << pm.name         // Added 2 for padding
+    //               << std::setw(column_widths[1] + 4) << pm.version      // Added 4 for padding
+    //               << std::setw(column_widths[2] + 2) << pm.description  // Added 2 for padding
+    //               << std::endl;
+    // }
 }
 
 void PackageManager::print_help() {
-    // const char* arg0 = "test0";
-    // const char* arg1 = "test1";
-    // const char* arg2 = "test2";
-    // const char* arg3 = "test3";
-    // printf("|%5s|%5s|%5s|%5s|", arg0, arg1, arg2, arg3);
-    std::cout << std::setw(20) << std::left << "COMMAND:";
+    std::cout << std::setw(20) << std::left << "\nCOMMAND:";
     std::cout << std::setw(60) << std::right << "DESCRIPTION:" << std::endl;
     std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::setw(20) << std::left << "--install";
@@ -185,5 +213,4 @@ void PackageManager::print_help() {
     std::cout << std::setw(60) << std::right << "to remove contents from cpp_libs folder" << std::endl;
     std::cout << "\n\n\n\n"
               << std::endl;
-    // std::cout << "Help: " << std::endl;
 }

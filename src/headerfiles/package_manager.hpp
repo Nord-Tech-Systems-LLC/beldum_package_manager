@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <vector>
 
 enum class PossibleOptions {
@@ -16,7 +17,8 @@ enum class PossibleOptions {
     HELP,
     VERSION,
     INPUT_FILE,
-    OUTPUT_FILE
+    OUTPUT_FILE,
+    LIST_PACKAGES
 };
 
 class Package {
@@ -42,6 +44,6 @@ class PackageManager {
 
     bool show_warning();
     void print_help();
-    void print_table(const std::vector<Package>& package);
+    void print_table(const std::map<std::string, std::string>& package);
 };
 #endif

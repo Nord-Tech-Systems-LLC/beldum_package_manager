@@ -37,11 +37,11 @@ int main(int argc, char* argv[]) {
     instance.check_passed_shell_arguments(options);
 
     // creates packages folder if it doesn't exist
-    if (!file_exists("cdm_packages.json")) {
+    if (!file_exists("installed_packages.json")) {
         std::cout << "This printed..." << std::endl;
-        std::ofstream output("cdm_packages.json");
+        std::ofstream output("installed_packages.json");
     }
-    std::ifstream package_list("cdm_packages.json");
+    std::ifstream package_list("installed_packages.json");
 
     // downloads json dependency if it doesn't exist
     // struct stat info;
