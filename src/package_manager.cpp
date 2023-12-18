@@ -18,11 +18,13 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     std::string repo_name;
 
     // gets list of packages
-    std::ifstream packages_file("installed_packages.json");
+    std::ifstream packages_file("package.json");
+    std::ifstream installed_packages("installed_packages.json");
 
     // instantiate json object
     using json = nlohmann::json;
     json data;
+    json installed_data;
 
     std::string requested_package = individual_package.name;
     std::string testing = std::string(fs::current_path());
@@ -61,6 +63,19 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
             command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
             std::cout << "Command: " << command << std::endl;
             return_code = system(command.c_str());
+
+            // updating installed package manager
+            installed_data = json::parse(installed_packages);
+            installed_data["packages"] = {
+                {"cpp_dependency_management", {
+                                                  {"git_link", "git@github.com:Nord-Tech-Systems-LLC/cpp_dependency_management.git"},
+                                                  {"repo_name", "cpp_dependency_management"},
+                                                  {"version", "v0.0.0"},
+                                                  {"package_rsa", "ssh-rsa blah"},
+                                              }}};
+
+            // TODO: need to output to json file
+            std::cout << installed_data.dump(4) << std::endl;
 
             break;
 
@@ -166,6 +181,7 @@ bool PackageManager::show_warning() {
     }
 }
 
+// TODO: need to remove
 void PackageManager::print_table(const std::map<std::string, std::string>& package) {
     // Determine column widths
     std::vector<size_t> column_widths = {0, 0, 0};
@@ -174,43 +190,23 @@ void PackageManager::print_table(const std::map<std::string, std::string>& packa
     for (auto it = package.begin(); it != package.end(); ++it) {
         std::cout << it->first << ": " << it->second << std::endl;
     }
+}
 
-    // for (int i = 0; i < package.size(); i++) {
-    //     const Package testing = package[i];
-
-    //     std::cout << &testing << std::endl;
-    // }
-    // for (const auto& pm : package) {
-    //     column_widths[0] = std::max(column_widths[0], pm.name.length());
-    //     column_widths[1] = std::max(column_widths[1], pm.version.length());
-    //     column_widths[2] = std::max(column_widths[2], pm.description.length());
-    // }
-
-    // // Print table header
-    // std::cout << std::left << std::setw(column_widths[0] + 2) << "Name"  // Added 2 for padding
-    //           << std::setw(column_widths[1] + 4) << "Version"            // Added 4 for padding
-    //           << std::setw(column_widths[2] + 2) << "Description"        // Added 2 for padding
-    //           << std::endl;
-
-    // // Print table data
-    // for (const auto& pm : package) {
-    //     std::cout << std::setw(column_widths[0] + 2) << pm.name         // Added 2 for padding
-    //               << std::setw(column_widths[1] + 4) << pm.version      // Added 4 for padding
-    //               << std::setw(column_widths[2] + 2) << pm.description  // Added 2 for padding
-    //               << std::endl;
-    // }
+void create_row_help_menu(const std::string& command_flag, const std::string& description) {
+    std::cout << std::setw(20) << std::left << command_flag;
+    std::cout << std::setw(60) << std::right << description << std::endl;
 }
 
 void PackageManager::print_help() {
-    std::cout << std::setw(20) << std::left << "\n\n\nCOMMAND:";
-    std::cout << std::setw(60) << std::right << "DESCRIPTION:" << std::endl;
+    std::cout << "\n\n\n"
+              << std::endl;
+    create_row_help_menu("COMMAND:", "DESCRIPTION:");
     std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
-    std::cout << std::setw(20) << std::left << "--install";
-    std::cout << std::setw(60) << std::right << "to install packages" << std::endl;
-    std::cout << std::setw(20) << std::left << "--help";
-    std::cout << std::setw(60) << std::right << "to show commands" << std::endl;
-    std::cout << std::setw(20) << std::left << "--clean";
-    std::cout << std::setw(60) << std::right << "to remove contents from cpp_libs folder" << std::endl;
+    create_row_help_menu("--list", "to list installed packages");
+    create_row_help_menu("--install", "to install packages");
+    create_row_help_menu("--uninstall", "to uninstall packages");  // TODO: not created yet
+    create_row_help_menu("--help", "to show commands");
+    create_row_help_menu("--clean", "to remove contents from cpp_libs folder");
     std::cout << "\n\n\n"
               << std::endl;
 }
