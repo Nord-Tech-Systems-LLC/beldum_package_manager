@@ -105,6 +105,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
          */
         case PossibleOptions::CLEAN:
             // using bash to clean the library folder
+
+            // TODO: need to use some variation of this: find cpp_libs ! -name 'json' -type d -exec rm -rf {} +
             command = "sudo rm -r cpp_libs";
             return_code = system(command.c_str());
             break;
@@ -113,51 +115,48 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
 // function to parse command line arguments and assign them to the enum
 PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
+    std::map<std::string, PossibleOptions> command_map = {
+        {"--help", PossibleOptions::HELP},
+        {"--install", PossibleOptions::INSTALL},
+        {"--clean", PossibleOptions::CLEAN},
+        {"--version", PossibleOptions::VERSION},
+        {"--list", PossibleOptions::LIST_PACKAGES}};
+
+    std::map<std::string, std::string> testing = {
+        {"help", "TESTING"},
+    };
+
+    // traverse passed command arguments
     for (int i = 1; i < argc; ++i) {
         const char* arg = argv[i];
 
-        if (std::strcmp(arg, "--help") == 0) {
-            return PossibleOptions::HELP;
-        } else if (std::strcmp(arg, "--install") == 0) {
-            // Check if the next argument exists
+        // if command isn't found, else return PossibleOptions
+        if (command_map.find(arg) == command_map.end()) {
+            std::cerr << "Error: Unknown option '" << arg << "'." << std::endl;
+            return PossibleOptions::NONE;
+        }
+        // TODO: need to revise --install to be inside of main install method
+        else if (std::strcmp(arg, "--install") == 0) {
+            // check if the next argument exists
             if (i + 1 < argc) {
-                // Assuming the next argument is the package name
+                // assuming the next argument is the package name
                 individual_package.name = argv[i + 1];
                 return PossibleOptions::INSTALL;
             } else {
                 std::cerr << "Error: Missing package name after '--install'." << std::endl;
                 return PossibleOptions::NONE;
             }
-        } else if (std::strcmp(arg, "--clean") == 0) {
-            // if warning returns true
-            if (show_warning()) {
-                return PossibleOptions::CLEAN;
-            } else {
-                return PossibleOptions::NONE;
-            }
-        } else if (std::strcmp(arg, "--version") == 0) {
-            return PossibleOptions::VERSION;
-        } else if (std::strcmp(arg, "-i") == 0 || std::strcmp(arg, "--input") == 0) {
-            // assuming that the next argument is the input file name
-            return (i + 1 < argc) ? PossibleOptions::INPUT_FILE : PossibleOptions::NONE;
-        } else if (std::strcmp(arg, "-o") == 0 || std::strcmp(arg, "--output") == 0) {
-            // assuming that the next argument is the output file name
-            return (i + 1 < argc) ? PossibleOptions::OUTPUT_FILE : PossibleOptions::NONE;
-        } else if (std::strcmp(arg, "--list") == 0) {
-            return PossibleOptions::LIST_PACKAGES;
-
         } else {
-            std::cerr << "Error: Unknown option '" << arg << "'." << std::endl;
-            return PossibleOptions::NONE;
+            return command_map[arg];
         }
     }
 
-    // No valid options found
+    // no valid options found
     return PossibleOptions::NONE;
 }
 
 bool PackageManager::show_warning() {
-    // TODO: on presssing no, command still runs -- need to fix
+    // TODO: on pressing no, command still runs -- need to fix
     // Display the warning message
     std::cout << "WARNING: This operation may have consequences.\n";
     std::cout << "Do you want to proceed? (y/n): ";
