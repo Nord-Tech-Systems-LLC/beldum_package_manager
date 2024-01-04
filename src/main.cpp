@@ -10,7 +10,6 @@
 
 /**
  * TODO:
- * - create a script for downloading JSON library dependency
  * - create package update
  * - create package remove
  * - when creating package change the logic for where the cpp_libs file is saved
