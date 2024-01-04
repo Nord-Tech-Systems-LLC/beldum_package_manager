@@ -2,18 +2,34 @@
 
 SrcDir=src
 IncludeDir=$(SrcDir)
-BuildDir = build
-BuildBinDir = $(BuildDir)/bin
-BuildObjectsDir = $(BuildDir)/objects
-LibDir = cpp_libs  # Added library folder
+BuildDir=build
+BuildBinDir=$(BuildDir)/bin
+BuildObjectsDir=$(BuildDir)/objects
+LibDir=program_dependencies # added library folder
 
-CC = g++
-CFlags = -I $(IncludeDir) -I $(LibDir) -g  # Added -I for library folder
+CC=g++
+CFlags= -I $(IncludeDir) -I $(LibDir) -g -Wall # added -I for library folder
 
-# The new executable name
-NewExecutable = cdm_cpp
+# header file and folder paths
+JSON_DEPENDENCY_PATH=$(LibDir)/json/single_include/nlohmann/json.hpp
+JSON_GITHUB_PATH=git@github.com:nlohmann/json.git
 
-all: $(BuildBinDir)/$(NewExecutable)
+# the new executable name
+NewExecutable=cdm_cpp
+
+all: check_dependencies $(BuildBinDir)/$(NewExecutable)
+
+# check if dependencies exists -- MAKE SURE TO STRIP LibDir of whitespaces
+check_dependencies:
+	@if [ -f $(JSON_DEPENDENCY_PATH) ]; then \
+		echo "Header file found."; \
+		$(eval CFlags += -D JSON_DEPENDENCY_EXIST) \
+		echo $(CFlags); \
+	else \
+		echo "\n\nJSON library dependency not found. Please wait while we download...\n\n"; \
+		test=$(strip $(LibDir)); \
+		git clone $(JSON_GITHUB_PATH) $$test/json/; \
+	fi
 
 prerequisites:
 	@ mkdir -p $(BuildBinDir)
@@ -22,9 +38,6 @@ prerequisites:
 $(BuildBinDir)/$(NewExecutable): \
 		$(BuildObjectsDir)/main.o \
 		$(BuildObjectsDir)/package_manager.o | prerequisites
-		# $(BuildObjectsDir)/http_server.o \
-		# $(BuildObjectsDir)/server_logging.o \
-		# $(BuildObjectsDir)/route_handler.o | prerequisites
 	@ echo Building $@ from $^
 	@ $(CC) -o $@ $^
 

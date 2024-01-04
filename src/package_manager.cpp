@@ -5,7 +5,8 @@
 #include <fstream>
 #include <map>
 
-#include "../cpp_libs/json/single_include/nlohmann/json.hpp"
+#ifdef JSON_DEPENDENCY_EXIST
+#include "json/single_include/nlohmann/json.hpp"
 
 Package individual_package;
 namespace fs = std::filesystem;
@@ -209,3 +210,5 @@ void PackageManager::print_help() {
     std::cout << "\n\n\n"
               << std::endl;
 }
+
+#endif

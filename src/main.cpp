@@ -8,11 +8,6 @@
 #include <limits>
 #include <vector>
 
-#include "headerfiles/package_manager.hpp"
-
-// libraries
-#include "json/single_include/nlohmann/json.hpp"
-
 /**
  * TODO:
  * - create a script for downloading JSON library dependency
@@ -25,6 +20,12 @@
  * - create function list of all currently installed packages
  *
  */
+
+// libraries
+#include "headerfiles/package_manager.hpp"
+
+#ifdef JSON_DEPENDENCY_EXIST
+#include "json/single_include/nlohmann/json.hpp"
 
 inline bool file_exists(const std::string& name) {
     std::ifstream file(name.c_str());
@@ -62,3 +63,18 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
+// // handles dependencies needed to execute package manager
+// int main() {
+//     std::string pre_requisites_command = "git clone git@github.com:nlohmann/json.git cpp_libs/json/";
+//     std::cout << "Dependency does not exist... Please wait while the json library is installed." << std::endl;
+//     int return_code = system(pre_requisites_command.c_str());
+//     return 0;
+// }
+
+#else
+int main() {
+    std::cout << "JSON dependency does not exist... Please execute make in package manager root directory." << std::endl;
+    return 0;
+}
+#endif
