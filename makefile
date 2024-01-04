@@ -5,7 +5,7 @@ IncludeDir=$(SrcDir)
 BuildDir=build
 BuildBinDir=$(BuildDir)/bin
 BuildObjectsDir=$(BuildDir)/objects
-LibDir=program_dependencies # added library folder
+LibDir=program_dependencies
 
 CC=g++
 CFlags= -I $(IncludeDir) -I $(LibDir) -g -Wall # added -I for library folder
@@ -19,16 +19,14 @@ NewExecutable=cdm_cpp
 
 all: check_dependencies $(BuildBinDir)/$(NewExecutable)
 
-# check if dependencies exists -- MAKE SURE TO STRIP LibDir of whitespaces
+# check if dependencies exists
 check_dependencies:
-	@if [ -f $(JSON_DEPENDENCY_PATH) ]; then \
-		echo "Header file found."; \
+	@if [ -f '$(JSON_DEPENDENCY_PATH)' ]; then \
+		echo '\n\nJSON library dependency found.\n\n'; \
 		$(eval CFlags += -D JSON_DEPENDENCY_EXIST) \
-		echo $(CFlags); \
 	else \
-		echo "\n\nJSON library dependency not found. Please wait while we download...\n\n"; \
-		test=$(strip $(LibDir)); \
-		git clone $(JSON_GITHUB_PATH) $$test/json/; \
+		echo '\n\nJSON library dependency not found. Please wait while we download...\n\n'; \
+		git clone $(JSON_GITHUB_PATH) $(LibDir)/json/; \
 	fi
 
 prerequisites:
