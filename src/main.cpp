@@ -21,6 +21,8 @@
  *
  */
 
+// #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
+
 // libraries
 #include "headerfiles/package_manager.hpp"
 

@@ -5,6 +5,8 @@
 #include <fstream>
 #include <map>
 
+// #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
+
 #ifdef JSON_DEPENDENCY_EXIST
 #include "json/single_include/nlohmann/json.hpp"
 
@@ -31,6 +33,13 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     std::string testing = std::string(fs::current_path());
     std::string result_string;
     switch (options) {
+        /**
+         * INIT ACTIONS
+         */
+        case PossibleOptions::INIT:
+            std::cout << "INIT...." << std::endl;
+            break;
+
         /**
          * HELP ACTIONS
          */
@@ -118,14 +127,11 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
     std::map<std::string, PossibleOptions> command_map = {
         {"--help", PossibleOptions::HELP},
+        {"--init", PossibleOptions::INIT},
         {"--install", PossibleOptions::INSTALL},
         {"--clean", PossibleOptions::CLEAN},
         {"--version", PossibleOptions::VERSION},
         {"--list", PossibleOptions::LIST_PACKAGES}};
-
-    std::map<std::string, std::string> testing = {
-        {"help", "TESTING"},
-    };
 
     // traverse passed command arguments
     for (int i = 1; i < argc; ++i) {
@@ -202,6 +208,7 @@ void PackageManager::print_help() {
               << std::endl;
     create_row_help_menu("COMMAND:", "DESCRIPTION:");
     std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
+    create_row_help_menu("--init", "to initialize new project");
     create_row_help_menu("--list", "to list installed packages");
     create_row_help_menu("--install", "to install packages");
     create_row_help_menu("--uninstall", "to uninstall packages");  // TODO: not created yet

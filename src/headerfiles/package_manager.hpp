@@ -12,12 +12,11 @@
 
 enum class PossibleOptions {
     NONE,
+    INIT,
     INSTALL,
     CLEAN,
     HELP,
     VERSION,
-    INPUT_FILE,
-    OUTPUT_FILE,
     LIST_PACKAGES
 };
 
