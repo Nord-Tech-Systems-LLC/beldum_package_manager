@@ -31,19 +31,20 @@
 int main(int argc, char* argv[]) {
     PackageManager instance = PackageManager::getInstance();
     PossibleOptions options = instance.parse_arguments(argc, argv);
-    instance.check_passed_shell_arguments(options);
 
-    // creates packages folder if it doesn't exist
-    if (!instance.file_exists("installed_packages.json") || !instance.file_exists("package.json")) {
+    // checks file dependencies
+    if (options == PossibleOptions::INIT) {
+        // if initializing project
+        instance.check_passed_shell_arguments(options);
+        return 0;
+    } else if (!instance.file_exists("installed_packages.json") || !instance.file_exists("package.json")) {
+        // if installed_packages.json or package.json doesn't exist
         std::cerr << "\nYou're missing the installed_packages.json or package.json, please run --init.\n"
                   << std::endl;
+        return 1;
     } else {
-        std::ifstream package_list("installed_packages.json");
-
-        using json = nlohmann::json;
-        json data = json::parse(package_list);
-
-        // std::cout << data.dump(4) << std::endl;
+        // else anything else
+        instance.check_passed_shell_arguments(options);
     }
 
     return 0;

@@ -140,20 +140,24 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
              */
         case PossibleOptions::LIST_PACKAGES:
 
-            installed_data = json::parse(installed_packages);
+            if (file_exists("installed_packages.json")) {
+                installed_data = json::parse(installed_packages);
 
-            // prints header
-            std::cout << std::setw(40) << std::left << "\n\n\nPACKAGE:";
-            std::cout << std::setw(20) << std::right << "VERSION:" << std::endl;
-            std::cout << std::setw(80) << std::left << "------------------------------------------------------------" << std::endl;
-            for (auto test : installed_data["packages"]) {
-                // prints all packages
-                std::cout << std::setw(40) << std::left << std::string(test["repo_name"]);
-                std::cout << std::setw(20) << std::right << std::string(test["version"]) << std::endl;
+                // prints header
+                std::cout << std::setw(40) << std::left << "\n\n\nPACKAGE:";
+                std::cout << std::setw(20) << std::right << "VERSION:" << std::endl;
+                std::cout << std::setw(80) << std::left << "------------------------------------------------------------" << std::endl;
+                for (auto test : installed_data["packages"]) {
+                    // prints all packages
+                    std::cout << std::setw(40) << std::left << std::string(test["repo_name"]);
+                    std::cout << std::setw(20) << std::right << std::string(test["version"]) << std::endl;
+                }
+                // space at bottom
+                std::cout << "\n\n"
+                          << std::endl;
+            } else {
+                std::cerr << "\nThe installed_packages.json does not exist, please run --init" << std::endl;
             }
-            // space at bottom
-            std::cout << "\n\n"
-                      << std::endl;
             break;
 
         /**
