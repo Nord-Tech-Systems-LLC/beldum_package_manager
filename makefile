@@ -22,10 +22,10 @@ all: check_dependencies $(BuildBinDir)/$(NewExecutable)
 # check if dependencies exists
 check_dependencies:
 	@if [ -f '$(JSON_DEPENDENCY_PATH)' ]; then \
-		echo '\n\nJSON library dependency found.\n\n'; \
+		echo '\nJSON library dependency found.\n'; \
 		$(eval CFlags += -D JSON_DEPENDENCY_EXIST) \
 	else \
-		echo '\n\nJSON library dependency not found. Please wait while we download...\n\n'; \
+		echo '\nJSON library dependency not found. Please wait while we download...\n'; \
 		git clone $(JSON_GITHUB_PATH) $(LibDir)/json/; \
 	fi
 

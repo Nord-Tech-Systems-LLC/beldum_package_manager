@@ -28,54 +28,30 @@
 #ifdef JSON_DEPENDENCY_EXIST
 #include "json/single_include/nlohmann/json.hpp"
 
-inline bool file_exists(const std::string& name) {
-    std::ifstream file(name.c_str());
-    return file.good();
-}
-
 int main(int argc, char* argv[]) {
     PackageManager instance = PackageManager::getInstance();
     PossibleOptions options = instance.parse_arguments(argc, argv);
     instance.check_passed_shell_arguments(options);
 
     // creates packages folder if it doesn't exist
-    if (!file_exists("installed_packages.json")) {
-        std::cout << "This printed..." << std::endl;
-        std::ofstream output("installed_packages.json");
+    if (!instance.file_exists("installed_packages.json") || !instance.file_exists("package.json")) {
+        std::cerr << "\nYou're missing the installed_packages.json or package.json, please run --init.\n"
+                  << std::endl;
+    } else {
+        std::ifstream package_list("installed_packages.json");
+
+        using json = nlohmann::json;
+        json data = json::parse(package_list);
+
+        // std::cout << data.dump(4) << std::endl;
     }
-    std::ifstream package_list("installed_packages.json");
-
-    // downloads json dependency if it doesn't exist
-    // struct stat info;
-    // const char* pathname = "cpp_libs/json";
-    // if (stat(pathname, &info) != 0) {
-    //     printf("cannot access %s\n", pathname);
-    // } else if (info.st_mode & S_IFDIR) {  // S_ISDIR() doesn't exist on my windows
-    //     printf("%s is a directory\n", pathname);
-    // } else {
-    //     // std::string = command = "git clone git@github.com:nlohmann/json.git cpp_libs/json";
-    //     printf("%s is no directory\n", pathname);
-    // }
-
-    using json = nlohmann::json;
-    json data = json::parse(package_list);
-
-    // std::cout << data.dump(4) << std::endl;
 
     return 0;
 }
 
-// // handles dependencies needed to execute package manager
-// int main() {
-//     std::string pre_requisites_command = "git clone git@github.com:nlohmann/json.git cpp_libs/json/";
-//     std::cout << "Dependency does not exist... Please wait while the json library is installed." << std::endl;
-//     int return_code = system(pre_requisites_command.c_str());
-//     return 0;
-// }
-
 #else
 int main() {
-    std::cout << "JSON dependency does not exist... Please execute make in package manager root directory." << std::endl;
+    std::cout << "\nJSON dependency does not exist... Please execute make in package manager root directory." << std::endl;
     return 0;
 }
 #endif

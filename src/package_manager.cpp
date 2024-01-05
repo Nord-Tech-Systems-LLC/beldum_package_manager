@@ -13,6 +13,11 @@
 Package individual_package;
 namespace fs = std::filesystem;
 
+inline bool PackageManager::file_exists(const std::string& name) {
+    std::ifstream file(name.c_str());
+    return file.good();
+}
+
 void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     // read shell arguments passed
     int return_code;
@@ -37,7 +42,36 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
          * INIT ACTIONS
          */
         case PossibleOptions::INIT:
-            std::cout << "INIT...." << std::endl;
+            // creates packages folder if it doesn't exist
+            std::cout << "\n";
+            if (file_exists("installed_packages.json") && file_exists("package.json")) {
+                std::cout << "Package.json and installed_packages.json already exist.\n"
+                          << "Try installing an example package with --install example_package\n"
+                          << std::endl;
+                break;
+            } else {
+                if (!file_exists("installed_packages.json")) {
+                    std::cout << "Creating installed_packages.json" << std::endl;
+                    std::ofstream output("installed_packages.json");
+                    installed_data["packages"] = {};
+                    output << installed_data;
+                }
+                if (!file_exists("package.json")) {
+                    std::cout << "Creating package.json" << std::endl;
+                    std::ofstream output("package.json");
+                    data["packages"] = {
+                        {"example_package", {
+                                                {"git_link", "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git"},
+                                                {"repo_name", "example_package"},
+                                                {"version", "v0.0.0"},
+                                                {"package_rsa", "ssh-rsa blah"},
+                                            }}};
+
+                    output << data;
+                }
+            }
+
+            std::cout << "\n";
             break;
 
         /**
@@ -52,40 +86,52 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
          * INSTALL ACTIONS
          */
         case PossibleOptions::INSTALL:
+            // parse package.json and installed_packages.json
             data = json::parse(packages_file);
-
-            std::cout << data.dump(4) << std::endl;
-
-            repo_name = data["packages"][requested_package]["repo_name"];
-            repository_URL = data["packages"][requested_package]["git_link"];
-
-            // strips quotes from directory
-            for (char c : testing) {
-                if (c != '\"') {
-                    result_string += c;
-                }
-            }
-            // unsure if this is needed yet
-            // std::cout.flush();
-
-            std::cout << result_string << std::endl;
-            // using bash to clone the repo
-            command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
-            std::cout << "Command: " << command << std::endl;
-            return_code = system(command.c_str());
-
-            // updating installed package manager
             installed_data = json::parse(installed_packages);
-            installed_data["packages"] = {
-                {"cpp_dependency_management", {
-                                                  {"git_link", "git@github.com:Nord-Tech-Systems-LLC/cpp_dependency_management.git"},
-                                                  {"repo_name", "cpp_dependency_management"},
-                                                  {"version", "v0.0.0"},
-                                                  {"package_rsa", "ssh-rsa blah"},
-                                              }}};
 
-            // TODO: need to output to json file
-            std::cout << installed_data.dump(4) << std::endl;
+            // checks if package is already installed
+            if (installed_data["packages"].contains(requested_package)) {
+                std::cout << "\nThe package \"" << requested_package << "\" is already installed...\n"
+                          << std::endl;
+                break;
+            };
+
+            // checks if package exists in package.json
+            if (data["packages"].contains(requested_package)) {
+                repo_name = data["packages"][requested_package]["repo_name"];
+                repository_URL = data["packages"][requested_package]["git_link"];
+
+                // strips quotes from directory
+                for (char c : testing) {
+                    if (c != '\"') {
+                        result_string += c;
+                    }
+                }
+
+                // unsure if this is needed yet
+                // std::cout.flush();
+
+                std::cout << result_string << std::endl;
+                // using bash to clone the repo
+                command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
+                std::cout << "Command: " << command << std::endl;
+                return_code = system(command.c_str());
+
+                // updating installed package manager
+                std::ofstream output("installed_packages.json");
+                installed_data["packages"][repo_name] = {
+                    {"git_link", repository_URL},
+                    {"repo_name", repo_name},
+                    {"version", "v0.0.0"},
+                    {"package_rsa", "ssh-rsa blah"},
+                };
+
+                output << installed_data;
+            } else {
+                std::cout << "\nPackage \"" << requested_package << "\" does not exist. Please enter the correct package name.\n"
+                          << std::endl;
+            }
 
             break;
 
@@ -94,19 +140,19 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
              */
         case PossibleOptions::LIST_PACKAGES:
 
-            data = json::parse(packages_file);
+            installed_data = json::parse(installed_packages);
 
             // prints header
             std::cout << std::setw(40) << std::left << "\n\n\nPACKAGE:";
             std::cout << std::setw(20) << std::right << "VERSION:" << std::endl;
             std::cout << std::setw(80) << std::left << "------------------------------------------------------------" << std::endl;
-            for (auto test : data["packages"]) {
+            for (auto test : installed_data["packages"]) {
                 // prints all packages
                 std::cout << std::setw(40) << std::left << std::string(test["repo_name"]);
                 std::cout << std::setw(20) << std::right << std::string(test["version"]) << std::endl;
             }
             // space at bottom
-            std::cout << "\n\n\n"
+            std::cout << "\n\n"
                       << std::endl;
             break;
 
@@ -118,7 +164,12 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
             // TODO: need to use some variation of this: find cpp_libs ! -name 'json' -type d -exec rm -rf {} +
             command = "sudo rm -r cpp_libs";
+            std::ofstream output("installed_packages.json");
+            installed_data["packages"] = {};
+            output << installed_data;
             return_code = system(command.c_str());
+            std::cout << "\nSuccessfully cleaned project directory.\n"
+                      << std::endl;
             break;
     }
 }
@@ -187,25 +238,13 @@ bool PackageManager::show_warning() {
     }
 }
 
-// TODO: need to remove
-void PackageManager::print_table(const std::map<std::string, std::string>& package) {
-    // Determine column widths
-    std::vector<size_t> column_widths = {0, 0, 0};
-
-    // Print the contents of the map using iterators
-    for (auto it = package.begin(); it != package.end(); ++it) {
-        std::cout << it->first << ": " << it->second << std::endl;
-    }
-}
-
 void create_row_help_menu(const std::string& command_flag, const std::string& description) {
     std::cout << std::setw(20) << std::left << command_flag;
     std::cout << std::setw(60) << std::right << description << std::endl;
 }
 
 void PackageManager::print_help() {
-    std::cout << "\n\n\n"
-              << std::endl;
+    std::cout << "\n\n\n";
     create_row_help_menu("COMMAND:", "DESCRIPTION:");
     std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
     create_row_help_menu("--init", "to initialize new project");
@@ -214,7 +253,7 @@ void PackageManager::print_help() {
     create_row_help_menu("--uninstall", "to uninstall packages");  // TODO: not created yet
     create_row_help_menu("--help", "to show commands");
     create_row_help_menu("--clean", "to remove contents from cpp_libs folder");
-    std::cout << "\n\n\n"
+    std::cout << "\n\n"
               << std::endl;
 }
 

@@ -36,6 +36,7 @@ class PackageManager {
 
     PossibleOptions parse_arguments(int argc, char* argv[]);
     void check_passed_shell_arguments(PossibleOptions options);
+    inline bool file_exists(const std::string& name);
 
    private:
     PackageManager(){};
@@ -43,6 +44,5 @@ class PackageManager {
 
     bool show_warning();
     void print_help();
-    void print_table(const std::map<std::string, std::string>& package);
 };
 #endif
