@@ -112,11 +112,20 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                 // unsure if this is needed yet
                 // std::cout.flush();
 
-                std::cout << result_string << std::endl;
-                // using bash to clone the repo
+                std::cout << "\n\n\nRESULT STRING: " << result_string << "\n\n\n"
+                          << std::endl;
+
+                // clone the repo
                 command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
                 std::cout << "Command: " << command << std::endl;
                 return_code = system(command.c_str());
+
+                // git version number
+                // command = "cd " + result_string + "/cpp_libs/" + std::string(repo_name) + " && git describe --tags --abbrev=0";
+                // std::cout << "\n\n\nCOMMAND: " << command << "\n\n\n"
+                //           << std::endl;
+                // return_code = system(command.c_str());
+                // std::cout << "RETURN CODE: " << return_code << std::endl;
 
                 // updating installed package manager
                 std::ofstream output("installed_packages.json");
@@ -159,6 +168,9 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                 std::cerr << "\nThe installed_packages.json does not exist, please run --init" << std::endl;
             }
             break;
+
+        case PossibleOptions::UNINSTALL:
+            std::cout << "Uninstalling..." << std::endl;
 
         /**
          * CLEAN ACTIONS

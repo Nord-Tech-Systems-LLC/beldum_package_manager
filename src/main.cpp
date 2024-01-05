@@ -12,11 +12,9 @@
  * TODO:
  * - create package update
  * - create package remove
- * - when creating package change the logic for where the cpp_libs file is saved
- * - need to move folder structure to separate backend / frontend
- * - need to figure out where to move cpp_libs so it's based on the current directory and not inside the package manager
- * - setup table with commands
- * - create function list of all currently installed packages
+ * - functionality to install all packages
+ * - package version management
+ * - package manager version management
  *
  */
 

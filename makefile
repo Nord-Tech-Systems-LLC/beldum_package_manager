@@ -17,7 +17,7 @@ JSON_GITHUB_PATH=git@github.com:nlohmann/json.git
 # the new executable name
 NewExecutable=cdm_cpp
 
-all: check_dependencies $(BuildBinDir)/$(NewExecutable)
+all: check_dependencies $(BuildBinDir)/$(NewExecutable) install
 
 # check if dependencies exists
 check_dependencies:
@@ -28,6 +28,10 @@ check_dependencies:
 		echo '\nJSON library dependency not found. Please wait while we download...\n'; \
 		git clone $(JSON_GITHUB_PATH) $(LibDir)/json/; \
 	fi
+
+# TODO: need to modify this
+install: 
+	@ sudo /usr/bin/install --mode=755 --owner=root --group=root $(BuildBinDir)/cdm_cpp /usr/local/bin/cdm_cpp
 
 prerequisites:
 	@ mkdir -p $(BuildBinDir)

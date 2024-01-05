@@ -14,6 +14,7 @@ enum class PossibleOptions {
     NONE,
     INIT,
     INSTALL,
+    UNINSTALL,
     CLEAN,
     HELP,
     VERSION,
