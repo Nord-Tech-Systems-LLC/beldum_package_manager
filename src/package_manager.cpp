@@ -64,7 +64,6 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                                                 {"git_link", "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git"},
                                                 {"repo_name", "example_package"},
                                                 {"version", "v0.0.0"},
-                                                {"package_rsa", "ssh-rsa blah"},
                                             }}};
 
                     output << data;
@@ -133,7 +132,6 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                     {"git_link", repository_URL},
                     {"repo_name", repo_name},
                     {"version", "v0.0.0"},
-                    {"package_rsa", "ssh-rsa blah"},
                 };
 
                 output << installed_data;
@@ -171,6 +169,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
         case PossibleOptions::UNINSTALL:
             std::cout << "Uninstalling..." << std::endl;
+            break;
 
         /**
          * CLEAN ACTIONS

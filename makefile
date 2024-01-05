@@ -15,7 +15,7 @@ JSON_DEPENDENCY_PATH=$(LibDir)/json/single_include/nlohmann/json.hpp
 JSON_GITHUB_PATH=git@github.com:nlohmann/json.git
 
 # the new executable name
-NewExecutable=cdm_cpp
+NewExecutable=beldum
 
 all: check_dependencies $(BuildBinDir)/$(NewExecutable) install
 
@@ -31,7 +31,7 @@ check_dependencies:
 
 # TODO: need to modify this
 install: 
-	@ sudo /usr/bin/install --mode=755 --owner=root --group=root $(BuildBinDir)/cdm_cpp /usr/local/bin/cdm_cpp
+	@ sudo /usr/bin/install --mode=755 --owner=root --group=root $(BuildBinDir)/beldum /usr/local/bin/beldum
 
 prerequisites:
 	@ mkdir -p $(BuildBinDir)
