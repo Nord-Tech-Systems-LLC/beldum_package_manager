@@ -18,12 +18,33 @@ inline bool PackageManager::file_exists(const std::string& name) {
     return file.good();
 }
 
+std::string exec(const char* cmd) {
+    // pipes command result to string for use
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+
+void create_row_help_menu(const std::string& command_flag, const std::string& description) {
+    std::cout << std::setw(20) << std::left << command_flag;
+    std::cout << std::setw(60) << std::right << description << std::endl;
+}
+
 void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     // read shell arguments passed
     int return_code;
     std::string command;
     std::string repository_URL;
     std::string repo_name;
+    std::string repo_version;
+    std::string test = "fatal";
 
     // gets list of packages
     std::ifstream packages_file("package.json");
@@ -108,30 +129,27 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                     }
                 }
 
-                // unsure if this is needed yet
-                // std::cout.flush();
-
-                std::cout << "\n\n\nRESULT STRING: " << result_string << "\n\n\n"
-                          << std::endl;
-
                 // clone the repo
                 command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
                 std::cout << "Command: " << command << std::endl;
                 return_code = system(command.c_str());
 
                 // git version number
-                // command = "cd " + result_string + "/cpp_libs/" + std::string(repo_name) + " && git describe --tags --abbrev=0";
-                // std::cout << "\n\n\nCOMMAND: " << command << "\n\n\n"
-                //           << std::endl;
-                // return_code = system(command.c_str());
-                // std::cout << "RETURN CODE: " << return_code << std::endl;
+                command = "cd " + result_string + "/cpp_libs/" + std::string(repo_name) + " && git describe --tags --abbrev=0";
+                repo_version = exec(command.c_str());
+                repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end());  // removes new line character from version
+
+                // assigning unknown if no version number exists in git repo
+                if (repo_version.empty()) {
+                    repo_version = "unknown";
+                }
 
                 // updating installed package manager
                 std::ofstream output("installed_packages.json");
                 installed_data["packages"][repo_name] = {
                     {"git_link", repository_URL},
                     {"repo_name", repo_name},
-                    {"version", "v0.0.0"},
+                    {"version", repo_version},
                 };
 
                 output << installed_data;
@@ -142,22 +160,21 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
             break;
 
-            /**
-             * LIST PACKAGES
-             */
+        /**
+         * LIST PACKAGES
+         */
         case PossibleOptions::LIST_PACKAGES:
 
             if (file_exists("installed_packages.json")) {
                 installed_data = json::parse(installed_packages);
 
                 // prints header
-                std::cout << std::setw(40) << std::left << "\n\n\nPACKAGE:";
-                std::cout << std::setw(20) << std::right << "VERSION:" << std::endl;
-                std::cout << std::setw(80) << std::left << "------------------------------------------------------------" << std::endl;
+                std::cout << "\n\n\n";
+                create_row_help_menu("PACKAGE:", "VERSION:");
+                std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
                 for (auto test : installed_data["packages"]) {
                     // prints all packages
-                    std::cout << std::setw(40) << std::left << std::string(test["repo_name"]);
-                    std::cout << std::setw(20) << std::right << std::string(test["version"]) << std::endl;
+                    create_row_help_menu(std::string(test["repo_name"]), std::string(test["version"]));
                 }
                 // space at bottom
                 std::cout << "\n\n"
@@ -251,11 +268,6 @@ bool PackageManager::show_warning() {
         std::cout << "Operation canceled.\n";
         return false;
     }
-}
-
-void create_row_help_menu(const std::string& command_flag, const std::string& description) {
-    std::cout << std::setw(20) << std::left << command_flag;
-    std::cout << std::setw(60) << std::right << description << std::endl;
 }
 
 void PackageManager::print_help() {
