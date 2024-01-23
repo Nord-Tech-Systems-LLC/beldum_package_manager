@@ -1,6 +1,8 @@
-# CPP_DEPENDENCY MANAGER
+# BELDUM C++ PACKAGE MANAGER
 
-The cpp dependency manager only works with header included packages. The purpose of the package is to be
+The Beldum C++ Package Manager is built to simplify the C++ workflow and utilize header libraries.
+
+**Side Note**: This package manager only supports header libraries at this time.
 
 ### Dependencies:
 
@@ -37,3 +39,5 @@ Execute `make` in the root project directory
     }
 }
 ```
+
+3. Execute `beldum --install example_package` to install the preferred package.
