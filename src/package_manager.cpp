@@ -81,7 +81,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                     std::cout << "Creating package.json" << std::endl;
                     std::ofstream output("package.json");
                     package_data["packages"] = {
-                        {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git"}}}};
+                        {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
 
                     output << package_data.dump(4);
                 }
