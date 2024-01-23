@@ -83,8 +83,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                     data["packages"] = {
                         {"example_package", {
                                                 {"git_link", "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git"},
-                                                {"repo_name", "example_package"},
-                                                {"version", "v0.0.0"},
+                                                {"repo_name", "example_package"}
                                             }}};
 
                     output << data;
