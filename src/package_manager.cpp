@@ -184,7 +184,11 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
             break;
 
         case PossibleOptions::UNINSTALL:
+            installed_data = json::parse(installed_packages);
+            
             std::cout << "Uninstalling..." << std::endl;
+            std::cout << requested_package << std::endl;
+            std::cout << installed_data["packages"].dump(4) << std::endl;
             break;
 
         /**
@@ -236,7 +240,18 @@ PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
                 std::cerr << "Error: Missing package name after '--install'." << std::endl;
                 return PossibleOptions::NONE;
             }
-        } else {
+        } else if (std::strcmp(arg, "--uninstall") == 0) {
+            // check if the next argument exists
+            if (i + 1 < argc) {
+                // assuming the next argument is the package name
+                individual_package.name = argv[i + 1];
+                return PossibleOptions::UNINSTALL;
+            } else {
+                std::cerr << "Error: Missing package name after '--uninstall'." << std::endl;
+                return PossibleOptions::NONE;
+            }
+        } 
+        else {
             return command_map[arg];
         }
     }
