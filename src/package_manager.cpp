@@ -52,7 +52,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
     // instantiate json object
     using json = nlohmann::json;
-    json data;
+    json package_data;
     json installed_data;
 
     std::string requested_package = individual_package.name;
@@ -80,13 +80,13 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                 if (!file_exists("package.json")) {
                     std::cout << "Creating package.json" << std::endl;
                     std::ofstream output("package.json");
-                    data["packages"] = {
+                    package_data["packages"] = {
                         {"example_package", {
                                                 {"git_link", "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git"},
                                                 {"repo_name", "example_package"}
                                             }}};
 
-                    output << data;
+                    output << package_data;
                 }
             }
 
@@ -106,7 +106,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
          */
         case PossibleOptions::INSTALL:
             // parse package.json and installed_packages.json
-            data = json::parse(packages_file);
+            package_data = json::parse(packages_file);
             installed_data = json::parse(installed_packages);
 
             // checks if package is already installed
@@ -117,9 +117,9 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
             };
 
             // checks if package exists in package.json
-            if (data["packages"].contains(requested_package)) {
-                repo_name = data["packages"][requested_package]["repo_name"];
-                repository_URL = data["packages"][requested_package]["git_link"];
+            if (package_data["packages"].contains(requested_package)) {
+                repo_name = requested_package;
+                repository_URL = package_data["packages"][requested_package]["git_link"];
 
                 // strips quotes from directory
                 for (char c : testing) {
