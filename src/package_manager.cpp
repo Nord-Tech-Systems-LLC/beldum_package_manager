@@ -211,6 +211,7 @@ PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
         {"--help", PossibleOptions::HELP},
         {"--init", PossibleOptions::INIT},
         {"--install", PossibleOptions::INSTALL},
+        {"--uninstall", PossibleOptions::UNINSTALL},
         {"--clean", PossibleOptions::CLEAN},
         {"--version", PossibleOptions::VERSION},
         {"--list", PossibleOptions::LIST_PACKAGES}};
