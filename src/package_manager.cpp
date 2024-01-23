@@ -52,7 +52,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
     // instantiate json object
     using json = nlohmann::json;
-    json data;
+    json package_data;
     json installed_data;
 
     std::string requested_package = individual_package.name;
@@ -75,18 +75,15 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                     std::cout << "Creating installed_packages.json" << std::endl;
                     std::ofstream output("installed_packages.json");
                     installed_data["packages"] = {};
-                    output << installed_data;
+                    output << installed_data.dump(4);
                 }
                 if (!file_exists("package.json")) {
                     std::cout << "Creating package.json" << std::endl;
                     std::ofstream output("package.json");
-                    data["packages"] = {
-                        {"example_package", {
-                                                {"git_link", "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git"},
-                                                {"repo_name", "example_package"}
-                                            }}};
+                    package_data["packages"] = {
+                        {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git"}}}};
 
-                    output << data;
+                    output << package_data.dump(4);
                 }
             }
 
@@ -106,7 +103,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
          */
         case PossibleOptions::INSTALL:
             // parse package.json and installed_packages.json
-            data = json::parse(packages_file);
+            package_data = json::parse(packages_file);
             installed_data = json::parse(installed_packages);
 
             // checks if package is already installed
@@ -117,9 +114,9 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
             };
 
             // checks if package exists in package.json
-            if (data["packages"].contains(requested_package)) {
-                repo_name = data["packages"][requested_package]["repo_name"];
-                repository_URL = data["packages"][requested_package]["git_link"];
+            if (package_data["packages"].contains(requested_package)) {
+                repo_name = requested_package;
+                repository_URL = package_data["packages"][requested_package]["git_link"];
 
                 // strips quotes from directory
                 for (char c : testing) {
@@ -151,7 +148,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                     {"version", repo_version},
                 };
 
-                output << installed_data;
+                output << installed_data.dump(4);
             } else {
                 std::cout << "\nPackage \"" << requested_package << "\" does not exist. Please enter the correct package name.\n"
                           << std::endl;
@@ -184,8 +181,30 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
             break;
 
         case PossibleOptions::UNINSTALL:
-            std::cout << "Uninstalling..." << std::endl;
-            break;
+
+            installed_data = json::parse(installed_packages);
+            if (installed_data["packages"].contains(requested_package)) {
+                std::cout << "\n\nUninstalling..." << std::endl;
+
+                // remove the repo
+                command = "rm -rf cpp_libs/" + std::string(requested_package);
+                std::cout << "Command: " << command << std::endl;
+                return_code = system(command.c_str());
+
+                // update installed_packages.json
+                installed_data["packages"].erase(requested_package);
+                std::ofstream output("installed_packages.json");
+                output << installed_data.dump(4);
+
+                std::cout << "Package " << requested_package << " successfully uninstalled.\n\n"
+                          << std::endl;
+                break;
+
+            } else {
+                std::cout << "\n\nPackage " << requested_package << " does not exist. Please check the installed packages and try again...\n\n"
+                          << std::endl;
+                break;
+            }
 
         /**
          * CLEAN ACTIONS
@@ -211,6 +230,7 @@ PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
         {"--help", PossibleOptions::HELP},
         {"--init", PossibleOptions::INIT},
         {"--install", PossibleOptions::INSTALL},
+        {"--uninstall", PossibleOptions::UNINSTALL},
         {"--clean", PossibleOptions::CLEAN},
         {"--version", PossibleOptions::VERSION},
         {"--list", PossibleOptions::LIST_PACKAGES}};
@@ -233,6 +253,16 @@ PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
                 return PossibleOptions::INSTALL;
             } else {
                 std::cerr << "Error: Missing package name after '--install'." << std::endl;
+                return PossibleOptions::NONE;
+            }
+        } else if (std::strcmp(arg, "--uninstall") == 0) {
+            // check if the next argument exists
+            if (i + 1 < argc) {
+                // assuming the next argument is the package name
+                individual_package.name = argv[i + 1];
+                return PossibleOptions::UNINSTALL;
+            } else {
+                std::cerr << "Error: Missing package name after '--uninstall'." << std::endl;
                 return PossibleOptions::NONE;
             }
         } else {
