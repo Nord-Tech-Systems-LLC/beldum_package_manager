@@ -185,10 +185,20 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
         case PossibleOptions::UNINSTALL:
             installed_data = json::parse(installed_packages);
-            
             std::cout << "Uninstalling..." << std::endl;
+
+            // remove the repo
+            command = "rm -rf cpp_libs/" + std::string(requested_package);
+            std::cout << "Command: " << command << std::endl;
+            // return_code = system(command.c_str());
+
             std::cout << requested_package << std::endl;
-            std::cout << installed_data["packages"].dump(4) << std::endl;
+            installed_data["packages"].erase(requested_package);
+            // installed_data["packages"].erase(requested_package);
+            
+            std::cout << installed_data.dump(4) << std::endl;
+            // output_installed << installed_data;
+            // std::cout << installed_data["packages"].dump(4) << std::endl;
             break;
 
         /**
