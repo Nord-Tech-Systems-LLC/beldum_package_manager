@@ -25,7 +25,7 @@ Execute `make` in the root project directory
 ### Main Project Workflow
 
 1. Execute `beldum --init` to initialize a project directory.
-2. Update the packages.json with a package from GitHub using this format below:
+2. Update the package.json with a package from GitHub using this format below:
 
 ```json
 {
