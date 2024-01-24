@@ -23,7 +23,10 @@
 // libraries
 #include "headerfiles/package_manager.hpp"
 
-#ifdef JSON_DEPENDENCY_EXIST
+#ifndef JSON_DEPENDENCY_EXIST
+#error("JSON_DEPENDENCY_EXIST not defined");
+#endif
+
 #include "json/single_include/nlohmann/json.hpp"
 
 int main(int argc, char* argv[]) {
@@ -47,10 +50,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
-#else
-int main() {
-    std::cout << "\nJSON dependency does not exist... Please execute make in package manager root directory." << std::endl;
-    return 0;
-}
-#endif

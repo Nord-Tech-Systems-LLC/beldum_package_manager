@@ -7,7 +7,10 @@
 
 // #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
 
-#ifdef JSON_DEPENDENCY_EXIST
+#ifndef JSON_DEPENDENCY_EXIST
+#error("JSON_DEPENDENCY_EXIST not defined");
+#endif
+
 #include "json/single_include/nlohmann/json.hpp"
 
 Package individual_package;
@@ -312,5 +315,3 @@ void PackageManager::print_help() {
     std::cout << "\n\n"
               << std::endl;
 }
-
-#endif
