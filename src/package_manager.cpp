@@ -47,7 +47,6 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     std::string repository_URL;
     std::string repo_name;
     std::string repo_version;
-    std::string test = "fatal";
 
     // gets list of packages
     std::ifstream packages_file("package.json");
