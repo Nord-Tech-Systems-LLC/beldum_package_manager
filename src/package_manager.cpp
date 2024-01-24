@@ -284,16 +284,13 @@ bool PackageManager::show_warning() {
     std::cout << "Do you want to proceed? (y/n): ";
 
     // Get user input
-    char response;
-    std::cin >> response;
-
-    // flush the input buffer to avoid issues with getline
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::string response;
+    std::getline(std::cin, response);
 
     // verification
     std::cout << "You entered:" << response << "\n";
     // Check user response
-    if (response == 'y' || response == 'Y') {
+    if (response == "y" || response == "Y") {
         std::cout << "Proceeding...\n";
         return true;
     } else {
