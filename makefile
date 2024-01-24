@@ -48,3 +48,5 @@ $(BuildBinDir)/$(NewExecutable): \
 $(BuildObjectsDir)/%.o: $(SrcDir)/%.cpp | prerequisites
 	@ echo Building $@ from $<
 	@ $(CXX) $(CXXFLAGS) -c -o $@ $<
+
+.PHONY: check_dependencies install prerequisites
