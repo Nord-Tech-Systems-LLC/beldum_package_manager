@@ -13,7 +13,7 @@
 Package individual_package;
 namespace fs = std::filesystem;
 
-inline bool PackageManager::file_exists(const std::string& name) {
+bool PackageManager::file_exists(const std::string& name) {
     std::ifstream file(name.c_str());
     return file.good();
 }
