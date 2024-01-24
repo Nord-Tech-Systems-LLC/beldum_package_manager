@@ -19,7 +19,7 @@ JSON_GITHUB_PATH=git@github.com:nlohmann/json.git
 # the new executable name
 NewExecutable=beldum
 
-all: check_dependencies $(BuildBinDir)/$(NewExecutable) install
+all: check_dependencies $(BuildBinDir)/$(NewExecutable)
 
 # check if dependencies exists
 check_dependencies:
