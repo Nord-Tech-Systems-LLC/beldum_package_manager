@@ -49,4 +49,7 @@ $(BuildObjectsDir)/%.o: $(SrcDir)/%.cpp | prerequisites
 	@ echo Building $@ from $<
 	@ $(CXX) $(CXXFLAGS) -c -o $@ $<
 
-.PHONY: check_dependencies install prerequisites
+.PHONY: check_dependencies clean install prerequisites
+
+clean:
+	@ find -P "$(BuildDir)" -xdev -delete
