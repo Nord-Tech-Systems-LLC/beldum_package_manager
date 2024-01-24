@@ -2,7 +2,9 @@
 
 The Beldum C++ Package Manager is built to simplify the C++ workflow and utilize header libraries.
 
-**Side Note**: This package manager only supports header libraries at this time.
+**Side Note**:
+This package manager only supports header libraries at this time.  
+**Supported Operating Systems: Linux**
 
 ### Dependencies:
 
