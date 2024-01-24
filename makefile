@@ -21,6 +21,17 @@ CXXFLAGS= \
 	-Wconversion \
 	-Wshadow
 	# added -I for library folder
+LDFLAGS=
+
+DEBUG?= 1
+ifeq ($(DEBUG),1)
+	CXXFLAGS+= -ggdb3
+	CXXFLAGS+= -fsanitize=undefined,address
+	LDFLAGS+= -fsanitize=undefined,address
+else
+	CXXFLAGS+= -O2
+	CXXFLAGS+= -Werror
+endif
 
 
 # header file and folder paths
@@ -52,11 +63,11 @@ $(BuildBinDir)/$(NewExecutable): \
 		$(BuildObjectsDir)/main.o \
 		$(BuildObjectsDir)/package_manager.o | prerequisites check_dependencies_exist
 	@ echo Building $@ from $^
-	@ $(CXX) $(CXXSTD) -o $@ $^
+	@ $(CXX) $(CXXSTD) $(LDFLAGS) -o $@ $^
 
 $(BuildObjectsDir)/%.o: $(SrcDir)/%.cpp | prerequisites check_dependencies_exist
 	@ echo Building $@ from $<
-	@ $(CXX) $(CXXSTD) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXSTD) $(CXXFLAGS) -c -o $@ $<
 
 .PHONY: check_dependencies_exist clean install prerequisites
 
