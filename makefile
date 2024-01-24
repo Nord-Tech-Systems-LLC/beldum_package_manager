@@ -9,8 +9,8 @@ BuildBinDir=$(BuildDir)/bin
 BuildObjectsDir=$(BuildDir)/objects
 LibDir=program_dependencies
 
-CC=g++
-CFlags= -I $(IncludeDir) -I $(LibDir) -g -Wall # added -I for library folder
+CXX=g++
+CXXFLAGS= -I $(IncludeDir) -I $(LibDir) -g -Wall # added -I for library folder
 
 # header file and folder paths
 JSON_DEPENDENCY_PATH=$(LibDir)/json/single_include/nlohmann/json.hpp
@@ -25,7 +25,7 @@ all: check_dependencies $(BuildBinDir)/$(NewExecutable) install
 check_dependencies:
 	@if [ -f '$(JSON_DEPENDENCY_PATH)' ]; then \
 		echo '\nJSON library dependency found.\n'; \
-		$(eval CFlags += -D JSON_DEPENDENCY_EXIST) \
+		$(eval CXXFLAGS += -D JSON_DEPENDENCY_EXIST) \
 	else \
 		echo '\nJSON library dependency not found. Please wait while we download...\n'; \
 		git clone $(JSON_GITHUB_PATH) $(LibDir)/json/; \
@@ -43,8 +43,8 @@ $(BuildBinDir)/$(NewExecutable): \
 		$(BuildObjectsDir)/main.o \
 		$(BuildObjectsDir)/package_manager.o | prerequisites
 	@ echo Building $@ from $^
-	@ $(CC) -o $@ $^
+	@ $(CXX) -o $@ $^
 
 $(BuildObjectsDir)/%.o: $(SrcDir)/%.cpp | prerequisites
 	@ echo Building $@ from $<
-	@ $(CC) $(CFlags) -c -o $@ $<
+	@ $(CXX) $(CXXFLAGS) -c -o $@ $<
