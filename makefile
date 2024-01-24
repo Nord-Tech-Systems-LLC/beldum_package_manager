@@ -1,5 +1,7 @@
 #!/usr/bin/env make
 
+SHELL := bash
+
 SrcDir=src
 IncludeDir=$(SrcDir)
 BuildDir=build
