@@ -303,15 +303,17 @@ bool PackageManager::show_warning() {
 }
 
 void PackageManager::print_help() {
-    std::cout << "\n\n\n";
-    create_row_help_menu("COMMAND:", "DESCRIPTION:");
-    std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
-    create_row_help_menu("--init", "to initialize new project");
-    create_row_help_menu("--list", "to list installed packages");
-    create_row_help_menu("--install", "to install packages");
-    create_row_help_menu("--uninstall", "to uninstall packages");  // TODO: not created yet
-    create_row_help_menu("--help", "to show commands");
-    create_row_help_menu("--clean", "to remove contents from cpp_libs folder");
-    std::cout << "\n\n"
-              << std::endl;
+    std::cout << R"PREFIX(
+
+
+COMMAND:                                                            DESCRIPTION:
+--------------------------------------------------------------------------------
+--init                                                 to initialize new project
+--list                                                to list installed packages
+--install                                                    to install packages
+--uninstall                                                to uninstall packages
+--help                                                          to show commands
+--clean                                  to remove contents from cpp_libs folder
+
+)PREFIX" << std::endl;
 }
