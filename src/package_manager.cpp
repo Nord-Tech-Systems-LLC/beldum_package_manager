@@ -7,20 +7,23 @@
 
 // #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
 
-#ifdef JSON_DEPENDENCY_EXIST
+#ifndef JSON_DEPENDENCY_EXIST
+#error("JSON_DEPENDENCY_EXIST not defined");
+#endif
+
 #include "json/single_include/nlohmann/json.hpp"
 
 Package individual_package;
 namespace fs = std::filesystem;
 
-inline bool PackageManager::file_exists(const std::string& name) {
+bool PackageManager::file_exists(const std::string& name) {
     std::ifstream file(name.c_str());
     return file.good();
 }
 
 std::string exec(const char* cmd) {
     // pipes command result to string for use
-    std::array<char, 128> buffer;
+    std::array<char, 1024> buffer;
     std::string result;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
     if (!pipe) {
@@ -44,7 +47,6 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     std::string repository_URL;
     std::string repo_name;
     std::string repo_version;
-    std::string test = "fatal";
 
     // gets list of packages
     std::ifstream packages_file("package.json");
@@ -281,16 +283,13 @@ bool PackageManager::show_warning() {
     std::cout << "Do you want to proceed? (y/n): ";
 
     // Get user input
-    char response;
-    std::cin >> response;
-
-    // flush the input buffer to avoid issues with getline
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::string response;
+    std::getline(std::cin, response);
 
     // verification
     std::cout << "You entered:" << response << "\n";
     // Check user response
-    if (response == 'y' || response == 'Y') {
+    if (response == "y" || response == "Y") {
         std::cout << "Proceeding...\n";
         return true;
     } else {
@@ -300,17 +299,17 @@ bool PackageManager::show_warning() {
 }
 
 void PackageManager::print_help() {
-    std::cout << "\n\n\n";
-    create_row_help_menu("COMMAND:", "DESCRIPTION:");
-    std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
-    create_row_help_menu("--init", "to initialize new project");
-    create_row_help_menu("--list", "to list installed packages");
-    create_row_help_menu("--install", "to install packages");
-    create_row_help_menu("--uninstall", "to uninstall packages");  // TODO: not created yet
-    create_row_help_menu("--help", "to show commands");
-    create_row_help_menu("--clean", "to remove contents from cpp_libs folder");
-    std::cout << "\n\n"
-              << std::endl;
-}
+    std::cout << R"PREFIX(
 
-#endif
+
+COMMAND:                                                            DESCRIPTION:
+--------------------------------------------------------------------------------
+--init                                                 to initialize new project
+--list                                                to list installed packages
+--install                                                    to install packages
+--uninstall                                                to uninstall packages
+--help                                                          to show commands
+--clean                                  to remove contents from cpp_libs folder
+
+)PREFIX" << std::endl;
+}
