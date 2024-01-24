@@ -10,6 +10,7 @@ BuildObjectsDir=$(BuildDir)/objects
 LibDir=program_dependencies
 
 CXX=g++
+CXXSTD=-std=c++20
 CXXFLAGS= -I $(IncludeDir) -I $(LibDir) -g -Wall # added -I for library folder
 
 # header file and folder paths
@@ -41,11 +42,11 @@ $(BuildBinDir)/$(NewExecutable): \
 		$(BuildObjectsDir)/main.o \
 		$(BuildObjectsDir)/package_manager.o | prerequisites check_dependencies_exist
 	@ echo Building $@ from $^
-	@ $(CXX) -o $@ $^
+	@ $(CXX) $(CXXSTD) -o $@ $^
 
 $(BuildObjectsDir)/%.o: $(SrcDir)/%.cpp | prerequisites check_dependencies_exist
 	@ echo Building $@ from $<
-	@ $(CXX) $(CXXFLAGS) -c -o $@ $<
+	@ $(CXX) $(CXXSTD) $(CXXFLAGS) -c -o $@ $<
 
 .PHONY: check_dependencies_exist clean install prerequisites
 
