@@ -19,7 +19,7 @@ JSON_GITHUB_PATH=git@github.com:nlohmann/json.git
 # the new executable name
 NewExecutable=beldum
 
-all: check_dependencies $(BuildBinDir)/$(NewExecutable)
+all: $(BuildBinDir)/$(NewExecutable)
 
 # check if dependencies exists
 check_dependencies:
@@ -32,7 +32,7 @@ check_dependencies:
 	fi
 
 # TODO: need to modify this
-install: 
+install: $(BuildBinDir)/$(NewExecutable)
 	@ sudo /usr/bin/install --mode=755 --owner=root --group=root $(BuildBinDir)/beldum /usr/local/bin/beldum
 
 prerequisites:
@@ -41,11 +41,11 @@ prerequisites:
 
 $(BuildBinDir)/$(NewExecutable): \
 		$(BuildObjectsDir)/main.o \
-		$(BuildObjectsDir)/package_manager.o | prerequisites
+		$(BuildObjectsDir)/package_manager.o | prerequisites check_dependencies
 	@ echo Building $@ from $^
 	@ $(CXX) -o $@ $^
 
-$(BuildObjectsDir)/%.o: $(SrcDir)/%.cpp | prerequisites
+$(BuildObjectsDir)/%.o: $(SrcDir)/%.cpp | prerequisites check_dependencies
 	@ echo Building $@ from $<
 	@ $(CXX) $(CXXFLAGS) -c -o $@ $<
 
