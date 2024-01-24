@@ -21,8 +21,7 @@ NewExecutable=beldum
 
 all: $(BuildBinDir)/$(NewExecutable)
 
-# check if dependencies exists
-check_dependencies:
+check_dependencies_exist:
 	@if [ -f '$(JSON_DEPENDENCY_PATH)' ]; then \
 		echo '\nJSON library dependency found.\n'; \
 		$(eval CXXFLAGS += -D JSON_DEPENDENCY_EXIST) \
@@ -31,25 +30,24 @@ check_dependencies:
 		git clone $(JSON_GITHUB_PATH) $(LibDir)/json/; \
 	fi
 
-# TODO: need to modify this
 install: $(BuildBinDir)/$(NewExecutable)
 	@ sudo /usr/bin/install --mode=755 --owner=root --group=root $(BuildBinDir)/beldum /usr/local/bin/beldum
 
-prerequisites:
+prerequisites:;
 	@ mkdir -p $(BuildBinDir)
 	@ mkdir -p $(BuildObjectsDir)
 
 $(BuildBinDir)/$(NewExecutable): \
 		$(BuildObjectsDir)/main.o \
-		$(BuildObjectsDir)/package_manager.o | prerequisites check_dependencies
+		$(BuildObjectsDir)/package_manager.o | prerequisites check_dependencies_exist
 	@ echo Building $@ from $^
 	@ $(CXX) -o $@ $^
 
-$(BuildObjectsDir)/%.o: $(SrcDir)/%.cpp | prerequisites check_dependencies
+$(BuildObjectsDir)/%.o: $(SrcDir)/%.cpp | prerequisites check_dependencies_exist
 	@ echo Building $@ from $<
 	@ $(CXX) $(CXXFLAGS) -c -o $@ $<
 
-.PHONY: check_dependencies clean install prerequisites
+.PHONY: check_dependencies_exist clean install prerequisites
 
 clean:
 	@ find -P "$(BuildDir)" -xdev -delete
