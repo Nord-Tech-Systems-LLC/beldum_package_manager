@@ -11,7 +11,17 @@ LibDir=program_dependencies
 
 CXX=g++
 CXXSTD=-std=c++20
-CXXFLAGS= -I $(IncludeDir) -I $(LibDir) -g -Wall # added -I for library folder
+CXXFLAGS= \
+	-I $(IncludeDir) \
+	-I $(LibDir) \
+	-g \
+	-Wall \
+	-Wextra \
+	-Wpedantic \
+	-Wconversion \
+	-Wshadow
+	# added -I for library folder
+
 
 # header file and folder paths
 JSON_DEPENDENCY_PATH=$(LibDir)/json/single_include/nlohmann/json.hpp
