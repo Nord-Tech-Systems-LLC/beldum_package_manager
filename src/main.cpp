@@ -15,6 +15,7 @@
  * - functionality to install all packages
  * - package version management
  * - package manager version management
+ * - add ability to add packages via the terminal beldum --add [package_name] [git_link]
  *
  */
 
