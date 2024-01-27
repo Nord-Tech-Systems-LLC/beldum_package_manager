@@ -61,6 +61,15 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     std::string testing = std::string(fs::current_path());
     std::string result_string;
     switch (options) {
+        case PossibleOptions::VERSION:
+            // git version number
+            command = "git describe --tags --abbrev=0";
+            repo_version = exec(command.c_str());
+            repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end());  // removes new line character from version
+            std::cout << "\nBeldum Version: " << repo_version << "\n"
+                      << std::endl;
+
+            break;
         /**
          * INIT ACTIONS
          */
