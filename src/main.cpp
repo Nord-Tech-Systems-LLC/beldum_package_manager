@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     PossibleOptions options = instance.parse_arguments(argc, argv);
 
     // checks file dependencies
-    if (options == PossibleOptions::INIT || options == PossibleOptions::HELP) {
+    if (options == PossibleOptions::INIT || options == PossibleOptions::HELP || options == PossibleOptions::VERSION) {
         // if initializing project
         instance.check_passed_shell_arguments(options);
         return 0;
