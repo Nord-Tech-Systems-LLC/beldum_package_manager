@@ -33,7 +33,7 @@
 
 std::string host = "tcp://127.0.0.1:3306";
 std::string username = "vikingofvalhalla";
-std::string password = "00006853";
+std::string password = "password";
 std::string database = "test";
 
 int main(int argc, char* argv[]) {
