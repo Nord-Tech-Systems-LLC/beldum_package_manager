@@ -1,4 +1,10 @@
 // #include <mysqlx/xdevapi.h>
+// #include <cppconn/driver.h>
+// #include <mysql_connection.h>
+// #include <mysql_driver.h>
+
+#include <mysql/mysql.h>
+// #include <cppconn/connection.h>
 
 #include <array>
 #include <filesystem>
@@ -8,15 +14,53 @@
 
 #include "headerfiles/msql_connection.hpp"
 
-void MySQLConnection::login(std::string &host, std::string &username, std::string &password) {
+void MySQLConnection::login(char *hostname, char *username, char *password) {
     try {
+        /* Using the Driver to create a connection */
+        char *database = "beldum_package_manager";
+        MYSQL *connection;
+        MYSQL_RES *result;
+        MYSQL_ROW row;
+
+        const char *statement = "select * from packages";
+        if (!(connection = mysql_init(NULL))) {
+            puts("Initialization has failed!");
+        }
+        if (connection = mysql_real_connect(connection, hostname, username, password, database, 3306, NULL, 0)) {
+            std::cout << "Attempting to connect to database..."
+                      << "\n";
+            std::cout << "Host: " << hostname << "\n";
+            std::cout << "User: " << username << std::endl;
+            std::cout << "Connected to MySQL Database." << std::endl;
+        }
+        if (mysql_query(connection, statement)) {
+            std::cout << "Attempting to conduct query..." << std::endl;
+        }
+        result = mysql_store_result(connection);
+        int num_fields = mysql_num_fields(result);
+        std::cout << "Data output below: " << std::endl;
+        while ((row = mysql_fetch_row(result))) {
+            for (int i = 0; i < num_fields; i++) {
+                printf("%s ", row[i] ? row[i] : "NULL");
+            }
+
+            printf("\n");
+        }
+
+        mysql_free_result(result);
+        mysql_close(connection);
+
+        // sql::Driver *driver = nullptr;
+        // sql::Connection *connection = nullptr;
+
+        // driver = get_driver_instance();
+        // connection = driver->connect(host, username, password);
+        // driver = get_driver_instance();
         // const std::string user = (EXAMPLE_USER);
         // const std::string pass = (EXAMPLE_PASS);
         // const std::string database = (EXAMPLE_DB);
-        std::cout << "Attempting to connect to database..."
-                  << "\n";
-        std::cout << "Host: " << host << "\n";
-        std::cout << "User: " << username << std::endl;
+
+        // delete con;
 
     } catch (std::string &e) {
         std::cout << "# ERR: SQLException in " << __FILE__;

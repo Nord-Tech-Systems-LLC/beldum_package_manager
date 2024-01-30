@@ -1,7 +1,11 @@
-// #include <mysqlx/xdevapi.h>
+
 /**
  * Usage example for Driver, Connection, (simple) Statement, ResultSet
  */
+
+struct connection_details {
+    const char *server, *user, *password, *database;
+};
 
 class MySQLConnection {
    public:
@@ -10,7 +14,7 @@ class MySQLConnection {
         return instance;
     };
     // ~MySQLConnection();
-    void login(std::string &host, std::string &username, std::string &password);
+    void login(char *hostname, char *username, char *password);
 
    private:
     std::string execute_command(const char *command);

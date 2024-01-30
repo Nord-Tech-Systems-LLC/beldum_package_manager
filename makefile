@@ -9,14 +9,12 @@ BuildBinDir=$(BuildDir)/bin
 BuildObjectsDir=$(BuildDir)/objects
 DepDir=program_dependencies
 LibDir=cpp_libs
-MySqlDatabaseHeaders=/usr/include/cppconn
 
 CXX=g++
 CXXSTD=-std=c++20
 CXXFLAGS= \
 	-I $(IncludeDir) \
 	-I $(DepDir) \
-	-I $(MySqlDatabaseHeaders)\
 	-g \
 	-Wall \
 	-Wextra \
@@ -24,13 +22,16 @@ CXXFLAGS= \
 	-Wconversion \
 	-Wshadow
 	# added -I for library folder
-LDFLAGS=
+LDFLAGS= \
+	$(shell mysql_config --libs)
+	# shell mysql_config is for mysql connection
+
 
 DEBUG?= 1
 ifeq ($(DEBUG),1)
 	CXXFLAGS+= -ggdb3
 	CXXFLAGS+= -fsanitize=undefined,address
-	LDFLAGS+= -fsanitize=undefined,address
+	LDFLAGS+= -fsanitize=undefined,address 
 else
 	CXXFLAGS+= -O2
 	CXXFLAGS+= -Werror

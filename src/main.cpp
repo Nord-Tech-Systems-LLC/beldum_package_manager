@@ -31,16 +31,16 @@
 
 #include "json/single_include/nlohmann/json.hpp"
 
-std::string host = "tcp://127.0.0.1:3306";
-std::string username = "vikingofvalhalla";
-std::string password = "password";
-std::string database = "test";
+char *hostname = "localhost";
+char *username = "vikingofvalhalla";
+// set the password for mysql server here
+char *password = "**********"; /* set me first */
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     PackageManager instance = PackageManager::getInstance();
     PossibleOptions options = instance.parse_arguments(argc, argv);
     MySQLConnection sql_instance = MySQLConnection::getInstance();
-    sql_instance.login(host, username, password);
+    sql_instance.login(hostname, username, password);
 
     // checks file dependencies
     if (options == PossibleOptions::INIT || options == PossibleOptions::HELP || options == PossibleOptions::VERSION) {
