@@ -7,13 +7,16 @@ IncludeDir=$(SrcDir)
 BuildDir=build
 BuildBinDir=$(BuildDir)/bin
 BuildObjectsDir=$(BuildDir)/objects
-LibDir=program_dependencies
+DepDir=program_dependencies
+LibDir=cpp_libs
+MySqlDatabaseHeaders=/usr/include/cppconn
 
 CXX=g++
 CXXSTD=-std=c++20
 CXXFLAGS= \
 	-I $(IncludeDir) \
-	-I $(LibDir) \
+	-I $(DepDir) \
+	-I $(MySqlDatabaseHeaders)\
 	-g \
 	-Wall \
 	-Wextra \
@@ -35,7 +38,7 @@ endif
 
 
 # header file and folder paths
-JSON_DEPENDENCY_PATH=$(LibDir)/json/single_include/nlohmann/json.hpp
+JSON_DEPENDENCY_PATH=$(DepDir)/json/single_include/nlohmann/json.hpp
 JSON_GITHUB_PATH=git@github.com:nlohmann/json.git
 
 # the new executable name
@@ -49,7 +52,7 @@ check_dependencies_exist:
 		$(eval CXXFLAGS += -D JSON_DEPENDENCY_EXIST) \
 	else \
 		echo '\nJSON library dependency not found. Please wait while we download...\n'; \
-		git clone $(JSON_GITHUB_PATH) $(LibDir)/json/; \
+		git clone $(JSON_GITHUB_PATH) $(DepDir)/json/; \
 	fi
 
 install: $(BuildBinDir)/$(NewExecutable)
@@ -61,6 +64,7 @@ prerequisites:;
 
 $(BuildBinDir)/$(NewExecutable): \
 		$(BuildObjectsDir)/main.o \
+		$(BuildObjectsDir)/mysql_connection.o \
 		$(BuildObjectsDir)/package_manager.o | prerequisites check_dependencies_exist
 	@ echo Building $@ from $^
 	@ $(CXX) $(CXXSTD) $(LDFLAGS) -o $@ $^

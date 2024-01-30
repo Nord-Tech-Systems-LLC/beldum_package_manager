@@ -22,6 +22,7 @@
 // #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
 
 // libraries
+#include "headerfiles/msql_connection.hpp"
 #include "headerfiles/package_manager.hpp"
 
 #ifndef JSON_DEPENDENCY_EXIST
@@ -30,14 +31,22 @@
 
 #include "json/single_include/nlohmann/json.hpp"
 
+std::string host = "tcp://127.0.0.1:3306";
+std::string username = "vikingofvalhalla";
+std::string password = "00006853";
+std::string database = "test";
+
 int main(int argc, char* argv[]) {
     PackageManager instance = PackageManager::getInstance();
     PossibleOptions options = instance.parse_arguments(argc, argv);
+    MySQLConnection sql_instance = MySQLConnection::getInstance();
+    sql_instance.login(host, username, password);
 
     // checks file dependencies
     if (options == PossibleOptions::INIT || options == PossibleOptions::HELP || options == PossibleOptions::VERSION) {
         // if initializing project
         instance.check_passed_shell_arguments(options);
+
         return 0;
     } else if (!instance.file_exists("installed_packages.json") || !instance.file_exists("package.json")) {
         // if installed_packages.json or package.json doesn't exist
