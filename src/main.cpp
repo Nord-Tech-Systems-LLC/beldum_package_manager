@@ -11,10 +11,8 @@
 /**
  * TODO:
  * - create package update
- * - create package remove
  * - functionality to install all packages
  * - package version management
- * - package manager version management
  * - add ability to add packages via the terminal beldum --add [package_name] [git_link]
  *
  */
@@ -31,16 +29,24 @@
 
 #include "json/single_include/nlohmann/json.hpp"
 
-char *hostname = "localhost";
-char *username = "vikingofvalhalla";
+const char *hostname = "localhost";
+const char *username = "vikingofvalhalla";
 // set the password for mysql server here
-char *password = "**********"; /* set me first */
+const char *password = "************"; /* set me first */
+const char *database = "beldum_package_manager";
+const char *statement = "select * from packages";
 
 int main(int argc, char *argv[]) {
     PackageManager instance = PackageManager::getInstance();
     PossibleOptions options = instance.parse_arguments(argc, argv);
-    MySQLConnection sql_instance = MySQLConnection::getInstance();
-    sql_instance.login(hostname, username, password);
+
+    // TODO: SQL connection for when ready to use database
+    // MySQLConnection sql_instance = MySQLConnection::getInstance();
+    // sql_instance.connectToDatabase(hostname,
+    //                                database,
+    //                                username,
+    //                                password);
+    // sql_instance.executeQuery(statement);
 
     // checks file dependencies
     if (options == PossibleOptions::INIT || options == PossibleOptions::HELP || options == PossibleOptions::VERSION) {

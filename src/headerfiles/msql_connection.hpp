@@ -1,11 +1,7 @@
 
-/**
- * Usage example for Driver, Connection, (simple) Statement, ResultSet
- */
+#include <mysql/mysql.h>
 
-struct connection_details {
-    const char *server, *user, *password, *database;
-};
+#include <string>
 
 class MySQLConnection {
    public:
@@ -13,9 +9,13 @@ class MySQLConnection {
         static MySQLConnection instance;
         return instance;
     };
-    // ~MySQLConnection();
-    void login(char *hostname, char *username, char *password);
+    ~MySQLConnection();
+    void connectToDatabase(const char *hostname,
+                           const char *database,
+                           const char *username,
+                           const char *password);
+    void executeQuery(const char *statement);
 
    private:
-    std::string execute_command(const char *command);
+    MYSQL *connection;
 };

@@ -1,87 +1,65 @@
-// #include <mysqlx/xdevapi.h>
-// #include <cppconn/driver.h>
-// #include <mysql_connection.h>
-// #include <mysql_driver.h>
-
 #include <mysql/mysql.h>
-// #include <cppconn/connection.h>
 
-#include <array>
-#include <filesystem>
 #include <iostream>
-#include <memory>
+#include <stdexcept>
 #include <string>
 
 #include "headerfiles/msql_connection.hpp"
 
-void MySQLConnection::login(char *hostname, char *username, char *password) {
-    try {
-        /* Using the Driver to create a connection */
-        char *database = "beldum_package_manager";
-        MYSQL *connection;
-        MYSQL_RES *result;
-        MYSQL_ROW row;
+MySQLConnection::~MySQLConnection() {
+    mysql_close(connection);
+}
 
-        const char *statement = "select * from packages";
+void MySQLConnection::connectToDatabase(const char *hostname,
+                                        const char *database,
+                                        const char *username,
+                                        const char *password) {
+    try {
+        // if failed initializing
         if (!(connection = mysql_init(NULL))) {
-            puts("Initialization has failed!");
+            std::cout << "Initialization has failed!" << std::endl;
         }
-        if (connection = mysql_real_connect(connection, hostname, username, password, database, 3306, NULL, 0)) {
+        // if failed connection to database
+        if (!(connection = mysql_real_connect(connection, hostname, username, password, database, 3306, NULL, 0))) {
+            throw std::invalid_argument("Connection has failed!");
+        } else {
+            // connect to database
             std::cout << "Attempting to connect to database..."
                       << "\n";
             std::cout << "Host: " << hostname << "\n";
             std::cout << "User: " << username << std::endl;
-            std::cout << "Connected to MySQL Database." << std::endl;
-        }
-        if (mysql_query(connection, statement)) {
-            std::cout << "Attempting to conduct query..." << std::endl;
-        }
-        result = mysql_store_result(connection);
-        int num_fields = mysql_num_fields(result);
-        std::cout << "Data output below: " << std::endl;
-        while ((row = mysql_fetch_row(result))) {
-            for (int i = 0; i < num_fields; i++) {
-                printf("%s ", row[i] ? row[i] : "NULL");
-            }
-
-            printf("\n");
+            std::cout << "Connected to MySQL Database: " << database << std::endl;
         }
 
-        mysql_free_result(result);
-        mysql_close(connection);
-
-        // sql::Driver *driver = nullptr;
-        // sql::Connection *connection = nullptr;
-
-        // driver = get_driver_instance();
-        // connection = driver->connect(host, username, password);
-        // driver = get_driver_instance();
-        // const std::string user = (EXAMPLE_USER);
-        // const std::string pass = (EXAMPLE_PASS);
-        // const std::string database = (EXAMPLE_DB);
-
-        // delete con;
-
-    } catch (std::string &e) {
+    } catch (std::exception &e) {
+        // error location
         std::cout << "# ERR: SQLException in " << __FILE__;
-        std::cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << std::endl;
-        /* Use what() (derived from std::runtime_error) to fetch the error message */
-        // std::cout << "# ERR: " << e.what();
-        // std::cout << " (MySQL error code: " << e.getErrorCode();
-        // std::cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        std::cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << "\n";
+        // error message
+        std::cout << "# ERR: " << e.what() << std::endl;
     }
 };
 
-std::string MySQLConnection::execute_command(const char *command) {
-    // pipes command result to string for use
-    std::array<char, 1024> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
+void MySQLConnection::executeQuery(const char *statement) {
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+
+    if (mysql_query(connection, statement)) {
+        std::cout << "Attempting to conduct query..." << std::endl;
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
+
+    result = mysql_store_result(connection);
+    int num_fields = mysql_num_fields(result);
+
+    // print data
+    std::cout << "Data output below: " << std::endl;
+    while ((row = mysql_fetch_row(result))) {
+        for (int i = 0; i < num_fields; i++) {
+            printf("%s ", row[i] ? row[i] : "NULL");
+        }
+
+        printf("\n");
     }
-    return result;
+
+    mysql_free_result(result);
 }
