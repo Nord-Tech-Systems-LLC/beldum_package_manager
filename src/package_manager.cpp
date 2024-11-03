@@ -1,4 +1,5 @@
 #include "headerfiles/package_manager.hpp"
+#include "headerfiles/beldum_init.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -11,36 +12,41 @@
 #error("JSON_DEPENDENCY_EXIST not defined");
 #endif
 
-#include "json/single_include/nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 
 Package individual_package;
-namespace fs = std::filesystem;
 
-bool PackageManager::file_exists(const std::string& name) {
-    std::ifstream file(name.c_str());
-    return file.good();
-}
+// bool PackageManager::beldum.file_exists(const std::string &name)
+// {
+//     std::ifstream file(name.c_str());
+//     return file.good();
+// }
 
-std::string exec(const char* cmd) {
+std::string exec(const char *cmd)
+{
     // pipes command result to string for use
     std::array<char, 1024> buffer;
     std::string result;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
+    if (!pipe)
+    {
         throw std::runtime_error("popen() failed!");
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+    {
         result += buffer.data();
     }
     return result;
 }
 
-void create_row_help_menu(const std::string& command_flag, const std::string& description) {
+void create_row_help_menu(const std::string &command_flag, const std::string &description)
+{
     std::cout << std::setw(20) << std::left << command_flag;
     std::cout << std::setw(60) << std::right << description << std::endl;
 }
 
-void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
+void PackageManager::check_passed_shell_arguments(PossibleOptions options)
+{
     // read shell arguments passed
     int return_code;
     std::string command;
@@ -58,183 +64,192 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     json installed_data;
 
     std::string requested_package = individual_package.name;
-    std::string testing = std::string(fs::current_path());
+    std::string testing = std::string(std::filesystem::current_path());
     std::string result_string;
-    switch (options) {
-        case PossibleOptions::VERSION:
-            // git version number
-            command = "git describe --tags --abbrev=0";
-            repo_version = exec(command.c_str());
-            repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end());  // removes new line character from version
-            std::cout << "\nBeldum Version: " << repo_version << "\n"
+    switch (options)
+    {
+    case PossibleOptions::VERSION:
+        // git version number
+        command = "git describe --tags --abbrev=0";
+        repo_version = exec(command.c_str());
+        repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end()); // removes new line character from version
+        std::cout << "\nBeldum Version: " << repo_version << "\n"
+                  << std::endl;
+
+        break;
+    /**
+     * INIT ACTIONS
+     */
+    case PossibleOptions::INIT:
+        // creates packages folder if it doesn't exist
+        std::cout << "\n";
+        if (beldum.file_exists("installed_packages.json") && beldum.file_exists("package.json"))
+        {
+            std::cout << "Package.json and installed_packages.json already exist.\n"
+                      << "Try installing an example package with --install example_package\n"
                       << std::endl;
-
             break;
-        /**
-         * INIT ACTIONS
-         */
-        case PossibleOptions::INIT:
-            // creates packages folder if it doesn't exist
-            std::cout << "\n";
-            if (file_exists("installed_packages.json") && file_exists("package.json")) {
-                std::cout << "Package.json and installed_packages.json already exist.\n"
-                          << "Try installing an example package with --install example_package\n"
-                          << std::endl;
-                break;
-            } else {
-                if (!file_exists("installed_packages.json")) {
-                    std::cout << "Creating installed_packages.json" << std::endl;
-                    std::ofstream output("installed_packages.json");
-                    installed_data["packages"] = {};
-                    output << installed_data.dump(4);
-                }
-                if (!file_exists("package.json")) {
-                    std::cout << "Creating package.json" << std::endl;
-                    std::ofstream output("package.json");
-                    package_data["packages"] = {
-                        {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
+        }
+        else
+        {
+            beldum.create_installed_packages(installed_data);
+            beldum.create_package_json(package_data);
+            beldum.create_build_script();
+            beldum.create_src_and_main();
+            beldum.create_cmake_lists();
+        }
 
-                    output << package_data.dump(4);
+        std::cout << "\n";
+        break;
+
+    /**
+     * HELP ACTIONS
+     */
+    case PossibleOptions::HELP:
+        print_help();
+        // std::cout << "Help printed" << std::endl;
+        break;
+
+    /**
+     * INSTALL ACTIONS
+     */
+    case PossibleOptions::INSTALL:
+        // parse package.json and installed_packages.json
+        package_data = json::parse(packages_file);
+        installed_data = json::parse(installed_packages);
+
+        // checks if package is already installed
+        if (installed_data["packages"].contains(requested_package))
+        {
+            std::cout << "\nThe package \"" << requested_package << "\" is already installed...\n"
+                      << std::endl;
+            break;
+        };
+
+        // checks if package exists in package.json
+        if (package_data["packages"].contains(requested_package))
+        {
+            repo_name = requested_package;
+            repository_URL = package_data["packages"][requested_package]["git_link"];
+
+            // strips quotes from directory
+            for (char c : testing)
+            {
+                if (c != '\"')
+                {
+                    result_string += c;
                 }
             }
 
-            std::cout << "\n";
-            break;
+            // clone the repo
+            command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " target/debug/deps/" + std::string(repo_name);
+            std::cout << "Command: " << command << std::endl;
+            return_code = system(command.c_str());
 
-        /**
-         * HELP ACTIONS
-         */
-        case PossibleOptions::HELP:
-            print_help();
-            // std::cout << "Help printed" << std::endl;
-            break;
+            // git version number
+            command = "cd " + result_string + "/target/debug/deps/" + std::string(repo_name) + " && git describe --tags --abbrev=0";
+            repo_version = exec(command.c_str());
+            repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end()); // removes new line character from version
 
-        /**
-         * INSTALL ACTIONS
-         */
-        case PossibleOptions::INSTALL:
-            // parse package.json and installed_packages.json
-            package_data = json::parse(packages_file);
-            installed_data = json::parse(installed_packages);
+            // assigning unknown if no version number exists in git repo
+            if (repo_version.empty())
+            {
+                repo_version = "unknown";
+            }
 
-            // checks if package is already installed
-            if (installed_data["packages"].contains(requested_package)) {
-                std::cout << "\nThe package \"" << requested_package << "\" is already installed...\n"
-                          << std::endl;
-                break;
+            // updating installed package manager
+            std::ofstream output("installed_packages.json");
+            installed_data["packages"][repo_name] = {
+                {"git_link", repository_URL},
+                {"repo_name", repo_name},
+                {"version", repo_version},
             };
 
-            // checks if package exists in package.json
-            if (package_data["packages"].contains(requested_package)) {
-                repo_name = requested_package;
-                repository_URL = package_data["packages"][requested_package]["git_link"];
+            output << installed_data.dump(4);
+        }
+        else
+        {
+            std::cout << "\nPackage \"" << requested_package << "\" does not exist. Please enter the correct package name.\n"
+                      << std::endl;
+        }
 
-                // strips quotes from directory
-                for (char c : testing) {
-                    if (c != '\"') {
-                        result_string += c;
-                    }
-                }
+        break;
 
-                // clone the repo
-                command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " target/debug/deps/" + std::string(repo_name);
-                std::cout << "Command: " << command << std::endl;
-                return_code = system(command.c_str());
+    /**
+     * LIST PACKAGES
+     */
+    case PossibleOptions::LIST_PACKAGES:
 
-                // git version number
-                command = "cd " + result_string + "/target/debug/deps/" + std::string(repo_name) + " && git describe --tags --abbrev=0";
-                repo_version = exec(command.c_str());
-                repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end());  // removes new line character from version
-
-                // assigning unknown if no version number exists in git repo
-                if (repo_version.empty()) {
-                    repo_version = "unknown";
-                }
-
-                // updating installed package manager
-                std::ofstream output("installed_packages.json");
-                installed_data["packages"][repo_name] = {
-                    {"git_link", repository_URL},
-                    {"repo_name", repo_name},
-                    {"version", repo_version},
-                };
-
-                output << installed_data.dump(4);
-            } else {
-                std::cout << "\nPackage \"" << requested_package << "\" does not exist. Please enter the correct package name.\n"
-                          << std::endl;
-            }
-
-            break;
-
-        /**
-         * LIST PACKAGES
-         */
-        case PossibleOptions::LIST_PACKAGES:
-
-            if (file_exists("installed_packages.json")) {
-                installed_data = json::parse(installed_packages);
-
-                // prints header
-                std::cout << "\n\n\n";
-                create_row_help_menu("PACKAGE:", "VERSION:");
-                std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
-                for (auto test : installed_data["packages"]) {
-                    // prints all packages
-                    create_row_help_menu(std::string(test["repo_name"]), std::string(test["version"]));
-                }
-                // space at bottom
-                std::cout << "\n\n"
-                          << std::endl;
-            } else {
-                std::cerr << "\nThe installed_packages.json does not exist, please run --init" << std::endl;
-            }
-            break;
-
-        case PossibleOptions::UNINSTALL:
-
+        if (beldum.file_exists("installed_packages.json"))
+        {
             installed_data = json::parse(installed_packages);
-            if (installed_data["packages"].contains(requested_package)) {
-                std::cout << "\n\nUninstalling..." << std::endl;
 
-                // remove the repo
-                command = "rm -rf target/debug/deps/" + std::string(requested_package);
-                std::cout << "Command: " << command << std::endl;
-                return_code = system(command.c_str());
-
-                // update installed_packages.json
-                installed_data["packages"].erase(requested_package);
-                std::ofstream output("installed_packages.json");
-                output << installed_data.dump(4);
-
-                std::cout << "Package " << requested_package << " successfully uninstalled.\n\n"
-                          << std::endl;
-                break;
-
-            } else {
-                std::cout << "\n\nPackage " << requested_package << " does not exist. Please check the installed packages and try again...\n\n"
-                          << std::endl;
-                break;
+            // prints header
+            std::cout << "\n\n\n";
+            create_row_help_menu("PACKAGE:", "VERSION:");
+            std::cout << std::setw(80) << std::left << "--------------------------------------------------------------------------------" << std::endl;
+            for (auto test : installed_data["packages"])
+            {
+                // prints all packages
+                create_row_help_menu(std::string(test["repo_name"]), std::string(test["version"]));
             }
+            // space at bottom
+            std::cout << "\n\n"
+                      << std::endl;
+        }
+        else
+        {
+            std::cerr << "\nThe installed_packages.json does not exist, please run --init" << std::endl;
+        }
+        break;
 
-        /**
-         * CLEAN ACTIONS
-         */
-        case PossibleOptions::CLEAN:
-            // using bash to clean the library folder
-            command = "sudo find target/debug/deps/* -maxdepth 0 -type d ! -name \"json\" -exec rm -r {} +";
-            std::ofstream output("installed_packages.json");
-            installed_data["packages"] = {};
-            output << installed_data;
+    case PossibleOptions::UNINSTALL:
+
+        installed_data = json::parse(installed_packages);
+        if (installed_data["packages"].contains(requested_package))
+        {
+            std::cout << "\n\nUninstalling..." << std::endl;
+
+            // remove the repo
+            command = "rm -rf target/debug/deps/" + std::string(requested_package);
+            std::cout << "Command: " << command << std::endl;
             return_code = system(command.c_str());
-            std::cout << "\nSuccessfully cleaned project directory.\n"
+
+            // update installed_packages.json
+            installed_data["packages"].erase(requested_package);
+            std::ofstream output("installed_packages.json");
+            output << installed_data.dump(4);
+
+            std::cout << "Package " << requested_package << " successfully uninstalled.\n\n"
                       << std::endl;
             break;
+        }
+        else
+        {
+            std::cout << "\n\nPackage " << requested_package << " does not exist. Please check the installed packages and try again...\n\n"
+                      << std::endl;
+            break;
+        }
+
+    /**
+     * CLEAN ACTIONS
+     */
+    case PossibleOptions::CLEAN:
+        // using bash to clean the library folder
+        command = "sudo find target/debug/deps/* -maxdepth 0 -type d ! -name \"json\" -exec rm -r {} +";
+        std::ofstream output("installed_packages.json");
+        installed_data["packages"] = {};
+        output << installed_data;
+        return_code = system(command.c_str());
+        std::cout << "\nSuccessfully cleaned project directory.\n"
+                  << std::endl;
+        break;
     }
 }
 
 // function to parse command line arguments and assign them to the enum
-PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
+PossibleOptions PackageManager::parse_arguments(int argc, char *argv[])
+{
     std::map<std::string, PossibleOptions> command_map = {
         {"--help", PossibleOptions::HELP},
         {"--init", PossibleOptions::INIT},
@@ -245,36 +260,49 @@ PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
         {"--list", PossibleOptions::LIST_PACKAGES}};
 
     // traverse passed command arguments
-    for (int i = 1; i < argc; ++i) {
-        const char* arg = argv[i];
+    for (int i = 1; i < argc; ++i)
+    {
+        const char *arg = argv[i];
 
         // if command isn't found, else return PossibleOptions
-        if (command_map.find(arg) == command_map.end()) {
+        if (command_map.find(arg) == command_map.end())
+        {
             std::cerr << "Error: Unknown option '" << arg << "'." << std::endl;
             return PossibleOptions::NONE;
         }
         // TODO: need to revise --install to be inside of main install method
-        else if (std::strcmp(arg, "--install") == 0) {
+        else if (std::strcmp(arg, "--install") == 0)
+        {
             // check if the next argument exists
-            if (i + 1 < argc) {
+            if (i + 1 < argc)
+            {
                 // assuming the next argument is the package name
                 individual_package.name = argv[i + 1];
                 return PossibleOptions::INSTALL;
-            } else {
+            }
+            else
+            {
                 std::cerr << "Error: Missing package name after '--install'." << std::endl;
                 return PossibleOptions::NONE;
             }
-        } else if (std::strcmp(arg, "--uninstall") == 0) {
+        }
+        else if (std::strcmp(arg, "--uninstall") == 0)
+        {
             // check if the next argument exists
-            if (i + 1 < argc) {
+            if (i + 1 < argc)
+            {
                 // assuming the next argument is the package name
                 individual_package.name = argv[i + 1];
                 return PossibleOptions::UNINSTALL;
-            } else {
+            }
+            else
+            {
                 std::cerr << "Error: Missing package name after '--uninstall'." << std::endl;
                 return PossibleOptions::NONE;
             }
-        } else {
+        }
+        else
+        {
             return command_map[arg];
         }
     }
@@ -283,7 +311,8 @@ PossibleOptions PackageManager::parse_arguments(int argc, char* argv[]) {
     return PossibleOptions::NONE;
 }
 
-bool PackageManager::show_warning() {
+bool PackageManager::show_warning()
+{
     // TODO: on pressing no, command still runs -- need to fix
     // Display the warning message
     std::cout << "WARNING: This operation may have consequences.\n";
@@ -296,16 +325,20 @@ bool PackageManager::show_warning() {
     // verification
     std::cout << "You entered:" << response << "\n";
     // Check user response
-    if (response == "y" || response == "Y") {
+    if (response == "y" || response == "Y")
+    {
         std::cout << "Proceeding...\n";
         return true;
-    } else {
+    }
+    else
+    {
         std::cout << "Operation canceled.\n";
         return false;
     }
 }
 
-void PackageManager::print_help() {
+void PackageManager::print_help()
+{
 
     std::cout << R"PREFIX(
 
