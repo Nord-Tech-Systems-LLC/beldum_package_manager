@@ -23,23 +23,6 @@ set(CXXFLAGS "-Wall -Wextra -Wpedantic -Wconversion -Wshadow")
 set(DEBUG_FLAGS "-ggdb3 -fsanitize=undefined,address")
 set(RELEASE_FLAGS "-O2 -Werror")
 
-# Add include directories
-include_directories(${IncludeDir} ${LibDir})
-
-# Detect and link JSON and FMT libraries if they exist
-set(JSON_DEPENDENCY_PATH "${LibDir}/json/single_include/nlohmann/json.hpp")
-set(FMT_DEPENDENCY_PATH "${LibDir}/fmt/include/fmt/core.h")
-
-# Check if JSON dependency exists
-if (EXISTS ${JSON_DEPENDENCY_PATH})
-    message(STATUS "JSON library dependency found.")
-    add_definitions(-DJSON_DEPENDENCY_EXIST)
-else()
-    message(STATUS "JSON library dependency not found. Downloading...")
-    execute_process(COMMAND git clone git@github.com:nlohmann/json.git ${LibDir}/json)
-    add_subdirectory(${LIB_DIR}/json)          # nlohmann_json
-endif()
-
 # Set debug and release flags based on build type
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXXFLAGS} ${DEBUG_FLAGS}")
@@ -50,17 +33,27 @@ endif()
 # Add source files
 file(GLOB_RECURSE SOURCES "${SrcDir}/*.cpp")
 
-# Create the executable
-add_executable(beldum ${SOURCES})
+# Add include directories
+include_directories(${IncludeDir} ${LibDir})
 
+# Handle JSON dependency
+execute_process(COMMAND git clone git@github.com:nlohmann/json.git ${LibDir}/json)
 add_subdirectory(${LibDir}/json)  # nlohmann_json
-# add_subdirectory(${LibDir}/fmt)   # fmt library
+add_definitions(-DJSON_DEPENDENCY_EXIST)
+
+# Handle FMT dependency
+execute_process(COMMAND git clone git@github.com:fmtlib/fmt.git ${LibDir}/fmt)
+add_subdirectory(${LibDir}/fmt)  # fmt
+add_definitions(-DFMT_DEPENDENCY_EXIST)
 
 # List your libraries to link
 set(MY_LIBRARIES
     nlohmann_json::nlohmann_json    # From json subdirectory
-    # fmt::fmt                        # From fmt library
+    fmt::fmt                        # From fmt library
 )
+
+# Create the executable
+add_executable(beldum ${SOURCES})
 
 # Link each library in MY_LIBRARIES
 message("\n\nLibraries Linked:")

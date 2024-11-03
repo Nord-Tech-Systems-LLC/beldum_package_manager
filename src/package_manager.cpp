@@ -11,16 +11,14 @@
 #ifndef JSON_DEPENDENCY_EXIST
 #error("JSON_DEPENDENCY_EXIST not defined");
 #endif
-
 #include "nlohmann/json.hpp"
 
-Package individual_package;
+#ifndef FMT_DEPENDENCY_EXIST
+#error("FMT_DEPENDENCY_EXIST not defined");
+#endif
+#include "fmt/core.h"
 
-// bool PackageManager::beldum.file_exists(const std::string &name)
-// {
-//     std::ifstream file(name.c_str());
-//     return file.good();
-// }
+Package individual_package;
 
 std::string exec(const char *cmd)
 {
@@ -142,6 +140,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             }
 
             // clone the repo
+            std::cout << fmt::format("cd {} && git clone {} target/debug/deps/{}", result_string, std::string(repository_URL), std::string(repo_name)) << std::endl;
             command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " target/debug/deps/" + std::string(repo_name);
             std::cout << "Command: " << command << std::endl;
             return_code = system(command.c_str());

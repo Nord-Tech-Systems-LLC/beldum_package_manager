@@ -29,6 +29,11 @@ read -p "Do you want to install the executable to /usr/local/bin? (y/n): " insta
 if [[ "$install_choice" == "y" || "$install_choice" == "Y" ]]; then
     echo "Installing executable..."
     sudo cmake --install "$BUILD_DIR" || error_exit "Installation failed."
+    echo "Build and installation complete!"
 fi
 
-echo "Build and installation complete!"
+if [[ "$install_choice" == "n" || "$install_choice" == "N" ]]; then
+    echo "Build complete, but not installed"
+    error_exit "Installation failed."
+fi
+
