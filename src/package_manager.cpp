@@ -97,8 +97,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         command = "git describe --tags --abbrev=0";
         repo_version = exec(command.c_str());
         repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end()); // removes new line character from version
-        std::cout << "\nBeldum Version: " << repo_version << "\n"
-                  << std::endl;
+        fmt::print("\nBeldum Version: {}\n\n", repo_version);
 
         break;
     /**
@@ -109,9 +108,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         std::cout << "\n";
         if (beldum.file_exists("installed_packages.json") && beldum.file_exists("package.json"))
         {
-            std::cout << "Package.json and installed_packages.json already exist.\n"
-                      << "Try installing an example package with --install example_package\n"
-                      << std::endl;
+            fmt::print("Package.json and installed_packages.json already exist.\nTry installing an example package with --install example_package\n\n");
             break;
         }
         else
@@ -125,6 +122,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
 >>>>>>> Stashed changes
 
         std::cout << "\n";
+        return_code = 0;
         break;
 
     /**
@@ -132,7 +130,6 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
      */
     case PossibleOptions::HELP:
         print_help();
-        // std::cout << "Help printed" << std::endl;
         break;
 
     /**
@@ -146,8 +143,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         // checks if package is already installed
         if (installed_data["packages"].contains(requested_package))
         {
-            std::cout << "\nThe package \"" << requested_package << "\" is already installed...\n"
-                      << std::endl;
+            fmt::print("\nThe package \"{}\" is already installed...\n\n", requested_package);
             break;
         };
 
@@ -168,7 +164,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
 
             // clone the repo
             command = fmt::format("cd {} && git clone {} target/debug/deps/{}", result_string, std::string(repository_URL), std::string(repo_name));
-            std::cout << "Command: " << command << std::endl;
+            fmt::print("Command: {}\n", command);
             return_code = system(command.c_str());
 
             // git version number
@@ -194,8 +190,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         }
         else
         {
-            std::cout << "\nPackage \"" << requested_package << "\" does not exist. Please enter the correct package name.\n"
-                      << std::endl;
+            fmt::print("\nPackage \"{}\" does not exist. Please enter the correct package name.\n\n", requested_package);
         }
 
         break;
@@ -233,11 +228,11 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         installed_data = json::parse(installed_packages);
         if (installed_data["packages"].contains(requested_package))
         {
-            std::cout << "\n\nUninstalling..." << std::endl;
+            fmt::print("\n\nUninstalling...\n");
 
             // remove the repo
             command = "rm -rf target/debug/deps/" + std::string(requested_package);
-            std::cout << "Command: " << command << std::endl;
+            fmt::print("Command: {}\n", command);
             return_code = system(command.c_str());
 
             // update installed_packages.json
@@ -245,8 +240,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             std::ofstream output("installed_packages.json");
             output << installed_data.dump(4);
 
-            std::cout << "Package " << requested_package << " successfully uninstalled.\n\n"
-                      << std::endl;
+            fmt::print("\nPackage {} successfully uninstalled.\n\n", requested_package);
+
             break;
         }
         else
@@ -261,14 +256,21 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
      */
     case PossibleOptions::CLEAN:
         // using bash to clean the library folder
-        command = "sudo find target/debug/deps/* -maxdepth 0 -type d ! -name \"json\" -exec rm -r {} +";
-        std::ofstream output("installed_packages.json");
-        installed_data["packages"] = {};
-        output << installed_data;
-        return_code = system(command.c_str());
-        std::cout << "\nSuccessfully cleaned project directory.\n"
-                  << std::endl;
-        break;
+        if (show_warning())
+        {
+            command = "sudo find target/debug/deps/* -maxdepth 0 -type d ! -name \"json\" -exec rm -r {} +";
+            std::ofstream output("installed_packages.json");
+            installed_data["packages"] = {};
+            output << installed_data;
+            return_code = system(command.c_str());
+            std::cout << "\nSuccessfully cleaned project directory.\n"
+                      << std::endl;
+            break;
+        }
+        else
+        {
+            break;
+        };
     }
 }
 
@@ -338,26 +340,26 @@ PossibleOptions PackageManager::parse_arguments(int argc, char *argv[])
 
 bool PackageManager::show_warning()
 {
-    // TODO: on pressing no, command still runs -- need to fix
-    // Display the warning message
-    std::cout << "WARNING: This operation may have consequences.\n";
-    std::cout << "Do you want to proceed? (y/n): ";
+    // display the warning message
+    fmt::print("WARNING: This operation may have consequences.\n");
+    fmt::print("Do you want to proceed? (y/n)");
 
-    // Get user input
+    // get user input
     std::string response;
     std::getline(std::cin, response);
 
     // verification
-    std::cout << "You entered:" << response << "\n";
-    // Check user response
+    fmt::print("You entered: {}\n", response);
+
+    // check user response
     if (response == "y" || response == "Y")
     {
-        std::cout << "Proceeding...\n";
+        fmt::print("Proceeding...\n");
         return true;
     }
     else
     {
-        std::cout << "Operation canceled.\n";
+        fmt::print("Operation canceled.\n");
         return false;
     }
 }
