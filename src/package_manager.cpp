@@ -347,7 +347,7 @@ COMMAND:                                                            DESCRIPTION:
 --install                                                    to install packages
 --uninstall                                                to uninstall packages
 --help                                                          to show commands
---clean                                  to remove contents from target/debug/deps folder
+--clean                         to remove contents from target/debug/deps folder
 
 )PREFIX" << std::endl;
 }
