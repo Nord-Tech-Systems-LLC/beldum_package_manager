@@ -18,6 +18,11 @@
 #endif
 #include "fmt/core.h"
 
+#ifndef CLI11_DEPENDENCY_EXIST
+#error("CLI11_DEPENDENCY_EXIST not defined");
+#endif
+#include "CLI/CLI.hpp"
+
 Package individual_package;
 
 std::string exec(const char *cmd)
@@ -275,67 +280,95 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
 }
 
 // function to parse command line arguments and assign them to the enum
-PossibleOptions PackageManager::parse_arguments(int argc, char *argv[])
+int PackageManager::parse_arguments(int argc, char **argv)
 {
-    std::map<std::string, PossibleOptions> command_map = {
-        {"--help", PossibleOptions::HELP},
-        {"--init", PossibleOptions::INIT},
-        {"--install", PossibleOptions::INSTALL},
-        {"--uninstall", PossibleOptions::UNINSTALL},
-        {"--clean", PossibleOptions::CLEAN},
-        {"--version", PossibleOptions::VERSION},
-        {"--list", PossibleOptions::LIST_PACKAGES}};
+    CLI::App app{"Beldum Package Manager"};
 
-    // traverse passed command arguments
-    for (int i = 1; i < argc; ++i)
+    bool init_flag = false;
+    bool help_flag = false;
+    bool version_flag = false;
+    bool install_flag = false;
+    bool uninstall_flag = false;
+    bool clean_flag = false;
+    bool list_flag = false;
+
+    app.add_flag("--init", init_flag, "Initialize the project");
+    app.add_flag("--other", help_flag, "Show help");
+    app.add_flag("--version", version_flag, "Show version");
+    app.add_flag("--clean", clean_flag, "Clean build directory and dependencies");
+    app.add_flag("--list", list_flag, "List installed packages");
+
+    // Add install option with the package name as a positional argument
+    std::string package_name;
+    app.add_flag("--install", install_flag, "Install a dependency");
+    app.add_flag("--uninstall", uninstall_flag, "Uninstall a dependency");
+    app.add_option("package_name", package_name, "Package name to install");
+
+    app.footer("\n");
+
+    CLI11_PARSE(app, argc, argv);
+
+    // if initializing project
+    if (init_flag || help_flag || version_flag)
     {
-        const char *arg = argv[i];
 
-        // if command isn't found, else return PossibleOptions
-        if (command_map.find(arg) == command_map.end())
+        if (help_flag)
         {
-            std::cerr << "Error: Unknown option '" << arg << "'." << std::endl;
-            return PossibleOptions::NONE;
+            check_passed_shell_arguments(PossibleOptions::HELP);
         }
-        // TODO: need to revise --install to be inside of main install method
-        else if (std::strcmp(arg, "--install") == 0)
+        if (init_flag)
         {
-            // check if the next argument exists
-            if (i + 1 < argc)
-            {
-                // assuming the next argument is the package name
-                individual_package.name = argv[i + 1];
-                return PossibleOptions::INSTALL;
-            }
-            else
-            {
-                std::cerr << "Error: Missing package name after '--install'." << std::endl;
-                return PossibleOptions::NONE;
-            }
+            check_passed_shell_arguments(PossibleOptions::INIT);
         }
-        else if (std::strcmp(arg, "--uninstall") == 0)
+
+        if (version_flag)
         {
-            // check if the next argument exists
-            if (i + 1 < argc)
-            {
-                // assuming the next argument is the package name
-                individual_package.name = argv[i + 1];
-                return PossibleOptions::UNINSTALL;
-            }
-            else
-            {
-                std::cerr << "Error: Missing package name after '--uninstall'." << std::endl;
-                return PossibleOptions::NONE;
-            }
+            check_passed_shell_arguments(PossibleOptions::VERSION);
         }
-        else
-        {
-            return command_map[arg];
-        }
+
+        return 0;
     }
 
-    // no valid options found
-    return PossibleOptions::NONE;
+    // if project hasn't been initialized
+    if (!beldum.file_exists("installed_packages.json") || !beldum.file_exists("package.json"))
+    {
+        // if installed_packages.json or package.json doesn't exist
+        std::cerr << "\nYou're missing the installed_packages.json or package.json, please run --init.\n"
+                  << std::endl;
+        return 1;
+    }
+
+    // package related flags
+    if (clean_flag)
+    {
+        check_passed_shell_arguments(PossibleOptions::CLEAN);
+    }
+    if (list_flag)
+    {
+        check_passed_shell_arguments(PossibleOptions::LIST_PACKAGES);
+    }
+    if (install_flag)
+    {
+        if (package_name.empty())
+        {
+            std::cerr << "Error: Missing package name after '--install'." << std::endl;
+            check_passed_shell_arguments(PossibleOptions::NONE);
+        }
+        individual_package.name = package_name;
+        check_passed_shell_arguments(PossibleOptions::INSTALL);
+    }
+    if (uninstall_flag)
+    {
+        if (package_name.empty())
+        {
+            std::cerr << "Error: Missing package name after '--uninstall'." << std::endl;
+            check_passed_shell_arguments(PossibleOptions::NONE);
+        }
+        individual_package.name = package_name;
+        check_passed_shell_arguments(PossibleOptions::UNINSTALL);
+    }
+
+    return 0;
 }
 
 bool PackageManager::show_warning()
