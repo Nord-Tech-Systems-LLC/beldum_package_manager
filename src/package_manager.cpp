@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <format>
 
 // #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
 
@@ -308,8 +309,8 @@ bool PackageManager::show_warning() {
 }
 
 void PackageManager::print_help() {
-    std::cout << R"PREFIX(
 
+    std::cout << R"PREFIX(
 
 COMMAND:                                                            DESCRIPTION:
 --------------------------------------------------------------------------------
