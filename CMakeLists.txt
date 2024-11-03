@@ -37,6 +37,7 @@ if (EXISTS ${JSON_DEPENDENCY_PATH})
 else()
     message(STATUS "JSON library dependency not found. Downloading...")
     execute_process(COMMAND git clone git@github.com:nlohmann/json.git ${LibDir}/json)
+    add_subdirectory(${LIB_DIR}/json)          # nlohmann_json
 endif()
 
 # Set debug and release flags based on build type
@@ -51,6 +52,23 @@ file(GLOB_RECURSE SOURCES "${SrcDir}/*.cpp")
 
 # Create the executable
 add_executable(beldum ${SOURCES})
+
+add_subdirectory(${LibDir}/json)  # nlohmann_json
+# add_subdirectory(${LibDir}/fmt)   # fmt library
+
+# List your libraries to link
+set(MY_LIBRARIES
+    nlohmann_json::nlohmann_json    # From json subdirectory
+    # fmt::fmt                        # From fmt library
+)
+
+# Link each library in MY_LIBRARIES
+message("\n\nLibraries Linked:")
+foreach(CPP_LIB ${MY_LIBRARIES})
+    message("Library Name: ${CPP_LIB}")
+    target_link_libraries(beldum PRIVATE ${CPP_LIB})  # Link with the executable name
+endforeach()
+message("\n\n")
 
 # Set link flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
