@@ -13,7 +13,7 @@ This package manager only supports header libraries at this time.
 
 ### To Install
 
-Execute `make install` in the root project directory
+Execute `./build.sh` in the root project directory
 
 ### Commands
 
