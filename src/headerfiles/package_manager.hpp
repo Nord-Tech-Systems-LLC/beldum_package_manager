@@ -40,10 +40,9 @@ public:
         return instance;
     }
 
-    PossibleOptions parse_arguments(int argc, char *argv[]);
+    int parse_arguments(int argc, char **argv);
     BeldumInit beldum;
     void check_passed_shell_arguments(PossibleOptions options);
-    // bool file_exists(const std::string &name);
 
 private:
     PackageManager() {};

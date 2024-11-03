@@ -1,12 +1,3 @@
-#include <sys/stat.h>
-#include <sys/types.h>
-
-#include <cstring>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <limits>
-#include <vector>
 
 /**
  * TODO:
@@ -19,21 +10,13 @@
  *
  */
 
-// #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
-
 // libraries
 #include "headerfiles/package_manager.hpp"
-#include "headerfiles/beldum_init.hpp"
 
-#ifndef JSON_DEPENDENCY_EXIST
-#error("JSON_DEPENDENCY_EXIST not defined");
-#endif
-
-#include "nlohmann/json.hpp"
-
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
     PackageManager instance = PackageManager::getInstance();
+<<<<<<< Updated upstream
     BeldumInit beldum;
     PossibleOptions options = instance.parse_arguments(argc, argv);
 
@@ -56,6 +39,9 @@ int main(int argc, char *argv[])
         // else anything else
         instance.check_passed_shell_arguments(options);
     }
+=======
+    instance.parse_arguments(argc, argv);
+>>>>>>> Stashed changes
 
     return 0;
 }

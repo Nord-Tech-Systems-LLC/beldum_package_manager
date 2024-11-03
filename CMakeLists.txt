@@ -46,10 +46,16 @@ execute_process(COMMAND git clone git@github.com:fmtlib/fmt.git ${LibDir}/fmt)
 add_subdirectory(${LibDir}/fmt)  # fmt
 add_definitions(-DFMT_DEPENDENCY_EXIST)
 
+# Handle CLI11 dependency
+execute_process(COMMAND git clone https://github.com/CLIUtils/CLI11 ${LibDir}/CLI11)
+add_subdirectory(${LibDir}/CLI11)  # fmt
+add_definitions(-DCLI11_DEPENDENCY_EXIST)
+
 # List your libraries to link
 set(MY_LIBRARIES
     nlohmann_json::nlohmann_json    # From json subdirectory
     fmt::fmt                        # From fmt library
+    CLI11::CLI11                    # From CLI11 library
 )
 
 # Create the executable
