@@ -4,7 +4,6 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
-#include <format>
 
 // #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
 
@@ -129,12 +128,12 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                 }
 
                 // clone the repo
-                command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " cpp_libs/" + std::string(repo_name);
+                command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " target/debug/deps/" + std::string(repo_name);
                 std::cout << "Command: " << command << std::endl;
                 return_code = system(command.c_str());
 
                 // git version number
-                command = "cd " + result_string + "/cpp_libs/" + std::string(repo_name) + " && git describe --tags --abbrev=0";
+                command = "cd " + result_string + "/target/debug/deps/" + std::string(repo_name) + " && git describe --tags --abbrev=0";
                 repo_version = exec(command.c_str());
                 repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end());  // removes new line character from version
 
@@ -190,7 +189,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                 std::cout << "\n\nUninstalling..." << std::endl;
 
                 // remove the repo
-                command = "rm -rf cpp_libs/" + std::string(requested_package);
+                command = "rm -rf target/debug/deps/" + std::string(requested_package);
                 std::cout << "Command: " << command << std::endl;
                 return_code = system(command.c_str());
 
@@ -214,9 +213,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options) {
          */
         case PossibleOptions::CLEAN:
             // using bash to clean the library folder
-
-            // TODO: need to use some variation of this: find cpp_libs ! -name 'json' -type d -exec rm -rf {} +
-            command = "sudo rm -r cpp_libs";
+            command = "sudo find target/debug/deps/* -maxdepth 0 -type d ! -name \"json\" -exec rm -r {} +";
             std::ofstream output("installed_packages.json");
             installed_data["packages"] = {};
             output << installed_data;
@@ -310,7 +307,7 @@ COMMAND:                                                            DESCRIPTION:
 --install                                                    to install packages
 --uninstall                                                to uninstall packages
 --help                                                          to show commands
---clean                                  to remove contents from cpp_libs folder
+--clean                                  to remove contents from target/debug/deps folder
 
 )PREFIX" << std::endl;
 }
