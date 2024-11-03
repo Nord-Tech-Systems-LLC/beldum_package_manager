@@ -25,7 +25,7 @@ std::string exec(const char *cmd)
     // pipes command result to string for use
     std::array<char, 1024> buffer;
     std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    std::unique_ptr<FILE, int (*)(FILE *)> pipe(popen(cmd, "r"), (int (*)(FILE *))pclose);
     if (!pipe)
     {
         throw std::runtime_error("popen() failed!");
@@ -39,8 +39,8 @@ std::string exec(const char *cmd)
 
 void create_row_help_menu(const std::string &command_flag, const std::string &description)
 {
-    std::cout << std::setw(20) << std::left << command_flag;
-    std::cout << std::setw(60) << std::right << description << std::endl;
+    std::cout << std::setw(20) << std::left << command_flag.c_str();
+    std::cout << std::setw(60) << std::right << description.c_str() << std::endl;
 }
 
 void PackageManager::check_passed_shell_arguments(PossibleOptions options)
@@ -140,13 +140,12 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             }
 
             // clone the repo
-            std::cout << fmt::format("cd {} && git clone {} target/debug/deps/{}", result_string, std::string(repository_URL), std::string(repo_name)) << std::endl;
-            command = "cd " + result_string + " && git clone " + std::string(repository_URL) + " target/debug/deps/" + std::string(repo_name);
+            command = fmt::format("cd {} && git clone {} target/debug/deps/{}", result_string, std::string(repository_URL), std::string(repo_name));
             std::cout << "Command: " << command << std::endl;
             return_code = system(command.c_str());
 
             // git version number
-            command = "cd " + result_string + "/target/debug/deps/" + std::string(repo_name) + " && git describe --tags --abbrev=0";
+            command = fmt::format("cd {}/target/debug/deps/{} && git describe --tags --abbrev=0", result_string, std::string(repo_name));
             repo_version = exec(command.c_str());
             repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end()); // removes new line character from version
 

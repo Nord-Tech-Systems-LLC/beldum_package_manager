@@ -131,7 +131,11 @@ add_executable(MyExecutable src/main.cpp) # Add the executable
     {
         std::cout << "Creating ./CMakeLists.txt" << std::endl;
         std::ofstream output("CMakeLists.txt");
-        output << cMakeLists;
+        if (output.is_open())
+        {
+            output << cMakeLists;
+        }
+        output.close();
     }
 }
 
@@ -141,10 +145,14 @@ void BeldumInit::create_package_json(nlohmann::json &package_data)
     {
         std::cout << "Creating package.json" << std::endl;
         std::ofstream output("package.json");
-        package_data["packages"] = {
-            {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
+        if (output.is_open())
+        {
+            package_data["packages"] = {
+                {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
 
-        output << package_data.dump(4);
+            output << package_data.dump(4);
+        }
+        output.close();
     }
 }
 
@@ -154,7 +162,11 @@ void BeldumInit::create_installed_packages(nlohmann::json &installed_data)
     {
         std::cout << "Creating installed_packages.json" << std::endl;
         std::ofstream output("installed_packages.json");
-        installed_data["packages"] = {};
-        output << installed_data.dump(4);
+        if (output.is_open())
+        {
+            installed_data["packages"] = {};
+            output << installed_data.dump(4);
+        }
+        output.close();
     }
 }
