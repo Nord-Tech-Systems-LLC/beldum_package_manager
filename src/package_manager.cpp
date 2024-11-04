@@ -24,7 +24,7 @@
 #include "CLI/CLI.hpp"
 
 #ifndef PROJECT_VERSION
-#error("PROJECT_VERSION not defined");
+#define PROJECT_VERSION "unknown"  // Fallback in case it’s not defined
 #endif
 
 Package individual_package;
@@ -78,8 +78,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
     case PossibleOptions::VERSION:
         // git version number
 
-        // repo_version = PROJECT_VERSION;
-        repo_version = "UNKNOWN";
+        repo_version = PROJECT_VERSION;
+        // repo_version = "UNKNOWN";
         fmt::print("\nBeldum Version: {}\n\n", repo_version);
 
         break;

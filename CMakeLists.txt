@@ -25,6 +25,8 @@ set(RELEASE_FLAGS "-O2 -Werror")
 
 # BELDUM VERSION
 # add_definitionss(-DPROJECT_VERSION="${PROJECT_VERSION}")
+add_compile_definitions(PROJECT_VERSION="${PROJECT_VERSION_NUM}")
+# set(PROJECT_VERSION "${PROJECT_VERSION_NUM}")
 
 # Set debug and release flags based on build type
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
