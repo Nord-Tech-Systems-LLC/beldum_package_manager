@@ -8,8 +8,13 @@ This package manager only supports header libraries at this time.
 
 ### Dependencies:
 
--   `json` C++ library
+### Not included in beldum installation:
 -   `git` git version control
+
+### Included in beldum installation:
+-   `json` JSON C++ library
+-   `fmt` fmt C++ library
+-   `CLI11` CLI parser C++ library
 
 ### To Install
 
@@ -17,16 +22,16 @@ Execute `./build.sh` in the root project directory
 
 ### Commands
 
-`beldum --init` to initialize new project  
-`beldum --list` to list installed packages  
-`beldum --install` to install packages  
-`beldum --uninstall` to uninstall packages  
 `beldum --help` to show commands  
-`beldum --clean` to remove contents from cpp_libs folder
+`beldum init` to initialize new project  
+`beldum list` to list installed packages  
+`beldum install package_name` to install packages  
+`beldum uninstall package_name` to uninstall packages  
+`beldum clean` to remove contents from cpp_libs folder
 
 ### Main Project Workflow
 
-1. Execute `beldum --init` to initialize a project directory.
+1. Execute `beldum init` to initialize a project directory.
 2. Update the package.json with a package from GitHub using this format below:
 
 ```json
@@ -42,4 +47,4 @@ Execute `./build.sh` in the root project directory
 }
 ```
 
-3. Execute `beldum --install example_package` to install the preferred package.
+3. Execute `beldum install example_package` to install the preferred package.
