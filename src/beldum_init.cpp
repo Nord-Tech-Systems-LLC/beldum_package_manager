@@ -1,6 +1,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <sys/stat.h> // for chmod
+#include <cstdlib>    // for std::system
 #include "headerfiles/beldum_init.hpp"
 
 #ifndef JSON_DEPENDENCY_EXIST
@@ -80,6 +82,12 @@ echo "Build complete!"
             output << script;
         }
         output.close(); // Close the file after writing
+
+        // Make the file executable
+        if (std::system("chmod +x build.sh") != 0)
+        {
+            std::cerr << "Failed to make build.sh executable." << std::endl;
+        }
     }
 }
 

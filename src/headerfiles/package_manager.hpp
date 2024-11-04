@@ -17,7 +17,6 @@ enum class PossibleOptions
     INSTALL,
     UNINSTALL,
     CLEAN,
-    HELP,
     VERSION,
     LIST_PACKAGES
 };

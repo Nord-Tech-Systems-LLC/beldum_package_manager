@@ -1,5 +1,8 @@
+# General config
 cmake_minimum_required(VERSION 3.16)
-project(beldum VERSION 1.0 LANGUAGES CXX)
+# BELDUM VERSION
+project(beldum VERSION 1.0.0 LANGUAGES CXX)
+add_compile_definitions(PROJECT_VERSION="${PROJECT_VERSION_NUM}")
 
 # Define C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -22,9 +25,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${BuildLibDir}")
 set(CXXFLAGS "-Wall -Wextra -Wpedantic -Wconversion -Wshadow")
 set(DEBUG_FLAGS "-ggdb3 -fsanitize=undefined,address")
 set(RELEASE_FLAGS "-O2 -Werror")
-
-# BELDUM VERSION
-# add_definitionss(-DPROJECT_VERSION="${PROJECT_VERSION}")
 
 # Set debug and release flags based on build type
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
