@@ -77,9 +77,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
     {
     case PossibleOptions::VERSION:
         // git version number
-
         repo_version = PROJECT_VERSION;
-        // repo_version = "UNKNOWN";
         fmt::print("\nBeldum Version: {}\n\n", repo_version);
 
         break;
@@ -260,10 +258,6 @@ int PackageManager::parse_arguments(int argc, char **argv)
     auto init_cmd = app.add_subcommand("init", "Initialize the project");
     init_cmd->callback([this]()
                        { check_passed_shell_arguments(PossibleOptions::INIT); });
-
-    auto help_cmd = app.add_subcommand("help", "Show help information");
-    help_cmd->callback([this]()
-                       { check_passed_shell_arguments(PossibleOptions::HELP); });
 
     auto version_cmd = app.add_subcommand("version", "Show version information");
     version_cmd->callback([this]()
