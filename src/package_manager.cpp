@@ -23,6 +23,10 @@
 #endif
 #include "CLI/CLI.hpp"
 
+#ifndef PROJECT_VERSION
+#error("PROJECT_VERSION not defined");
+#endif
+
 Package individual_package;
 
 std::string exec(const char *cmd)
@@ -73,9 +77,9 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
     {
     case PossibleOptions::VERSION:
         // git version number
-        command = "git describe --tags --abbrev=0";
-        repo_version = exec(command.c_str());
-        repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end()); // removes new line character from version
+
+        // repo_version = PROJECT_VERSION;
+        repo_version = "UNKNOWN";
         fmt::print("\nBeldum Version: {}\n\n", repo_version);
 
         break;
