@@ -104,13 +104,6 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         break;
 
     /**
-     * HELP ACTIONS
-     */
-    case PossibleOptions::HELP:
-        print_help();
-        break;
-
-    /**
      * INSTALL ACTIONS
      */
     case PossibleOptions::INSTALL:
@@ -257,89 +250,65 @@ int PackageManager::parse_arguments(int argc, char **argv)
 {
     CLI::App app{"Beldum Package Manager"};
 
-    bool init_flag = false;
-    bool help_flag = false;
-    bool version_flag = false;
-    bool install_flag = false;
-    bool uninstall_flag = false;
-    bool clean_flag = false;
-    bool list_flag = false;
-
-    app.add_flag("--init", init_flag, "Initialize the project");
-    app.add_flag("--other", help_flag, "Show help");
-    app.add_flag("--version", version_flag, "Show version");
-    app.add_flag("--clean", clean_flag, "Clean build directory and dependencies");
-    app.add_flag("--list", list_flag, "List installed packages");
-
-    // Add install option with the package name as a positional argument
-    std::string package_name;
-    app.add_flag("--install", install_flag, "Install a dependency");
-    app.add_flag("--uninstall", uninstall_flag, "Uninstall a dependency");
-    app.add_option("package_name", package_name, "Package name to install");
-
     app.footer("\n");
 
+    // Define subcommands without any dependencies
+    auto init_cmd = app.add_subcommand("init", "Initialize the project");
+    init_cmd->callback([this]()
+                       { check_passed_shell_arguments(PossibleOptions::INIT); });
+
+    auto help_cmd = app.add_subcommand("help", "Show help information");
+    help_cmd->callback([this]()
+                       { check_passed_shell_arguments(PossibleOptions::HELP); });
+
+    auto version_cmd = app.add_subcommand("version", "Show version information");
+    version_cmd->callback([this]()
+                          { check_passed_shell_arguments(PossibleOptions::VERSION); });
+
+    // Define subcommands with file dependencies
+    std::string package_name;
+
+    auto install_cmd = app.add_subcommand("install", "Install a dependency");
+    install_cmd->add_option("package_name", package_name, "Name of the package to install")->required();
+    install_cmd->callback([this, &package_name]()
+                          {
+        if (!beldum.file_exists("installed_packages.json") || !beldum.file_exists("package.json")) {
+            std::cerr << "Error: Missing required files (installed_packages.json or package.json). Please run 'beldum init' first.\n";
+            return;
+        }
+        individual_package.name = package_name;
+        check_passed_shell_arguments(PossibleOptions::INSTALL); });
+
+    auto uninstall_cmd = app.add_subcommand("uninstall", "Uninstall a dependency");
+    uninstall_cmd->add_option("package_name", package_name, "Name of the package to uninstall")->required();
+    uninstall_cmd->callback([this, &package_name]()
+                            {
+        if (!beldum.file_exists("installed_packages.json") || !beldum.file_exists("package.json")) {
+            std::cerr << "Error: Missing required files (installed_packages.json or package.json). Please run 'beldum init' first.\n";
+            return;
+        }
+        individual_package.name = package_name;
+        check_passed_shell_arguments(PossibleOptions::UNINSTALL); });
+
+    auto list_cmd = app.add_subcommand("list", "List installed packages");
+    list_cmd->callback([this]()
+                       {
+        if (!beldum.file_exists("installed_packages.json") || !beldum.file_exists("package.json")) {
+            std::cerr << "Error: Missing required files (installed_packages.json or package.json). Please run 'beldum init' first.\n";
+            return;
+        }
+        check_passed_shell_arguments(PossibleOptions::LIST_PACKAGES); });
+
+    auto clean_cmd = app.add_subcommand("clean", "Clean build directory and dependencies");
+    clean_cmd->callback([this]()
+                        {
+        if (!beldum.file_exists("installed_packages.json") || !beldum.file_exists("package.json")) {
+            std::cerr << "Error: Missing required files (installed_packages.json or package.json). Please run 'beldum init' first.\n";
+            return;
+        }
+        check_passed_shell_arguments(PossibleOptions::CLEAN); });
+
     CLI11_PARSE(app, argc, argv);
-
-    // if initializing project
-    if (init_flag || help_flag || version_flag)
-    {
-
-        if (help_flag)
-        {
-            check_passed_shell_arguments(PossibleOptions::HELP);
-        }
-        if (init_flag)
-        {
-            check_passed_shell_arguments(PossibleOptions::INIT);
-        }
-
-        if (version_flag)
-        {
-            check_passed_shell_arguments(PossibleOptions::VERSION);
-        }
-
-        return 0;
-    }
-
-    // if project hasn't been initialized
-    if (!beldum.file_exists("installed_packages.json") || !beldum.file_exists("package.json"))
-    {
-        // if installed_packages.json or package.json doesn't exist
-        std::cerr << "\nYou're missing the installed_packages.json or package.json, please run --init.\n"
-                  << std::endl;
-        return 1;
-    }
-
-    // package related flags
-    if (clean_flag)
-    {
-        check_passed_shell_arguments(PossibleOptions::CLEAN);
-    }
-    if (list_flag)
-    {
-        check_passed_shell_arguments(PossibleOptions::LIST_PACKAGES);
-    }
-    if (install_flag)
-    {
-        if (package_name.empty())
-        {
-            std::cerr << "Error: Missing package name after '--install'." << std::endl;
-            check_passed_shell_arguments(PossibleOptions::NONE);
-        }
-        individual_package.name = package_name;
-        check_passed_shell_arguments(PossibleOptions::INSTALL);
-    }
-    if (uninstall_flag)
-    {
-        if (package_name.empty())
-        {
-            std::cerr << "Error: Missing package name after '--uninstall'." << std::endl;
-            check_passed_shell_arguments(PossibleOptions::NONE);
-        }
-        individual_package.name = package_name;
-        check_passed_shell_arguments(PossibleOptions::UNINSTALL);
-    }
 
     return 0;
 }
@@ -368,21 +337,4 @@ bool PackageManager::show_warning()
         fmt::print("Operation canceled.\n");
         return false;
     }
-}
-
-void PackageManager::print_help()
-{
-
-    std::cout << R"PREFIX(
-
-COMMAND:                                                            DESCRIPTION:
---------------------------------------------------------------------------------
---init                                                 to initialize new project
---list                                                to list installed packages
---install                                                    to install packages
---uninstall                                                to uninstall packages
---help                                                          to show commands
---clean                         to remove contents from target/debug/deps folder
-
-)PREFIX" << std::endl;
 }

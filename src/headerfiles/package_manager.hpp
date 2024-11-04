@@ -13,7 +13,6 @@
 
 enum class PossibleOptions
 {
-    NONE,
     INIT,
     INSTALL,
     UNINSTALL,
@@ -47,8 +46,6 @@ public:
 private:
     PackageManager() {};
     // ~PackageManager();
-
     bool show_warning();
-    void print_help();
 };
 #endif

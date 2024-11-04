@@ -2,7 +2,6 @@
 /**
  * TODO:
  * - create package update
- * - create package remove
  * - functionality to install all packages
  * - package version management
  * - package manager version management
