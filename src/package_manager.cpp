@@ -54,6 +54,7 @@ void create_row_help_menu(const std::string &command_flag, const std::string &de
 
 void PackageManager::check_passed_shell_arguments(PossibleOptions options)
 {
+    logger.log("Starting argument check with option: " + std::to_string(static_cast<int>(options)));
     // read shell arguments passed
     int return_code;
     std::string command;
@@ -61,17 +62,34 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
     std::string repo_name;
     std::string repo_version;
 
-    // gets list of packages
+    // Open package files -- gets list of packages
     std::ifstream packages_file("package.json");
+    if (!packages_file.is_open()) {
+        logger.logError("Error: Failed to open package.json file.");
+        return;
+    }
+
+    logger.log("Opened package.json file.");
     std::ifstream installed_packages("installed_packages.json");
+    if (!installed_packages.is_open()) {
+        logger.logError("Error: Failed to open installed_packages.json file.");
+        return;
+    }
+    logger.log("Opened installed_packages.json file.");
 
     // instantiate json object
     using json = nlohmann::json;
     json package_data;
     json installed_data;
 
+    // Extract requested package details
     std::string requested_package = individual_package.name;
+    logger.log("Requested package to process: " + requested_package);
+
+    // Get and log the current path
     std::string testing = std::string(std::filesystem::current_path());
+    logger.log("Current directory path: " + testing);
+
     std::string result_string;
     switch (options)
     {
@@ -198,32 +216,30 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         break;
 
     case PossibleOptions::UNINSTALL:
-
         installed_data = json::parse(installed_packages);
-        if (installed_data["packages"].contains(requested_package))
-        {
-            fmt::print("\n\nUninstalling...\n");
+        
+        if (installed_data["packages"].contains(requested_package)) {
+            logger.log("Uninstalling package: " + requested_package);
 
-            // remove the repo
+            // Remove the repo
             command = "rm -rf target/debug/deps/" + std::string(requested_package);
-            fmt::print("Command: {}\n", command);
+            logger.log("Executing command: " + command);
             return_code = system(command.c_str());
 
-            // update installed_packages.json
+            // Update installed_packages.json
             installed_data["packages"].erase(requested_package);
             std::ofstream output("installed_packages.json");
             output << installed_data.dump(4);
 
+            logger.log("Package " + requested_package + " successfully uninstalled.");
             fmt::print("\nPackage {} successfully uninstalled.\n\n", requested_package);
+        } 
+        else {
+            logger.logError("Attempted to uninstall package: " + requested_package + ", but it was not found.");
+            std::cout << "\n\nPackage " << requested_package << " does not exist. Please check the installed packages and try again...\n\n" << std::endl;
+        }
+        break;
 
-            break;
-        }
-        else
-        {
-            std::cout << "\n\nPackage " << requested_package << " does not exist. Please check the installed packages and try again...\n\n"
-                      << std::endl;
-            break;
-        }
 
     /**
      * CLEAN ACTIONS
