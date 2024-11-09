@@ -44,7 +44,7 @@ public:
 
 private:
     PackageManager() : logger() { 
-        logger.log("PackageManager initialized."); 
+        // logger.log("PackageManager initialized."); 
         
     }
     BeldumLogging logger;
