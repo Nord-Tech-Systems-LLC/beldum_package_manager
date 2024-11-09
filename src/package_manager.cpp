@@ -77,6 +77,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
     {
     case PossibleOptions::VERSION:
         // git version number
+        logger.log("Displaying version information.");
         repo_version = PROJECT_VERSION;
         fmt::print("\nBeldum Version: {}\n\n", repo_version);
 

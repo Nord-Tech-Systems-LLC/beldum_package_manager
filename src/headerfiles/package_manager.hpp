@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include "beldum_init.hpp"
+#include "beldum_logging.hpp"
 
 enum class PossibleOptions
 {
@@ -39,12 +40,16 @@ public:
     }
 
     int parse_arguments(int argc, char **argv);
-    BeldumInit beldum;
     void check_passed_shell_arguments(PossibleOptions options);
 
 private:
-    PackageManager() {};
+    PackageManager() : logger() { 
+        logger.log("PackageManager initialized."); 
+        
+    }
+    BeldumLogging logger;
     // ~PackageManager();
     bool show_warning();
+    BeldumInit beldum;
 };
 #endif

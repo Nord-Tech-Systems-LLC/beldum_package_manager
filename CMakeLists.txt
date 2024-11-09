@@ -54,11 +54,17 @@ execute_process(COMMAND git clone https://github.com/CLIUtils/CLI11.git ${DepsRo
 add_subdirectory(${DepsRootDir}/CLI11 EXCLUDE_FROM_ALL)  # CLI11
 add_definitions(-DCLI11_DEPENDENCY_EXIST)
 
+# Handle spdlog dependency
+execute_process(COMMAND git clone https://github.com/gabime/spdlog ${DepsRootDir}/spdlog)
+add_subdirectory(${DepsRootDir}/spdlog EXCLUDE_FROM_ALL)  # CLI11
+add_definitions(-DSPDLOG_DEPENDENCY_EXIST)
+
 # List libraries to link
 set(MY_LIBRARIES
     nlohmann_json::nlohmann_json    # From json subdirectory
     fmt::fmt                        # From fmt library
     CLI11::CLI11                    # From CLI11 library
+    spdlog::spdlog                  # From spdlog library
 )
 
 # Create executable
