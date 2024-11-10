@@ -128,22 +128,32 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
      * INSTALL ACTIONS
      */
     case PossibleOptions::INSTALL:
-        // parse package.json and installed_packages.json
-        package_data = json::parse(packages_file);
-        installed_data = json::parse(installed_packages);
 
-        // checks if package is already installed
-        if (installed_data["packages"].contains(requested_package))
-        {
+        logger.log("Attempting to install package: " + requested_package);
+
+        // Parse package.json and installed_packages.json
+        try {
+            package_data = json::parse(packages_file);
+            installed_data = json::parse(installed_packages);
+            logger.log("Parsed JSON data from package files.");
+        } catch (const json::parse_error &e) {
+            logger.logError("Failed to parse JSON data: " + std::string(e.what()));
+            break;
+        }
+
+        // Check if package is already installed
+        if (installed_data["packages"].contains(requested_package)) {
+            logger.logWarning("The package \"" + requested_package + "\" is already installed.");
             fmt::print("\nThe package \"{}\" is already installed...\n\n", requested_package);
             break;
-        };
+        }
 
         // checks if package exists in package.json
         if (package_data["packages"].contains(requested_package))
         {
             repo_name = requested_package;
             repository_URL = package_data["packages"][requested_package]["git_link"];
+            logger.log("Found package \"" + repo_name + "\" in package.json with repository URL: " + repository_URL);
 
             // strips quotes from directory
             for (char c : testing)
@@ -153,10 +163,11 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
                     result_string += c;
                 }
             }
+            logger.log("Cleaned directory path: " + result_string);
 
             // clone the repo
             command = fmt::format("cd {} && git clone {} target/debug/deps/{}", result_string, std::string(repository_URL), std::string(repo_name));
-            fmt::print("Command: {}\n", command);
+            logger.log("Executing command to clone repository: " + command);
             return_code = system(command.c_str());
 
             // git version number
@@ -168,20 +179,27 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             if (repo_version.empty())
             {
                 repo_version = "unknown";
+                logger.logWarning("No version tag found in repository. Defaulting to version: unknown.");
+            } else {
+                logger.log("Retrieved version for " + repo_name + ": " + repo_version);
             }
-
-            // updating installed package manager
-            std::ofstream output("installed_packages.json");
-            installed_data["packages"][repo_name] = {
-                {"git_link", repository_URL},
-                {"repo_name", repo_name},
-                {"version", repo_version},
-            };
-
-            output << installed_data.dump(4);
+            // Update installed package manager
+            try {
+                std::ofstream output("installed_packages.json");
+                installed_data["packages"][repo_name] = {
+                    {"git_link", repository_URL},
+                    {"repo_name", repo_name},
+                    {"version", repo_version},
+                };
+                output << installed_data.dump(4);
+                logger.log("Successfully updated installed_packages.json with " + repo_name);
+            } catch (const std::exception &e) {
+                logger.logError("Failed to update installed_packages.json: " + std::string(e.what()));
+            }
         }
         else
         {
+            logger.logWarning("Package \"" + requested_package + "\" does not exist in package.json.");
             fmt::print("\nPackage \"{}\" does not exist. Please enter the correct package name.\n\n", requested_package);
         }
 
