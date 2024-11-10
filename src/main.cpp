@@ -13,7 +13,7 @@
 
 int main(int argc, char **argv)
 {
-    PackageManager instance = PackageManager::getInstance();
+    PackageManager& instance = PackageManager::getInstance();
     instance.parse_arguments(argc, argv);
 
     return 0;

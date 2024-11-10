@@ -4,6 +4,8 @@
 #define BELDUM_INIT_H
 
 #include <iostream>
+#include <fstream>
+#include "beldum_logging.hpp"
 #include "nlohmann/json.hpp"
 
 class BeldumInit
@@ -15,5 +17,8 @@ public:
     void create_cmake_lists();
     void create_package_json(nlohmann::json &package_data);
     void create_installed_packages(nlohmann::json &installed_data);
+    std::ofstream output;
+private:
+    BeldumLogging logger;
 };
 #endif

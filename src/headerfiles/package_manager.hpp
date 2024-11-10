@@ -7,6 +7,7 @@
 #include <cstdlib> // For getenv
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <limits>
 #include <map>
 #include <vector>
@@ -47,12 +48,24 @@ public:
 private:
     PackageManager() : logger() { 
         // logger.log("PackageManager initialized."); 
-        
     }
+
+    // Delete the copy constructor and copy assignment operator
+    PackageManager(const PackageManager&) = delete;
+    PackageManager& operator=(const PackageManager&) = delete;
+
     const std::string available_packages_path = std::string(getenv("HOME")) + "/.beldum/packages/available_packages.json";
+    std::ifstream packages_file;
+
+    const std::string installed_packages_path = "installed_packages.json";
+    std::ifstream installed_packages_file;
+
+    std::ofstream output;
+
     BeldumLogging logger;
-    // ~PackageManager();
-    bool show_warning();
     BeldumInit beldum;
+
+    bool show_warning();
+
 };
 #endif
