@@ -20,8 +20,15 @@ void BeldumLogging::initializeLogger() {
     // Ensure the log directory exists
     std::filesystem::create_directories(std::filesystem::path(fullPath).parent_path());
 
-    // Create and configure the logger
-    logger = spdlog::basic_logger_mt("beldum_logger", fullPath);
+    // Check if the logger already exists
+    if (spdlog::get("beldum_logger") != nullptr) {
+        logger = spdlog::get("beldum_logger");
+    } else {
+        // Create a new logger if not found
+        logger = spdlog::basic_logger_mt("beldum_logger", fullPath);
+        logger->set_level(spdlog::level::info);
+        logger->flush_on(spdlog::level::info);
+    }
     logger->set_level(spdlog::level::info);  // Set default log level
     logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");  // Set log message format
 }

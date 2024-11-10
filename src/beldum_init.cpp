@@ -12,9 +12,8 @@
 #include "nlohmann/json.hpp"
 
 bool BeldumInit::file_exists(const std::string &name)
-{
-    std::ifstream file(name.c_str());
-    return file.good();
+{ 
+    return std::filesystem::exists(name.c_str());
 }
 
 void BeldumInit::create_src_and_main()
@@ -32,11 +31,13 @@ int main() {
     {
         std::cout << "Creating src/main.cpp" << std::endl;
         std::filesystem::create_directory("src");
-        std::ofstream output("src/main.cpp");
-        if (output.is_open())
-        {
-            output << mainCpp;
+
+        output.open("src/main.cpp");
+        if (!output.is_open()) {
+            logger.logError("Error: Failed to open build.sh file.");
         }
+
+        output << mainCpp;
         output.close();
     }
 }
@@ -76,11 +77,12 @@ echo "Build complete!"
     if (!file_exists("build.sh"))
     {
         std::cout << "Creating ./build.sh" << std::endl;
-        std::ofstream output("build.sh");
-        if (output.is_open())
-        {
-            output << script;
+        output.open("build.sh");
+        if (!output.is_open()) {
+            logger.logError("Error: Failed to open build.sh file.");
         }
+
+        output << script;
         output.close(); // Close the file after writing
 
         // Make the file executable
@@ -138,11 +140,12 @@ add_executable(MyExecutable src/main.cpp) # Add the executable
     if (!file_exists("CMakeLists.txt"))
     {
         std::cout << "Creating ./CMakeLists.txt" << std::endl;
-        std::ofstream output("CMakeLists.txt");
-        if (output.is_open())
-        {
-            output << cMakeLists;
+
+        output.open("CMakeLists.txt");
+        if (!output.is_open()) {
+            logger.logError("Error: Failed to open CMakeLists.txt file.");
         }
+        output << cMakeLists;
         output.close();
     }
 }
@@ -152,14 +155,16 @@ void BeldumInit::create_package_json(nlohmann::json &package_data)
     if (!file_exists("package.json"))
     {
         std::cout << "Creating package.json" << std::endl;
-        std::ofstream output("package.json");
-        if (output.is_open())
-        {
-            package_data["packages"] = {
-                {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
-
-            output << package_data.dump(4);
+        output.open("package.json");
+        if (!output.is_open()) {
+            logger.logError("Error: Failed to open package.json file.");
         }
+
+        package_data["packages"] = {
+            {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
+
+        output << package_data.dump(4);
+        
         output.close();
     }
 }
@@ -169,12 +174,13 @@ void BeldumInit::create_installed_packages(nlohmann::json &installed_data)
     if (!file_exists("installed_packages.json"))
     {
         std::cout << "Creating installed_packages.json" << std::endl;
-        std::ofstream output("installed_packages.json");
-        if (output.is_open())
-        {
-            installed_data["packages"] = {};
-            output << installed_data.dump(4);
+
+        output.open("installed_packages.json");
+        if (!output.is_open()) {
+            logger.logError("Error: Failed to open installed_packages.json file.");
         }
+        installed_data["packages"] = {};
+        output << installed_data.dump(4);
         output.close();
     }
 }
