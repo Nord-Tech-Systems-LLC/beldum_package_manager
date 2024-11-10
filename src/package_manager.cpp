@@ -47,11 +47,11 @@ std::string exec(const char *cmd)
     return result;
 }
 
-void PackageManager::check_passed_shell_arguments(PossibleOptions options)
+int PackageManager::check_passed_shell_arguments(PossibleOptions options)
 {
     logger.log("Starting argument check with option: " + std::to_string(static_cast<int>(options)));
     // read shell arguments passed
-    int return_code;
+    int return_code = 0;
     std::string command;
     std::string repository_URL;
     std::string repo_name;
@@ -82,7 +82,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         repo_version = PROJECT_VERSION;
         fmt::print("\nBeldum Version: {}\n\n", repo_version);
 
-        break;
+        return return_code;
     /**
      * INIT ACTIONS
      */
@@ -92,7 +92,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         if (beldum.file_exists(installed_packages_path) && beldum.file_exists(available_packages_path))
         {
             fmt::print("Available_packages.json and installed_packages.json already exist.\nTry installing an example package with --install example_package\n\n");
-            break;
+            return_code = 1;
+            return return_code;
         }
         else
         {
@@ -104,8 +105,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         }
 
         std::cout << "\n";
-        return_code = 0;
-        break;
+        return return_code;
 
     /**
      * INSTALL ACTIONS
@@ -119,7 +119,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             packages_file.open(available_packages_path);
             if (!packages_file.is_open()) {
                 logger.logError("Error: Failed to open available_packages.json file.");
-                break;
+                return_code = 1;
+                return return_code;
             }
             logger.log("Opened available_packages.json file.");
             package_data = json::parse(packages_file);
@@ -128,7 +129,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             installed_packages_file.open(installed_packages_path);
             if (!installed_packages_file.is_open()) {
                 logger.logError("Error: Failed to open installed_packages.json file.");
-                break;
+                return_code = 1;
+                return return_code;
             }
             logger.log("Opened installed_packages.json file.");
             installed_data = json::parse(installed_packages_file);
@@ -138,14 +140,16 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
 
         } catch (const json::parse_error &e) {
             logger.logError("Failed to parse JSON data: " + std::string(e.what()));
-            break;
+            return_code = 1;
+            return return_code;
         }
 
         // Check if package is already installed
         if (installed_data["packages"].contains(requested_package)) {
             logger.logWarning("The package \"" + requested_package + "\" is already installed.");
             fmt::print("\nThe package \"{}\" is already installed...\n\n", requested_package);
-            break;
+            return_code = 1;
+            return return_code;
         }
 
         // checks if package exists in package.json
@@ -190,7 +194,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
                 output.open(installed_packages_path);
                 if (!output.is_open()) {
                     logger.logError("Error: Failed to open installed_packages.json file.");
-                    break;
+                    return_code = 1;
+                    return return_code;
                 }
                 logger.log("Opened installed_packages.json file.");
 
@@ -205,6 +210,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
                 logger.log("Successfully updated installed_packages.json with " + repo_name);
             } catch (const std::exception &e) {
                 logger.logError("Failed to update installed_packages.json: " + std::string(e.what()));
+                return_code = 1;
+                return return_code;
             }
         }
         else
@@ -213,7 +220,7 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             fmt::print("\nPackage \"{}\" does not exist. Please enter the correct package name.\n\n", requested_package);
         }
 
-        break;
+        return return_code;
 
     /**
      * LIST INSTALLED / AVAILABLE PACKAGES
@@ -225,7 +232,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             installed_packages_file.open(installed_packages_path);
             if (!installed_packages_file.is_open()) {
                 logger.logError("Error: Failed to open installed_packages.json file.");
-                break;
+                return_code = 1;
+                return return_code;
             }
             logger.log("Opened installed_packages.json file.");
             installed_data = json::parse(installed_packages_file);
@@ -248,8 +256,10 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         else
         {
             std::cerr << "\nThe installed_packages.json does not exist, please run --init" << std::endl;
+            return_code = 1;
+            return return_code;
         }
-        break;
+        return return_code;
 
     case PossibleOptions::LIST_AVAILABLE_PACKAGES:
 
@@ -259,7 +269,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             packages_file.open(available_packages_path);
             if (!packages_file.is_open()) {
                 logger.logError("Error: Failed to open available_packages.json file.");
-                break;
+                return_code = 1;
+                return return_code;
             }
             logger.log("Opened available_packages.json file.");
             package_data = json::parse(packages_file);
@@ -293,15 +304,19 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         {
             // Display error if the file is missing
             std::cerr << "\nThe available_packages.json does not exist. Please ensure the file is available at ~/.beldum/packages/\n";
+            return_code = 1;
+            return return_code;
         }
-        break;
+
+        return return_code;
     
 
     case PossibleOptions::UNINSTALL:
         installed_packages_file.open(installed_packages_path);
         if (!installed_packages_file.is_open()) {
             logger.logError("Error: Failed to open installed_packages.json file.");
-            break;
+            return_code = 1;
+            return return_code;
         }
         logger.log("Opened installed_packages.json file.");
         installed_data = json::parse(installed_packages_file);
@@ -318,7 +333,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             output.open(installed_packages_path);
             if (!output.is_open()) {
                 logger.logError("Error: Failed to open installed_packages.json file.");
-                break;
+                return_code = 1;
+                return return_code;
             }
             logger.log("Opened installed_packages.json file.");
 
@@ -334,8 +350,10 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
         else {
             logger.logError("Attempted to uninstall package: " + requested_package + ", but it was not found.");
             std::cout << "\n\nPackage " << requested_package << " does not exist. Please check the installed packages and try again...\n\n" << std::endl;
+            return_code = 1;
+            return return_code;
         }
-        break;
+        return return_code;
 
 
     /**
@@ -350,7 +368,8 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             output.open(installed_packages_path);
             if (!output.is_open()) {
                 logger.logError("Error: Failed to open installed_packages.json file.");
-                break;
+                return_code = 1;
+                return return_code;
             }
             logger.log("Opened installed_packages.json file.");
             installed_data["packages"] = {};
@@ -360,13 +379,15 @@ void PackageManager::check_passed_shell_arguments(PossibleOptions options)
             fmt::print("\nSuccessfully cleaned project directory.\n");
             std::cout << std::endl;
 
-            break;
+            
         }
         else
         {
-            break;
+            return_code = 1;
+            return return_code;
         };
     }
+    return return_code;
 }
 
 // function to parse command line arguments and assign them to the enum
@@ -462,6 +483,7 @@ int PackageManager::parse_arguments(int argc, char **argv)
             }
         }
         logger.log("Command line arguments: " + ss.str() + "\" parsed successfully.");
+        return 0;
     } catch (const CLI::ParseError &e) {
         logger.logError("Error while parsing command line arguments: " + std::string(e.what()));
         return e.get_exit_code();

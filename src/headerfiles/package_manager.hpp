@@ -43,7 +43,7 @@ public:
     }
 
     int parse_arguments(int argc, char **argv);
-    void check_passed_shell_arguments(PossibleOptions options);
+    int check_passed_shell_arguments(PossibleOptions options);
 
 private:
     PackageManager() : logger() { 
