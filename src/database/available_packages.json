@@ -1,0 +1,22 @@
+{
+    "packages": [
+        {
+            "name": "example-package",
+            "description": "This is an example package for demonstration.",
+            "repository_url": "https://github.com/example/example-package",
+            "tags": ["example", "demo", "package"]
+        },
+        {
+            "name": "another-package",
+            "description": "Another example package with more features.",
+            "repository_url": "https://github.com/example/another-package",
+            "tags": ["another", "example"]
+        },
+        {
+            "name": "cool-tool",
+            "description": "A cool tool for various utilities.",
+            "repository_url": "https://github.com/example/cool-tool",
+            "tags": ["tool", "utility"]
+        }
+    ]
+}
