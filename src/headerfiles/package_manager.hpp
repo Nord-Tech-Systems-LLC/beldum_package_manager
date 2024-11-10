@@ -4,6 +4,7 @@
 #define PACKAGE_MANAGER_H
 
 #include <cstring>
+#include <cstdlib> // For getenv
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -19,7 +20,8 @@ enum class PossibleOptions
     UNINSTALL,
     CLEAN,
     VERSION,
-    LIST_PACKAGES
+    LIST_INSTALLED_PACKAGES,
+    LIST_AVAILABLE_PACKAGES
 };
 
 class Package
@@ -47,6 +49,7 @@ private:
         // logger.log("PackageManager initialized."); 
         
     }
+    const std::string available_packages_path = std::string(getenv("HOME")) + "/.beldum/packages/available_packages.json";
     BeldumLogging logger;
     // ~PackageManager();
     bool show_warning();
