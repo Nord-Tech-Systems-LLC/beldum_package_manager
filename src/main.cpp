@@ -2,9 +2,8 @@
 /**
  * TODO:
  * - create package update
- * - functionality to install all packages
+ * - mysql backend with packages
  * - package version management
- * - package manager version management
  * - add ability to add packages via the terminal beldum --add [package_name] [git_link]
  *
  */

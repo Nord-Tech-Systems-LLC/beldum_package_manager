@@ -341,7 +341,13 @@ int PackageManager::parse_arguments(int argc, char **argv)
         }
         check_passed_shell_arguments(PossibleOptions::CLEAN); });
 
-    CLI11_PARSE(app, argc, argv);
+    try {
+        CLI11_PARSE(app, argc, argv);
+        logger.log("Command line arguments parsed successfully.");
+    } catch (const CLI::ParseError &e) {
+        logger.logError("Error while parsing command line arguments: " + std::string(e.what()));
+        return e.get_exit_code();
+    }
 
     return 0;
 }
