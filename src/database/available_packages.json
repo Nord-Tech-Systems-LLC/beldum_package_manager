@@ -43,6 +43,12 @@
             "description": "A cool tool for various utilities.",
             "repository_url": "https://github.com/gabime/spdlog",
             "tags": ["cpp", "logging", "cpp11", "header-only", "spdlog"]
+        },
+        "pico-sdk": {
+            "git_link": "https://github.com/raspberrypi/pico-sdk",
+            "description": "The SDK for pi-pico low level coding.",
+            "repository_url": "https://github.com/raspberrypi/pico-sdk",
+            "tags": ["low-level", "header-only", "pi-pico"]
         }
     }
 }
