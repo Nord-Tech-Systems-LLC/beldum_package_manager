@@ -54,11 +54,17 @@ execute_process(COMMAND git clone https://github.com/CLIUtils/CLI11.git ${DepsRo
 add_subdirectory(${DepsRootDir}/CLI11 EXCLUDE_FROM_ALL)  # CLI11
 add_definitions(-DCLI11_DEPENDENCY_EXIST)
 
+# Handle spdlog dependency
+execute_process(COMMAND git clone https://github.com/gabime/spdlog ${DepsRootDir}/spdlog)
+add_subdirectory(${DepsRootDir}/spdlog EXCLUDE_FROM_ALL)  # CLI11
+add_definitions(-DSPDLOG_DEPENDENCY_EXIST)
+
 # List libraries to link
 set(MY_LIBRARIES
     nlohmann_json::nlohmann_json    # From json subdirectory
     fmt::fmt                        # From fmt library
     CLI11::CLI11                    # From CLI11 library
+    spdlog::spdlog                  # From spdlog library
 )
 
 # Create executable
@@ -79,4 +85,16 @@ install(TARGETS beldum DESTINATION /usr/local/bin)
 add_custom_target(clean_all
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${BuildRootDir}
     COMMENT "Cleaning up the entire build directory"
+)
+
+# Specify the source and destination paths for the JSON file
+set(AvailablePackagesSource "${CMAKE_SOURCE_DIR}/src/database/available_packages.json")
+set(AvailablePackagesDestination "$ENV{HOME}/.beldum/packages/available_packages.json")
+
+# Custom command to create the destination directory and copy the JSON file
+add_custom_command(
+    TARGET beldum POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$ENV{HOME}/.beldum/packages"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${AvailablePackagesSource}" "${AvailablePackagesDestination}"
+    COMMENT "Copying available_packages.json to ~/.beldum/packages/"
 )

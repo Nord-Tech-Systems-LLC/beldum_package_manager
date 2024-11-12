@@ -2,7 +2,7 @@
 
 # Define variables
 BUILD_DIR="target/debug/build"
-BUILD_TYPE="Debug" # Change to "Release" if needed
+BUILD_TYPE="Release" # Change to "Release" if needed
 
 # Function to print error messages
 function error_exit {
