@@ -1,6 +1,12 @@
 # BELDUM C++ PACKAGE MANAGER
 
-The Beldum C++ Package Manager is built to simplify the C++ workflow and utilize libraries that work with CMake. 
+The Beldum Package Manager is a lightweight, user-friendly package manager for C++ projects, designed to streamline the management and integration of dependencies. It allows developers to easily install, uninstall, and manage custom libraries needed for their C++ applications, much like Cargo does for Rust. Beldum emphasizes simplicity and ease of use, enabling rapid configuration with minimal overhead.
+
+## Key Features
+- **Dependency Management**: Automatically resolves and installs dependencies, handling complex dependency trees with ease.
+- **Local Caching and Logging**: Packages are cached locally, with detailed logs stored under `~/.beldum/logs/`, allowing for efficient builds and tracking.
+- **Centralized Package List**: Maintains a list of available packages in `~/.beldum/packages/`, making it easy to browse and search for dependencies.
+- **CMake Integration**: Designed to work seamlessly with CMake, Beldum can generate necessary build configurations to integrate libraries directly into the CMake build system.
 
 **Side Note**: This library only supports a few libraries at this time, but it will grow as libraries are tested.
 **Supported Operating Systems: Linux**
