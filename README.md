@@ -1,5 +1,6 @@
 # BELDUM C++ PACKAGE MANAGER
 
+![Open](https://img.shields.io/badge/Open-Source-89E051?style=flat) 
 ![License](https://img.shields.io/badge/License-Nord_Tech_Systems-C23656?style=flat) 
 ![C++](https://img.shields.io/badge/C++-Package_Manager-F34B7D?style=flat) 
 ![Maintainer](https://img.shields.io/badge/Maintainer-VikingOfValhalla-124ED8?style=flat)
