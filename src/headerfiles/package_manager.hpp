@@ -71,6 +71,7 @@ private:
     std::string cmakeHeaderOnlyCommand;
     std::vector<std::string> cmakeLines; // used for reading all lines
     std::string cmakeLine;               // used for single cmake line
+    bool cmakeRunNewLibrary = true;
 
     /**
      * GENERAL OUTPUT FOR SWITCH

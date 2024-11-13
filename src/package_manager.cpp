@@ -295,24 +295,39 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             {
                 for (std::string &sentence : cmakeLines)
                 {
-
-                    if (sentence.find("MY_LIBRARIES") == std::string::npos)
+                    if (sentence.find("BELDUM-LINKER") != std::string::npos)
                     {
                         auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                        cmakeLines.insert(it - 2, cmakeStaticCommand);
-                        cmakeLines.insert(it + 1, "    " + repo_name + "::" + repo_name);
-                        break;
+                        cmakeLines.insert(it + 2, "    " + repo_name + "::" + repo_name);
+                        cmakeRunNewLibrary = false;
                     }
-                    else
+                }
+                if (!cmakeRunNewLibrary)
+                {
+                    for (std::string &sentence : cmakeLines)
+                    {
+                        if (sentence.find("BELDUM-STATIC-ONLY") != std::string::npos)
+                        {
+                            auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                            cmakeLines.insert(it + 1, cmakeStaticCommand);
+                            break;
+                        }
+                    }
+                }
+                if (cmakeRunNewLibrary)
+                {
+                    for (std::string &sentence : cmakeLines)
                     {
                         if (sentence.find("BELDUM-STATIC-ONLY") != std::string::npos)
                         {
                             // Insert after the current sentence in the vector
                             auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+
                             cmakeLines.insert(it + 1, cmakeStaticCommand); // Insert the static library command
-                            cmakeLines.insert(it + 2, "set(MY_LIBRARIES # List your libraries to link");
-                            cmakeLines.insert(it + 3, "    " + repo_name + "::" + repo_name);
-                            cmakeLines.insert(it + 4, ")");
+                            cmakeLines.insert(it + 2, "# BELDUM-LINKER");  // Used as a separator
+                            cmakeLines.insert(it + 3, "set(MY_LIBRARIES # List your libraries to link");
+                            cmakeLines.insert(it + 4, "    " + repo_name + "::" + repo_name);
+                            cmakeLines.insert(it + 5, ")");
 
                             break;
                         }
