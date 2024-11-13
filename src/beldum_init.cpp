@@ -99,11 +99,10 @@ void BeldumInit::create_cmake_lists()
 {
     std::string cMakeLists = R"(
 
-
 # CMake Gloabl Config
 cmake_minimum_required(VERSION 3.10)
 project(MyProject) # Set the project name
-set(CMAKE_CXX_STANDARD 17) # Specify the C++ standard
+set(CMAKE_CXX_STANDARD 20) # Specify the C++ standard
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Link Dependencies
@@ -115,22 +114,32 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/target/debug/build") # S
 add_executable(MyExecutable src/main.cpp) # Add the executable
 
 ##################################
-# TODO: Add libraries that you're using
+# TODO: Add libraries not managed by beldum
+# To add custom libraries, examples below: 
+##################################
+
+# find_package(CURL REQUIRED)
+# target_link_libraries(MyExecutable PRIVATE CURL::libcurl)
+
+
+
+
+
+
+
+##################################
+# Beldum Config -- DO NOT TOUCH --
 ##################################
 
 # BELDUM-HEADER-ONLY header only library
 
 # BELDUM-STATIC-ONLY static library
 
-# Link each library in MY_LIBRARIES
-message("\n\nLibraries Linked:")
 foreach(CPP_LIB ${MY_LIBRARIES})
     message("Library Name: ${BELDUM_LIB_DIR}")
     target_link_libraries(MyExecutable PRIVATE ${CPP_LIB})
 endforeach()
 message("\n\n")
-
-
 
 )";
     if (!file_exists("CMakeLists.txt"))
