@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <string>
 
 // #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
 
@@ -25,7 +26,7 @@
 #include "CLI/CLI.hpp"
 
 #ifndef PROJECT_VERSION
-#define PROJECT_VERSION "unknown"  // Fallback in case it’s not defined
+#define PROJECT_VERSION "unknown" // Fallback in case it’s not defined
 #endif
 
 Package individual_package;
@@ -47,6 +48,35 @@ std::string exec(const char *cmd)
     return result;
 }
 
+bool containsValue(const std::vector<std::string> &vec, const std::string &value)
+{
+    return std::find_if(vec.begin(), vec.end(), [&value](const std::string &element)
+                        { return element.find(value) != std::string::npos; }) != vec.end();
+}
+
+void findAndInsert(std::vector<std::string> &cmakeLines, const std::string &searchValue, const std::string &cmakeStaticCommand, const std::string &repo_name)
+{
+    bool cmakeInserted = false; // Track if insertion has been done
+    // Iterate through the cmakeLines vector
+    for (size_t i = 0; i < cmakeLines.size(); ++i)
+    {
+        // Check if the current line contains the search value
+        if (cmakeLines[i].find(searchValue) != std::string::npos)
+        {
+            // If not inserted yet, insert the lines after the matching line
+            if (!cmakeInserted)
+            {
+                cmakeLines.insert(cmakeLines.begin() + i + 1, cmakeStaticCommand); // Insert the static library command
+                cmakeLines.insert(cmakeLines.begin() + i + 2, "set(MY_LIBRARIES # List your libraries to link");
+                cmakeLines.insert(cmakeLines.begin() + i + 3, "    " + repo_name + "::" + repo_name);
+                cmakeLines.insert(cmakeLines.begin() + i + 4, ")"); // Closing the set command
+                cmakeInserted = true;                               // Mark as inserted
+            }
+            break; // Stop further checking once insertion is done
+        }
+    }
+}
+
 int PackageManager::check_passed_shell_arguments(PossibleOptions options)
 {
     logger.log("Starting argument check with option: " + std::to_string(static_cast<int>(options)));
@@ -56,7 +86,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
     std::string repository_URL;
     std::string repo_name;
     std::string repo_version;
-    
+    std::string repo_type;
 
     logger.log("Available Packages Path: " + available_packages_path);
 
@@ -115,9 +145,11 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
         logger.log("Attempting to install package: " + requested_package);
 
         // Parse package.json and installed_packages.json
-        try {
+        try
+        {
             packages_file.open(available_packages_path);
-            if (!packages_file.is_open()) {
+            if (!packages_file.is_open())
+            {
                 logger.logError("Error: Failed to open available_packages.json file.");
                 return_code = 1;
                 return return_code;
@@ -127,7 +159,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             packages_file.close();
 
             installed_packages_file.open(installed_packages_path);
-            if (!installed_packages_file.is_open()) {
+            if (!installed_packages_file.is_open())
+            {
                 logger.logError("Error: Failed to open installed_packages.json file.");
                 return_code = 1;
                 return return_code;
@@ -137,15 +170,17 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             installed_packages_file.close();
 
             logger.log("Parsed JSON data from package files.");
-
-        } catch (const json::parse_error &e) {
+        }
+        catch (const json::parse_error &e)
+        {
             logger.logError("Failed to parse JSON data: " + std::string(e.what()));
             return_code = 1;
             return return_code;
         }
 
         // Check if package is already installed
-        if (installed_data["packages"].contains(requested_package)) {
+        if (installed_data["packages"].contains(requested_package))
+        {
             logger.logWarning("The package \"" + requested_package + "\" is already installed.");
             fmt::print("\nThe package \"{}\" is already installed...\n\n", requested_package);
             return_code = 1;
@@ -155,9 +190,11 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
         // checks if package exists in package.json
         if (package_data["packages"].contains(requested_package))
         {
+
             repo_name = requested_package;
             repository_URL = package_data["packages"][requested_package]["repository_url"];
-            logger.log("Found package \"" + repo_name + "\" in package.json with repository URL: " + repository_URL);
+            repo_type = package_data["packages"][requested_package]["repo_type"];
+            logger.log("Found package \"" + repo_name + "\" in package.json with repository URL: " + repository_URL + "Type: " + repo_type);
 
             // strips quotes from directory
             for (char c : testing)
@@ -184,15 +221,17 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             {
                 repo_version = "unknown";
                 logger.logWarning("No version tag found in repository. Defaulting to version: unknown.");
-            } else {
+            }
+            else
+            {
                 logger.log("Retrieved version for " + repo_name + ": " + repo_version);
             }
             // Update installed package manager
-            try {
-
-
+            try
+            {
                 output.open(installed_packages_path);
-                if (!output.is_open()) {
+                if (!output.is_open())
+                {
                     logger.logError("Error: Failed to open installed_packages.json file.");
                     return_code = 1;
                     return return_code;
@@ -206,13 +245,148 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
                 };
                 output << installed_data.dump(4);
                 output.close();
-                
+
                 logger.log("Successfully updated installed_packages.json with " + repo_name);
-            } catch (const std::exception &e) {
+            }
+            catch (const std::exception &e)
+            {
                 logger.logError("Failed to update installed_packages.json: " + std::string(e.what()));
                 return_code = 1;
                 return return_code;
             }
+
+            /**
+             * Read the file line by line
+             */
+            cmake_list_file.open(cmake_list_path);
+            if (!cmake_list_file.is_open())
+            {
+                logger.logError("Error: Failed to open CMakeLists.txt file for reading.");
+                return_code = 1;
+                return return_code;
+            }
+            logger.log("Opened CMakeLists.txt file for reading.");
+
+            // commands for adding
+            cmakeStaticCommand = fmt::format("add_subdirectory(${{BELDUM_LIB_DIR}}/{})", repo_name);
+            cmakeHeaderOnlyCommand = fmt::format("include_directories(${{BELDUM_LIB_DIR}}/{})", repo_name);
+
+            //   findAndInsert(cmakeLines, "BELDUM-STATIC-ONLY", cmakeStaticCommand, repo_name);
+            while (std::getline(cmake_list_file, cmakeLine))
+            {
+                cmakeLines.push_back(cmakeLine); // Add the current line to the vector
+            }
+
+            if (repo_type == "header-only")
+            {
+                for (std::string &sentence : cmakeLines)
+                {
+                    if (sentence.find("BELDUM-HEADER-ONLY") != std::string::npos)
+                    {
+                        // Insert after the current sentence in the vector
+                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                        cmakeLines.insert(it + 1, cmakeHeaderOnlyCommand); // Insert after the found sentence
+                        break;                                             // Optional: if you only want to insert once, otherwise remove this line
+                    }
+                }
+            }
+
+            if (repo_type == "static")
+            {
+                for (std::string &sentence : cmakeLines)
+                {
+
+                    if (sentence.find("MY_LIBRARIES") == std::string::npos)
+                    {
+                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                        cmakeLines.insert(it - 2, cmakeStaticCommand);
+                        cmakeLines.insert(it + 1, "    " + repo_name + "::" + repo_name);
+                        break;
+                    }
+                    else
+                    {
+                        if (sentence.find("BELDUM-STATIC-ONLY") != std::string::npos)
+                        {
+                            // Insert after the current sentence in the vector
+                            auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                            cmakeLines.insert(it + 1, cmakeStaticCommand); // Insert the static library command
+                            cmakeLines.insert(it + 2, "set(MY_LIBRARIES # List your libraries to link");
+                            cmakeLines.insert(it + 3, "    " + repo_name + "::" + repo_name);
+                            cmakeLines.insert(it + 4, ")");
+
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // switch (repo_type == "header-only" ? 0 : repo_type == "static" ? 1
+            //                                                                : 2)
+            // {
+            // case 0:
+            //     // add header only library
+            //     if (!cmakeInserted && cmakeLine.find("BELDUM-HEADER-ONLY") != std::string::npos)
+            //     {
+            //         cmakeLines.push_back(cmakeHeaderOnlyCommand); // Insert the new library on the next line
+            //         cmakeInserted = true;
+            //     }
+            //     break;
+
+            // case 1:
+
+            //     // // add static library
+            //     // if (containsValue(cmakeLines, "MY_LIBRARIES"))
+            //     // {
+            //     //     if (cmakeLine.find("BELDUM-STATIC-ONLY") != std::string::npos)
+            //     //     {
+            //     //         cmakeLines.push_back(cmakeStaticCommand); // Insert the static library command
+            //     //         // insertedStaticCommand = true;
+            //     //     }
+            //     //     if (cmakeLine.find("MY_LIBRARIES") != std::string::npos)
+            //     //     {
+            //     //         cmakeLines.push_back("    " + repo_name + "::" + repo_name); // Add to MY_LIBRARIES
+
+            //     //         break; // Mark insertion to avoid duplication in further lines
+            //     //     }
+            //     // }
+            //     // else
+            //     // {
+            //     //     if (cmakeLine.find("BELDUM-STATIC-ONLY") != std::string::npos)
+            //     //     {
+            //     //         cmakeLines.push_back(cmakeStaticCommand); // Insert the static library command
+            //     //         cmakeLines.push_back("set(MY_LIBRARIES # List your libraries to link");
+            //     //         cmakeLines.push_back("    " + repo_name + "::" + repo_name);
+            //     //         cmakeLines.push_back(")");
+
+            //     //         break;
+            //     //     }
+            //     // }
+
+            //     break;
+            // default:
+            //     // handle other cases
+            //     break;
+            // }
+            cmake_list_file.close();
+
+            /**
+             * Write to CMakeLists.txt
+             */
+            output.open(cmake_list_path);
+            if (!output.is_open())
+            {
+                logger.logError("Error: Failed to open CMakeLists.txt file for writing.");
+                return_code = 1;
+                return return_code;
+            }
+            logger.log("Opened CMakeLists.txt file for writing.");
+            for (const auto &outputLine : cmakeLines)
+            {
+                output << outputLine << '\n';
+            }
+            output.close();
+
+            logger.log("Successfully updated installed_packages.json with " + repo_name);
         }
         else
         {
@@ -230,7 +404,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
         if (beldum.file_exists("installed_packages.json"))
         {
             installed_packages_file.open(installed_packages_path);
-            if (!installed_packages_file.is_open()) {
+            if (!installed_packages_file.is_open())
+            {
                 logger.logError("Error: Failed to open installed_packages.json file.");
                 return_code = 1;
                 return return_code;
@@ -244,7 +419,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             fmt::print("{:<40} {:<20}\n", std::string(40, '-'), std::string(20, '-'));
 
             // Iterate over installed packages and display each one
-            for (const auto& package : installed_data["packages"]) {
+            for (const auto &package : installed_data["packages"])
+            {
                 // std::string repo_name = package.value()["repo_name"];
                 // std::string version = package.value()["version"];
                 fmt::print("{:<40} {:<20}\n", std::string(package["repo_name"]), std::string(package["version"]));
@@ -264,10 +440,11 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
     case PossibleOptions::LIST_AVAILABLE_PACKAGES:
 
         // Check if the available packages file exists
-        if (beldum.file_exists(available_packages_path)) 
+        if (beldum.file_exists(available_packages_path))
         {
             packages_file.open(available_packages_path);
-            if (!packages_file.is_open()) {
+            if (!packages_file.is_open())
+            {
                 logger.logError("Error: Failed to open available_packages.json file.");
                 return_code = 1;
                 return return_code;
@@ -281,15 +458,15 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             fmt::print("{:<20} {:<40} {:<60}\n", std::string(20, '-'), std::string(40, '-'), std::string(60, '-'));
 
             // Iterate over each package in the JSON data
-            for (const auto& package_entry : package_data["packages"].items()) 
+            for (const auto &package_entry : package_data["packages"].items())
             {
-                const std::string& package_name = package_entry.key();
-                const json& package = package_entry.value();
+                const std::string &package_name = package_entry.key();
+                const json &package = package_entry.value();
 
                 // Retrieve package information -- print package details with alignment
-                fmt::print("{:<20} {:<40} {:<60}\n", package_name, 
-                        std::string(package["description"]), 
-                        std::string(package["repository_url"]));
+                fmt::print("{:<20} {:<40} {:<60}\n", package_name,
+                           std::string(package["description"]),
+                           std::string(package["repository_url"]));
 
                 // // Print tags as a comma-separated list, indented
                 // if (package.contains("tags")) {
@@ -300,7 +477,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             // Add spacing after the output
             fmt::print("\n\n");
         }
-        else 
+        else
         {
             // Display error if the file is missing
             std::cerr << "\nThe available_packages.json does not exist. Please ensure the file is available at ~/.beldum/packages/\n";
@@ -309,11 +486,11 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
         }
 
         return return_code;
-    
 
     case PossibleOptions::UNINSTALL:
         installed_packages_file.open(installed_packages_path);
-        if (!installed_packages_file.is_open()) {
+        if (!installed_packages_file.is_open())
+        {
             logger.logError("Error: Failed to open installed_packages.json file.");
             return_code = 1;
             return return_code;
@@ -321,8 +498,9 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
         logger.log("Opened installed_packages.json file.");
         installed_data = json::parse(installed_packages_file);
         installed_packages_file.close();
-        
-        if (installed_data["packages"].contains(requested_package)) {
+
+        if (installed_data["packages"].contains(requested_package))
+        {
             logger.log("Uninstalling package: " + requested_package);
 
             // Remove the repo
@@ -331,7 +509,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             return_code = system(command.c_str());
 
             output.open(installed_packages_path);
-            if (!output.is_open()) {
+            if (!output.is_open())
+            {
                 logger.logError("Error: Failed to open installed_packages.json file.");
                 return_code = 1;
                 return return_code;
@@ -346,15 +525,16 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
 
             logger.log("Package " + requested_package + " successfully uninstalled.");
             fmt::print("\nPackage {} successfully uninstalled.\n\n", requested_package);
-        } 
-        else {
+        }
+        else
+        {
             logger.logError("Attempted to uninstall package: " + requested_package + ", but it was not found.");
-            std::cout << "\n\nPackage " << requested_package << " does not exist. Please check the installed packages and try again...\n\n" << std::endl;
+            std::cout << "\n\nPackage " << requested_package << " does not exist. Please check the installed packages and try again...\n\n"
+                      << std::endl;
             return_code = 1;
             return return_code;
         }
         return return_code;
-
 
     /**
      * CLEAN ACTIONS
@@ -366,7 +546,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             command = "sudo find target/debug/deps/* -maxdepth 0 -type d ! -name \"json\" -exec rm -r {} +";
 
             output.open(installed_packages_path);
-            if (!output.is_open()) {
+            if (!output.is_open())
+            {
                 logger.logError("Error: Failed to open installed_packages.json file.");
                 return_code = 1;
                 return return_code;
@@ -378,8 +559,6 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             return_code = system(command.c_str());
             fmt::print("\nSuccessfully cleaned project directory.\n");
             std::cout << std::endl;
-
-            
         }
         else
         {
@@ -414,7 +593,7 @@ int PackageManager::parse_arguments(int argc, char **argv)
     install_cmd->callback([this, &package_name]()
                           {
         if (!beldum.file_exists(installed_packages_path) || !beldum.file_exists(available_packages_path)) {
-            std::cerr << "Error: Missing required files (installed_packages.json or package.json). Please run 'beldum init' first.\n";
+            std::cerr << "Error: Missing required files (installed_packages.json or available_packages.json). Please run 'beldum init' first.\n";
             return;
         }
         individual_package.name = package_name;
@@ -425,20 +604,19 @@ int PackageManager::parse_arguments(int argc, char **argv)
     uninstall_cmd->callback([this, &package_name]()
                             {
         if (!beldum.file_exists(installed_packages_path) || !beldum.file_exists(available_packages_path)) {
-            std::cerr << "Error: Missing required files (installed_packages.json or package.json). Please run 'beldum init' first.\n";
+            std::cerr << "Error: Missing required files (installed_packages.json or available_packages.json). Please run 'beldum init' first.\n";
             return;
         }
         individual_package.name = package_name;
         check_passed_shell_arguments(PossibleOptions::UNINSTALL); });
 
     auto list_cmd = app.add_subcommand("list", "List installed packages");
-    
+
     // Define flags for installed and available options
     bool list_installed = false;
     bool list_available = false;
     list_cmd->add_flag("--installed", list_installed, "List installed packages");
     list_cmd->add_flag("--available", list_available, "List available packages");
-
 
     list_cmd->callback([this, &list_installed, &list_available]()
                        {
@@ -453,8 +631,7 @@ int PackageManager::parse_arguments(int argc, char **argv)
             check_passed_shell_arguments(PossibleOptions::LIST_AVAILABLE_PACKAGES);
         } else {
             std::cerr << "Error: Please specify either --installed or --available.\n";
-        }
-        });
+        } });
 
     auto clean_cmd = app.add_subcommand("clean", "Clean build directory and dependencies");
     clean_cmd->callback([this]()
@@ -465,7 +642,8 @@ int PackageManager::parse_arguments(int argc, char **argv)
         }
         check_passed_shell_arguments(PossibleOptions::CLEAN); });
 
-    try {
+    try
+    {
         CLI11_PARSE(app, argc, argv);
         // Create a stringstream to accumulate the output
         std::stringstream ss;
@@ -475,16 +653,22 @@ int PackageManager::parse_arguments(int argc, char **argv)
 
         // Add each argument to the stringstream
         ss << "arguments: \"";
-        for (int i = 0; i < argc; ++i) {
-            if (i < argc - 1) {
+        for (int i = 0; i < argc; ++i)
+        {
+            if (i < argc - 1)
+            {
                 ss << argv[i] << " ";
-            } else {
+            }
+            else
+            {
                 ss << argv[i];
             }
         }
         logger.log("Command line arguments: " + ss.str() + "\" parsed successfully.");
         return 0;
-    } catch (const CLI::ParseError &e) {
+    }
+    catch (const CLI::ParseError &e)
+    {
         logger.logError("Error while parsing command line arguments: " + std::string(e.what()));
         return e.get_exit_code();
     }

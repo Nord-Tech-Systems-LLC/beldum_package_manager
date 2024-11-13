@@ -12,7 +12,7 @@
 #include "nlohmann/json.hpp"
 
 bool BeldumInit::file_exists(const std::string &name)
-{ 
+{
     return std::filesystem::exists(name.c_str());
 }
 
@@ -33,7 +33,8 @@ int main() {
         std::filesystem::create_directory("src");
 
         output.open("src/main.cpp");
-        if (!output.is_open()) {
+        if (!output.is_open())
+        {
             logger.logError("Error: Failed to open build.sh file.");
         }
 
@@ -78,7 +79,8 @@ echo "Build complete!"
     {
         std::cout << "Creating ./build.sh" << std::endl;
         output.open("build.sh");
-        if (!output.is_open()) {
+        if (!output.is_open())
+        {
             logger.logError("Error: Failed to open build.sh file.");
         }
 
@@ -97,6 +99,7 @@ void BeldumInit::create_cmake_lists()
 {
     std::string cMakeLists = R"(
 
+
 # CMake Gloabl Config
 cmake_minimum_required(VERSION 3.10)
 project(MyProject) # Set the project name
@@ -104,8 +107,8 @@ set(CMAKE_CXX_STANDARD 17) # Specify the C++ standard
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Link Dependencies
-set(LIB_DIR "${CMAKE_SOURCE_DIR}/target/debug/deps") # Set the path to the C++ libraries
-link_directories(${LIB_DIR}) # Add the path to the linker
+set(BELDUM_LIB_DIR "${CMAKE_SOURCE_DIR}/target/debug/deps") # Set the path to the C++ libraries
+link_directories(${BELDUM_LIB_DIR}) # Add the path to the linker
 
 # Create executeable
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/target/debug/build") # Set the output directory for the executable
@@ -115,26 +118,19 @@ add_executable(MyExecutable src/main.cpp) # Add the executable
 # TODO: Add libraries that you're using
 ##################################
 
-# Add each library as a subdirectory
-# add_subdirectory(${LIB_DIR}/json)          # nlohmann_json
-# add_subdirectory(${LIB_DIR}/fmt)           # fmt library
+# BELDUM-HEADER-ONLY header only library
 
-# List your libraries to link
-# set(MY_LIBRARIES
-#     nlohmann_json::nlohmann_json        # From json subdirectory
-#     fmt::fmt                            # From fmt library
-# )
+# BELDUM-STATIC-ONLY static library
 
 # Link each library in MY_LIBRARIES
-# message("\n\nLibraries Linked:")
-# foreach(CPP_LIB ${MY_LIBRARIES})
-#     message("Library Name: ${CPP_LIB}")
-#     target_link_libraries(MyExecutable PRIVATE ${CPP_LIB})
-# endforeach()
-# message("\n\n")
+message("\n\nLibraries Linked:")
+foreach(CPP_LIB ${MY_LIBRARIES})
+    message("Library Name: ${BELDUM_LIB_DIR}")
+    target_link_libraries(MyExecutable PRIVATE ${CPP_LIB})
+endforeach()
+message("\n\n")
 
-# Include directories for headers if necessary
-# include_directories(${CMAKE_SOURCE_DIR}/path/to/headers)
+
 
 )";
     if (!file_exists("CMakeLists.txt"))
@@ -142,7 +138,8 @@ add_executable(MyExecutable src/main.cpp) # Add the executable
         std::cout << "Creating ./CMakeLists.txt" << std::endl;
 
         output.open("CMakeLists.txt");
-        if (!output.is_open()) {
+        if (!output.is_open())
+        {
             logger.logError("Error: Failed to open CMakeLists.txt file.");
         }
         output << cMakeLists;
@@ -156,7 +153,8 @@ void BeldumInit::create_package_json(nlohmann::json &package_data)
     {
         std::cout << "Creating package.json" << std::endl;
         output.open("package.json");
-        if (!output.is_open()) {
+        if (!output.is_open())
+        {
             logger.logError("Error: Failed to open package.json file.");
         }
 
@@ -164,7 +162,7 @@ void BeldumInit::create_package_json(nlohmann::json &package_data)
             {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
 
         output << package_data.dump(4);
-        
+
         output.close();
     }
 }
@@ -176,7 +174,8 @@ void BeldumInit::create_installed_packages(nlohmann::json &installed_data)
         std::cout << "Creating installed_packages.json" << std::endl;
 
         output.open("installed_packages.json");
-        if (!output.is_open()) {
+        if (!output.is_open())
+        {
             logger.logError("Error: Failed to open installed_packages.json file.");
         }
         installed_data["packages"] = {};

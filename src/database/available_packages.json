@@ -4,12 +4,19 @@
             "git_link": "git@github.com:fmlib/fmt.git",
             "description": "A modern formatting library.",
             "repository_url": "https://github.com/fmtlib/fmt",
-            "tags": ["format", "fmt", "print", "string template"]
+            "repo_type": "static",
+            "tags": [
+                "format",
+                "fmt",
+                "print",
+                "string template"
+            ]
         },
-        "json": {
+        "nlohmann_json": {
             "git_link": "git@github.com:nlohmann/json.git",
             "description": "JSON for Modern C++.",
             "repository_url": "https://github.com/nlohmann/json",
+            "repo_type": "static",
             "tags": [
                 "json",
                 "json-serialization",
@@ -36,19 +43,45 @@
             "git_link": "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git",
             "description": "A C++ webserver for backend development.",
             "repository_url": "https://github.com/Nord-Tech-Systems-LLC/cpp_webserver",
-            "tags": ["webserver", "server"]
+            "repo_type": "static",
+            "tags": [
+                "webserver",
+                "server"
+            ]
         },
         "spdlog": {
             "git_link": "git@github.com:gabime/spdlog.git",
             "description": "A cool tool for various utilities.",
             "repository_url": "https://github.com/gabime/spdlog",
-            "tags": ["cpp", "logging", "cpp11", "header-only", "spdlog"]
+            "repo_type": "static",
+            "tags": [
+                "cpp",
+                "logging",
+                "cpp11",
+                "header-only",
+                "spdlog"
+            ]
         },
         "pico-sdk": {
             "git_link": "https://github.com/raspberrypi/pico-sdk",
             "description": "The SDK for pi-pico low level coding.",
             "repository_url": "https://github.com/raspberrypi/pico-sdk",
-            "tags": ["low-level", "header-only", "pi-pico"]
+            "repo_type": "static",
+            "tags": [
+                "low-level",
+                "header-only",
+                "pi-pico"
+            ]
+        },
+        "stevensStringLib": {
+            "git_link": "git@github.com:Bucephalus-Studios/stevensStringLib.git",
+            "description": "An easy-to-use library of C++ string functions. ",
+            "repository_url": "https://github.com/Bucephalus-Studios/stevensStringLib",
+            "repo_type": "header-only",
+            "tags": [
+                "strings",
+                "header-only"
+            ]
         }
     }
 }

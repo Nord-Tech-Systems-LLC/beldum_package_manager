@@ -95,6 +95,6 @@ set(AvailablePackagesDestination "$ENV{HOME}/.beldum/packages/available_packages
 add_custom_command(
     TARGET beldum POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "$ENV{HOME}/.beldum/packages"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${AvailablePackagesSource}" "${AvailablePackagesDestination}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${AvailablePackagesSource}" "${AvailablePackagesDestination}"
     COMMENT "Copying available_packages.json to ~/.beldum/packages/"
 )
