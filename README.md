@@ -1,10 +1,9 @@
 # BELDUM C++ PACKAGE MANAGER
 
-![License](https://img.shields.io/badge/License-Nord_Tech_Systems-C23656?style=flat)  
-![C++](https://img.shields.io/badge/C++-Package_Manager-F34B7D?style=flat)  
+![License](https://img.shields.io/badge/License-Nord_Tech_Systems-C23656?style=flat) 
+![C++](https://img.shields.io/badge/C++-Package_Manager-F34B7D?style=flat) 
 ![Maintainer](https://img.shields.io/badge/Maintainer-VikingOfValhalla-124ED8?style=flat)
-
-# 
+  
 The Beldum Package Manager is a lightweight, user-friendly package manager for C++ projects, designed to streamline the management and integration of dependencies. It allows developers to easily install, uninstall, and manage custom libraries needed for their C++ applications, much like Cargo does for Rust. Beldum emphasizes simplicity and ease of use, enabling rapid configuration with minimal overhead.
 
 ### **Supported Operating Systems**: Linux
