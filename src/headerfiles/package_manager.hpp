@@ -71,7 +71,7 @@ private:
     std::string cmakeHeaderOnlyCommand;
     std::vector<std::string> cmakeLines; // used for reading all lines
     std::string cmakeLine;               // used for single cmake line
-    bool cmakeRunNewLibrary = true;
+    bool cmakeRunNewLibrary = true;      // used to dictate if a package has been insertted yet during rotation
 
     /**
      * GENERAL OUTPUT FOR SWITCH

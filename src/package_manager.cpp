@@ -48,35 +48,6 @@ std::string exec(const char *cmd)
     return result;
 }
 
-bool containsValue(const std::vector<std::string> &vec, const std::string &value)
-{
-    return std::find_if(vec.begin(), vec.end(), [&value](const std::string &element)
-                        { return element.find(value) != std::string::npos; }) != vec.end();
-}
-
-void findAndInsert(std::vector<std::string> &cmakeLines, const std::string &searchValue, const std::string &cmakeStaticCommand, const std::string &repo_name)
-{
-    bool cmakeInserted = false; // Track if insertion has been done
-    // Iterate through the cmakeLines vector
-    for (size_t i = 0; i < cmakeLines.size(); ++i)
-    {
-        // Check if the current line contains the search value
-        if (cmakeLines[i].find(searchValue) != std::string::npos)
-        {
-            // If not inserted yet, insert the lines after the matching line
-            if (!cmakeInserted)
-            {
-                cmakeLines.insert(cmakeLines.begin() + i + 1, cmakeStaticCommand); // Insert the static library command
-                cmakeLines.insert(cmakeLines.begin() + i + 2, "set(MY_LIBRARIES # List your libraries to link");
-                cmakeLines.insert(cmakeLines.begin() + i + 3, "    " + repo_name + "::" + repo_name);
-                cmakeLines.insert(cmakeLines.begin() + i + 4, ")"); // Closing the set command
-                cmakeInserted = true;                               // Mark as inserted
-            }
-            break; // Stop further checking once insertion is done
-        }
-    }
-}
-
 int PackageManager::check_passed_shell_arguments(PossibleOptions options)
 {
     logger.log("Starting argument check with option: " + std::to_string(static_cast<int>(options)));
@@ -242,7 +213,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
                     {"git_link", repository_URL},
                     {"repo_name", repo_name},
                     {"version", repo_version},
-                };
+                    {"repo_type", repo_type}};
+
                 output << installed_data.dump(4);
                 output.close();
 
@@ -277,8 +249,12 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
                 cmakeLines.push_back(cmakeLine); // Add the current line to the vector
             }
 
+            /**
+             * Logic for when / where to insert in CMakeLists.txt
+             */
             if (repo_type == "header-only")
             {
+                // if beldum header config is found in CMakeLists.txt
                 for (std::string &sentence : cmakeLines)
                 {
                     if (sentence.find("BELDUM-HEADER-ONLY") != std::string::npos)
@@ -293,6 +269,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
 
             if (repo_type == "static")
             {
+                // if beldum linker already exists, add to linker
                 for (std::string &sentence : cmakeLines)
                 {
                     if (sentence.find("BELDUM-LINKER") != std::string::npos)
@@ -302,6 +279,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
                         cmakeRunNewLibrary = false;
                     }
                 }
+                // if beldum library isn't new
                 if (!cmakeRunNewLibrary)
                 {
                     for (std::string &sentence : cmakeLines)
@@ -314,6 +292,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
                         }
                     }
                 }
+                // if beldum library is new
                 if (cmakeRunNewLibrary)
                 {
                     for (std::string &sentence : cmakeLines)
@@ -334,54 +313,6 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
                     }
                 }
             }
-
-            // switch (repo_type == "header-only" ? 0 : repo_type == "static" ? 1
-            //                                                                : 2)
-            // {
-            // case 0:
-            //     // add header only library
-            //     if (!cmakeInserted && cmakeLine.find("BELDUM-HEADER-ONLY") != std::string::npos)
-            //     {
-            //         cmakeLines.push_back(cmakeHeaderOnlyCommand); // Insert the new library on the next line
-            //         cmakeInserted = true;
-            //     }
-            //     break;
-
-            // case 1:
-
-            //     // // add static library
-            //     // if (containsValue(cmakeLines, "MY_LIBRARIES"))
-            //     // {
-            //     //     if (cmakeLine.find("BELDUM-STATIC-ONLY") != std::string::npos)
-            //     //     {
-            //     //         cmakeLines.push_back(cmakeStaticCommand); // Insert the static library command
-            //     //         // insertedStaticCommand = true;
-            //     //     }
-            //     //     if (cmakeLine.find("MY_LIBRARIES") != std::string::npos)
-            //     //     {
-            //     //         cmakeLines.push_back("    " + repo_name + "::" + repo_name); // Add to MY_LIBRARIES
-
-            //     //         break; // Mark insertion to avoid duplication in further lines
-            //     //     }
-            //     // }
-            //     // else
-            //     // {
-            //     //     if (cmakeLine.find("BELDUM-STATIC-ONLY") != std::string::npos)
-            //     //     {
-            //     //         cmakeLines.push_back(cmakeStaticCommand); // Insert the static library command
-            //     //         cmakeLines.push_back("set(MY_LIBRARIES # List your libraries to link");
-            //     //         cmakeLines.push_back("    " + repo_name + "::" + repo_name);
-            //     //         cmakeLines.push_back(")");
-
-            //     //         break;
-            //     //     }
-            //     // }
-
-            //     break;
-            // default:
-            //     // handle other cases
-            //     break;
-            // }
             cmake_list_file.close();
 
             /**
@@ -517,6 +448,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
         if (installed_data["packages"].contains(requested_package))
         {
             logger.log("Uninstalling package: " + requested_package);
+            repo_name = requested_package;
+            repo_type = installed_data["packages"][requested_package]["repo_type"];
 
             // Remove the repo
             command = "rm -rf target/debug/deps/" + std::string(requested_package);
@@ -536,6 +469,104 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options)
             installed_data["packages"].erase(requested_package);
 
             output << installed_data.dump(4);
+            output.close();
+
+            /**
+             * Read the file line by line
+             */
+            cmake_list_file.open(cmake_list_path);
+            if (!cmake_list_file.is_open())
+            {
+                logger.logError("Error: Failed to open CMakeLists.txt file for reading.");
+                return_code = 1;
+                return return_code;
+            }
+            logger.log("Opened CMakeLists.txt file for reading.");
+
+            // commands for adding
+            cmakeStaticCommand = fmt::format("add_subdirectory(${{BELDUM_LIB_DIR}}/{})", repo_name);
+            cmakeHeaderOnlyCommand = fmt::format("include_directories(${{BELDUM_LIB_DIR}}/{})", repo_name);
+
+            //   findAndInsert(cmakeLines, "BELDUM-STATIC-ONLY", cmakeStaticCommand, repo_name);
+            while (std::getline(cmake_list_file, cmakeLine))
+            {
+                cmakeLines.push_back(cmakeLine); // Add the current line to the vector
+            }
+
+            /**
+             * Logic for when / where to insert in CMakeLists.txt
+             */
+
+            if (repo_type == "header-only")
+            {
+                // if beldum header config is found in CMakeLists.txt
+                for (std::string &sentence : cmakeLines)
+                {
+                    if (sentence.find(cmakeHeaderOnlyCommand) != std::string::npos)
+                    {
+                        // Erase after the current sentence in the vector
+                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                        cmakeLines.erase(it); // Erase the found sentence
+                        break;
+                    }
+                }
+            }
+
+            if (repo_type == "static")
+            {
+                // if beldum static command config is found in CMakeLists.txt
+                for (std::string &sentence : cmakeLines)
+                {
+                    if (sentence.find(cmakeStaticCommand) != std::string::npos)
+                    {
+                        // Erase after the current sentence in the vector
+                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                        cmakeLines.erase(it); // Erase the found sentence
+                        break;
+                    }
+                }
+                // if beldum linker already exists, add to linker
+                for (std::string &sentence : cmakeLines)
+                {
+                    if (sentence.find("    " + repo_name + "::" + repo_name) != std::string::npos)
+                    {
+                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                        cmakeLines.erase(it);
+                    }
+                }
+                // if beldum linker MY_LIBRARIES variable
+                for (std::string &sentence : cmakeLines)
+                {
+                    if (sentence.find("# BELDUM-LINKER") != std::string::npos)
+                    {
+                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                        // if a library does not exist in the MY_LIBRARIES variable then erase the next three lines
+                        if (it + 2 < cmakeLines.end() && (it + 2)->find("::") == std::string::npos)
+                        {
+                            cmakeLines.erase(it);
+                            cmakeLines.erase(it);
+                            cmakeLines.erase(it);
+                        }
+                    }
+                }
+            }
+            cmake_list_file.close();
+
+            /**
+             * Write to CMakeLists.txt
+             */
+            output.open(cmake_list_path);
+            if (!output.is_open())
+            {
+                logger.logError("Error: Failed to open CMakeLists.txt file for writing.");
+                return_code = 1;
+                return return_code;
+            }
+            logger.log("Opened CMakeLists.txt file for writing.");
+            for (const auto &outputLine : cmakeLines)
+            {
+                output << outputLine << '\n';
+            }
             output.close();
 
             logger.log("Package " + requested_package + " successfully uninstalled.");
