@@ -1,11 +1,11 @@
 
-#include "headerfiles/package_manager.hpp"
-#include "headerfiles/beldum_clean.hpp"
-#include "headerfiles/beldum_init.hpp"
-#include "headerfiles/beldum_install.hpp"
-#include "headerfiles/beldum_list.hpp"
-#include "headerfiles/beldum_uninstall.hpp"
-#include "headerfiles/global_utilities.hpp"
+#include "header_files/package_manager.hpp"
+#include "header_files/beldum_clean.hpp"
+#include "header_files/beldum_init.hpp"
+#include "header_files/beldum_install.hpp"
+#include "header_files/beldum_list.hpp"
+#include "header_files/beldum_uninstall.hpp"
+#include "header_files/global_utilities.hpp"
 
 #include <algorithm>
 #include <filesystem>

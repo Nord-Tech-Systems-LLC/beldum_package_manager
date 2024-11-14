@@ -1,8 +1,9 @@
-#include "headerfiles/beldum_logging.hpp"
+#include "header_files/beldum_list.hpp"
+#include "header_files/beldum_logging.hpp"
+#include "header_files/global_utilities.hpp"
 
 #include "fmt/core.h"
-#include "headerfiles/beldum_list.hpp"
-#include "headerfiles/global_utilities.hpp"
+
 #include "nlohmann/json.hpp"
 
 #include <fstream>

@@ -1,5 +1,5 @@
-#include "headerfiles/beldum_logging.hpp"
-#include "headerfiles/global_utilities.hpp"
+#include "header_files/beldum_logging.hpp"
+#include "header_files/global_utilities.hpp"
 
 #include "nlohmann/json.hpp"
 #include <fstream>

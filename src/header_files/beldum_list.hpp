@@ -1,5 +1,4 @@
 
-
 #ifndef BELDUM_LIST_H
 #define BELDUM_LIST_H
 

@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef BELDUM_LOGGING_H
 #define BELDUM_LOGGING_H

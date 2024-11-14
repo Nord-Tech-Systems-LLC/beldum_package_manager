@@ -1,5 +1,5 @@
-#include "headerfiles/beldum_init.hpp"
-#include "headerfiles/global_utilities.hpp"
+#include "header_files/beldum_init.hpp"
+#include "header_files/global_utilities.hpp"
 #include <cstdlib> // for std::system
 #include <filesystem>
 #include <fstream>

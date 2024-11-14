@@ -1,5 +1,5 @@
-#include "headerfiles/beldum_logging.hpp"
-#include "headerfiles/package_manager.hpp"
+#include "header_files/beldum_logging.hpp"
+#include "header_files/package_manager.hpp"
 
 #include "nlohmann/json.hpp"
 #include <fstream>

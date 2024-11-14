@@ -1,9 +1,8 @@
-#pragma once
 
 #ifndef BELDUM_INIT_H
 #define BELDUM_INIT_H
 
-#include "beldum_logging.hpp"
+#include "header_files/beldum_logging.hpp"
 #include "nlohmann/json.hpp"
 #include <fstream>
 #include <iostream>
