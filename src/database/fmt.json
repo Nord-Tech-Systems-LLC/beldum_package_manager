@@ -1,0 +1,14 @@
+{
+    "fmt": {
+        "git_link": "git@github.com:fmlib/fmt.git",
+        "description": "A modern formatting library.",
+        "repository_url": "https://github.com/fmtlib/fmt",
+        "repo_type": "static",
+        "tags": [
+            "format",
+            "fmt",
+            "print",
+            "string template"
+        ]
+    }
+}

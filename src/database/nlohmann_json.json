@@ -1,0 +1,29 @@
+{
+    "nlohmann_json": {
+        "git_link": "git@github.com:nlohmann/json.git",
+        "description": "JSON for Modern C++.",
+        "repository_url": "https://github.com/nlohmann/json",
+        "repo_type": "static",
+        "tags": [
+            "json",
+            "json-serialization",
+            "msgpack",
+            "cbor",
+            "json-parser",
+            "header-only",
+            "messagepack",
+            "json-pointer",
+            "json-patch",
+            "stl-containers",
+            "rfc-6901",
+            "rfc-6902",
+            "rfc-7159",
+            "rfc-7049",
+            "json-diff",
+            "bson",
+            "ubjson",
+            "json-merge-patch",
+            "rfc-8259"
+        ]
+    }
+}

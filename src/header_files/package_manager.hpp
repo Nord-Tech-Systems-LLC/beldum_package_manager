@@ -50,8 +50,7 @@ class PackageManager {
     PackageManager(const PackageManager &) = delete;
     PackageManager &operator=(const PackageManager &) = delete;
 
-    std::string available_packages_path =
-        std::string(getenv("HOME")) + "/.beldum/packages/available_packages.json";
+    std::string packages_path = std::string(getenv("HOME")) + "/.beldum/packages/";
     std::ifstream packages_file;
 
     std::string installed_packages_path = "installed_packages.json";

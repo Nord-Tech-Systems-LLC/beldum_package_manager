@@ -8,8 +8,48 @@
 
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
 
-int beldum_list_available(std::string &available_packages_path) {
+// Function to parse a single JSON file
+nlohmann::json parse_json_file(const std::string &filepath) {
+    std::ifstream file(filepath);
+    if (!file) {
+        throw std::runtime_error("Could not open file: " + filepath);
+    }
+
+    nlohmann::json jsonData;
+    try {
+        file >> jsonData;
+    } catch (const nlohmann::json::exception &e) {
+        throw std::runtime_error("JSON parsing error in file " + filepath + ": " +
+                                 std::string(e.what()));
+    }
+    return jsonData;
+}
+
+// Main function to parse all JSON files in a directory
+std::unordered_map<std::string, nlohmann::json>
+parse_all_json_files(const std::string &directoryPath) {
+    std::unordered_map<std::string, nlohmann::json> jsonFilesData;
+
+    for (const auto &entry : std::filesystem::directory_iterator(directoryPath)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".json") {
+            const std::string filename = entry.path().filename().string();
+            try {
+                nlohmann::json jsonData = parse_json_file(entry.path().string());
+
+                // Add the parsed JSON to the map
+                jsonFilesData[filename] = jsonData;
+
+            } catch (const std::exception &e) {
+                std::cerr << "Error parsing " << filename << ": " << std::string(e.what()) << '\n';
+            }
+        }
+    }
+    return jsonFilesData;
+}
+
+int beldum_list_available(std::string &packages_path) {
     using json = nlohmann::json;
     BeldumLogging logger;
     std::ifstream packages_file;
@@ -18,16 +58,9 @@ int beldum_list_available(std::string &available_packages_path) {
     int return_code = 0;
 
     // Check if the available packages file exists
-    if (file_exists(available_packages_path)) {
-        packages_file.open(available_packages_path);
-        if (!packages_file.is_open()) {
-            logger.logError("Error: Failed to open available_packages.json file.");
-            return_code = 1;
-            return return_code;
-        }
-        logger.log("Opened available_packages.json file.");
-        package_data = json::parse(packages_file);
-        packages_file.close();
+    if (file_exists(packages_path)) {
+        // const std::string directoryPath = "."; // Use the current directory
+        auto jsonFilesData = parse_all_json_files(packages_path);
 
         // Print header with alignment and divider
         fmt::print("\n{:<20} {:<40} {:<60}\n", "PACKAGE", "DESCRIPTION", "REPOSITORY URL");
@@ -36,22 +69,26 @@ int beldum_list_available(std::string &available_packages_path) {
                    std::string(40, '-'),
                    std::string(60, '-'));
 
-        // Iterate over each package in the JSON data
-        for (const auto &package_entry : package_data["packages"].items()) {
-            const std::string &package_name = package_entry.key();
-            const json &package = package_entry.value();
+        // Example output of parsed data
+        for (const auto &[filename, jsonData] : jsonFilesData) {
+            for (const auto &package_entry : jsonData.items()) {
+                const std::string &package_name = package_entry.key();
+                const json &package = package_entry.value();
 
-            // Retrieve package information -- print package details with alignment
-            fmt::print("{:<20} {:<40} {:<60}\n",
-                       package_name,
-                       std::string(package["description"]),
-                       std::string(package["repository_url"]));
+                // Retrieve package information -- print package details with alignment
+                fmt::print("{:<20} {:<40} {:<60}\n",
+                           package_name,
+                           std::string(package["description"]),
+                           std::string(package["repository_url"]));
 
-            // // Print tags as a comma-separated list, indented
-            // if (package.contains("tags")) {
-            //     fmt::print("  Tags: {}\n", fmt::join(package["tags"].begin(),
-            //     package["tags"].end(), ", "));
-            // }
+                // // Print tags as a comma-separated list, indented
+                // if (package.contains("tags")) {
+                //     fmt::print("  Tags: {}\n", fmt::join(package["tags"].begin(),
+                //     package["tags"].end(), ", "));
+                // }
+            };
+            //  std::cout << "Contents of " << filename << ":\n"
+            //                            << jsonData.dump(4) << "\n\n";
         }
 
         // Add spacing after the output

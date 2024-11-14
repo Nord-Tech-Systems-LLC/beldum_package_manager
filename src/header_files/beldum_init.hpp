@@ -20,6 +20,6 @@ class BeldumInit {
     BeldumLogging logger;
 };
 
-int beldum_init(std::string &installed_packages_path, std::string &available_packages_path);
+int beldum_init(std::string &installed_packages_path, std::string &packages_path);
 
 #endif

@@ -1,0 +1,12 @@
+{
+    "stevensMapLib": {
+        "git_link": "git@github.com:Bucephalus-Studios/stevensMapLib.git",
+        "description": "A simple C++ map library.",
+        "repository_url": "https://github.com/Bucephalus-Studios/stevensMapLib",
+        "repo_type": "header-only",
+        "tags": [
+            "map",
+            "header-only"
+        ]
+    }
+}

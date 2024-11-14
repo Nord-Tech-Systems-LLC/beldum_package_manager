@@ -1,0 +1,13 @@
+{
+    "pico-sdk": {
+        "git_link": "https://github.com/raspberrypi/pico-sdk",
+        "description": "The SDK for pi-pico low level coding.",
+        "repository_url": "https://github.com/raspberrypi/pico-sdk",
+        "repo_type": "static",
+        "tags": [
+            "low-level",
+            "header-only",
+            "pi-pico"
+        ]
+    }
+}

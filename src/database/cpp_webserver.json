@@ -1,0 +1,12 @@
+{
+    "cpp_webserver": {
+        "git_link": "git@github.com:Nord-Tech-Systems-LLC/cpp_webserver.git",
+        "description": "A C++ webserver for backend development.",
+        "repository_url": "https://github.com/Nord-Tech-Systems-LLC/cpp_webserver",
+        "repo_type": "static",
+        "tags": [
+            "webserver",
+            "server"
+        ]
+    }
+}

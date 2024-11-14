@@ -15,7 +15,7 @@ int beldum_install(std::string &requested_package,
                    std::string &repository_URL,
                    std::string &repo_type,
                    std::string &command,
-                   std::string &available_packages_path,
+                   std::string &single_package_directory_path,
                    std::string &installed_packages_path,
                    const std::string &cmake_list_path,
                    std::string &cmakeStaticCommand,
@@ -48,13 +48,14 @@ int beldum_install(std::string &requested_package,
 
     // Parse package.json and installed_packages.json
     try {
-        packages_file.open(available_packages_path);
+        packages_file.open(single_package_directory_path);
         if (!packages_file.is_open()) {
-            logger.logError("Error: Failed to open available_packages.json file.");
+            logger.logError("Error: Failed to open " + single_package_directory_path + " file.");
             return_code = 1;
             return return_code;
         }
-        logger.log("Opened available_packages.json file.");
+        logger.log("Opened " + single_package_directory_path + " file.");
+
         package_data = json::parse(packages_file);
         packages_file.close();
 
@@ -84,10 +85,10 @@ int beldum_install(std::string &requested_package,
     }
 
     // checks if package exists in available_packages
-    if (package_data["packages"].contains(requested_package)) {
+    if (package_data.contains(requested_package)) {
         repo_name = requested_package;
-        repository_URL = package_data["packages"][requested_package]["repository_url"];
-        repo_type = package_data["packages"][requested_package]["repo_type"];
+        repository_URL = package_data[requested_package]["repository_url"];
+        repo_type = package_data[requested_package]["repo_type"];
         logger.log("Found package \"" + repo_name + "\" in package.json with repository URL: " +
                    repository_URL + " Type: " + repo_type);
     } else {
@@ -126,17 +127,18 @@ int beldum_install(std::string &requested_package,
         } else {
             logger.log("Repository copied successfully from cache.");
         }
-    }
-    // If cache doesn't exist, clone the repo into the cache directory
-    logger.log("Repository not found in cache, cloning repository.");
+    } else {
+        // If cache doesn't exist, clone the repo into the cache directory
+        logger.log("Repository not found in cache, cloning repository.");
 
-    std::string clone_command = fmt::format("git clone {} {}", repository_URL, cache_path);
-    logger.log("Executing command to clone repository into cache: " + clone_command);
-    return_code = system(clone_command.c_str());
+        std::string clone_command = fmt::format("git clone {} {}", repository_URL, cache_path);
+        logger.log("Executing command to clone repository into cache: " + clone_command);
+        return_code = system(clone_command.c_str());
 
-    if (return_code != 0) {
-        logger.log("Error cloning repository.");
-        return return_code;
+        if (return_code != 0) {
+            logger.log("Error cloning repository.");
+            return return_code;
+        }
     }
 
     // Ensure target directory exists before copying

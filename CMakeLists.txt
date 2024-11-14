@@ -24,7 +24,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${BuildLibDir}")
 # Compiler flags
 set(CXXFLAGS "-Wall -Wextra -Wpedantic -Wconversion -Wshadow")
 set(DEBUG_FLAGS "-ggdb3 -fsanitize=undefined,address")
-set(RELEASE_FLAGS "-O2 -Werror")
+set(RELEASE_FLAGS "-O2")
 
 # Set debug and release flags based on build type
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -88,13 +88,13 @@ add_custom_target(clean_all
 )
 
 # Specify the source and destination paths for the JSON file
-set(AvailablePackagesSource "${CMAKE_SOURCE_DIR}/src/database/available_packages.json")
-set(AvailablePackagesDestination "$ENV{HOME}/.beldum/packages/available_packages.json")
+set(AvailablePackagesSource "${CMAKE_SOURCE_DIR}/src/database")
+set(AvailablePackagesDestination "$ENV{HOME}/.beldum/packages")
 
 # Custom command to create the destination directory and copy the JSON file
 add_custom_command(
     TARGET beldum POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "$ENV{HOME}/.beldum/packages"
-    COMMAND ${CMAKE_COMMAND} -E copy "${AvailablePackagesSource}" "${AvailablePackagesDestination}"
-    COMMENT "Copying available_packages.json to ~/.beldum/packages/"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${AvailablePackagesSource}" "${AvailablePackagesDestination}"
+    COMMENT "Copying contents of src/database to ~/.beldum/packages/"
 )

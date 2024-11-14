@@ -1,0 +1,13 @@
+{
+    "stevensVectorLib": {
+        "git_link": "git@github.com:Bucephalus-Studios/stevensVectorLib.git",
+        "description": "A C++ std::vector library that is simple and powerful.",
+        "repository_url": "https://github.com/Bucephalus-Studios/stevensVectorLib",
+        "repo_type": "header-only",
+        "tags": [
+            "vectors",
+            "vector",
+            "header-only"
+        ]
+    }
+}

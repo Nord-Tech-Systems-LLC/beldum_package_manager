@@ -1,0 +1,15 @@
+{
+    "spdlog": {
+        "git_link": "git@github.com:gabime/spdlog.git",
+        "description": "A cool tool for various utilities.",
+        "repository_url": "https://github.com/gabime/spdlog",
+        "repo_type": "static",
+        "tags": [
+            "cpp",
+            "logging",
+            "cpp11",
+            "header-only",
+            "spdlog"
+        ]
+    }
+}

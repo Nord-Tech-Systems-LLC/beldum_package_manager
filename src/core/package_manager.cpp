@@ -48,8 +48,6 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     std::string repo_version;
     std::string repo_type;
 
-    logger.log("Available Packages Path: " + available_packages_path);
-
     // instantiate json object
     using json = nlohmann::json;
     json package_data;
@@ -58,6 +56,9 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     // Extract requested package details
     std::string requested_package = individual_package.name;
     logger.log("Requested package to process: " + requested_package);
+    // std::string packages_directory = std::string(getenv("HOME")) + "/.beldum/packages/";
+    std::string single_package_directory_path =
+        fmt::format("{}{}.json", packages_path, requested_package);
 
     // Get and log the current path
     std::string testing = std::string(std::filesystem::current_path());
@@ -74,7 +75,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
         return return_code;
 
     case PossibleOptions::INIT:
-        return beldum_init(installed_packages_path, available_packages_path);
+        return beldum_init(installed_packages_path, packages_path);
 
     case PossibleOptions::INSTALL:
         return beldum_install(requested_package,
@@ -83,7 +84,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                               repository_URL,
                               repo_type,
                               command,
-                              available_packages_path,
+                              single_package_directory_path,
                               installed_packages_path,
                               cmake_list_path,
                               cmakeStaticCommand,
@@ -103,7 +104,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
         return beldum_list_installed(installed_packages_path);
 
     case PossibleOptions::LIST_AVAILABLE_PACKAGES:
-        return beldum_list_available(available_packages_path);
+        return beldum_list_available(packages_path);
 
     case PossibleOptions::CLEAN:
         return beldum_clean(command, installed_packages_path);
@@ -131,7 +132,7 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     install_cmd->add_option("package_name", package_name, "Name of the package to install")
         ->required();
     install_cmd->callback([this, &package_name]() {
-        if (!file_exists(installed_packages_path) || !file_exists(available_packages_path)) {
+        if (!file_exists(installed_packages_path) || !file_exists(packages_path)) {
             std::cerr << "Error: Missing required files (installed_packages.json or "
                          "available_packages.json). Please run 'beldum init' first.\n";
             return;
@@ -144,7 +145,7 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     uninstall_cmd->add_option("package_name", package_name, "Name of the package to uninstall")
         ->required();
     uninstall_cmd->callback([this, &package_name]() {
-        if (!file_exists(installed_packages_path) || !file_exists(available_packages_path)) {
+        if (!file_exists(installed_packages_path) || !file_exists(packages_path)) {
             std::cerr << "Error: Missing required files (installed_packages.json or "
                          "available_packages.json). Please run 'beldum init' first.\n";
             return;
@@ -162,7 +163,7 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     list_cmd->add_flag("--available", list_available, "List available packages");
 
     list_cmd->callback([this, &list_installed, &list_available]() {
-        if (!file_exists(installed_packages_path) || !file_exists(available_packages_path)) {
+        if (!file_exists(installed_packages_path) || !file_exists(packages_path)) {
             std::cerr << "Error: Missing required files (installed_packages.json or "
                          "available_packages.json). Please run 'beldum init' first.\n";
             return;
@@ -179,7 +180,7 @@ int PackageManager::parse_arguments(int argc, char **argv) {
 
     auto clean_cmd = app.add_subcommand("clean", "Clean build directory and dependencies");
     clean_cmd->callback([this]() {
-        if (!file_exists(installed_packages_path) || !file_exists(available_packages_path)) {
+        if (!file_exists(installed_packages_path) || !file_exists(packages_path)) {
             std::cerr << "Error: Missing required files (installed_packages.json or "
                          "available_packages.json). Please run 'beldum init' first.\n";
             return;

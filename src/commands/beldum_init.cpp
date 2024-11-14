@@ -12,7 +12,7 @@
 
 #include "nlohmann/json.hpp"
 
-int beldum_init(std::string &installed_packages_path, std::string &available_packages_path) {
+int beldum_init(std::string &installed_packages_path, std::string &packages_path) {
     using json = nlohmann::json;
     BeldumInit beldum;
     json installed_data;
@@ -20,8 +20,8 @@ int beldum_init(std::string &installed_packages_path, std::string &available_pac
 
     // creates packages folder if it doesn't exist
     std::cout << "\n";
-    if (file_exists(installed_packages_path) && file_exists(available_packages_path)) {
-        fmt::print("Available_packages.json and installed_packages.json already exist.\nTry "
+    if (file_exists(installed_packages_path) && file_exists(packages_path)) {
+        fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
                    "installing an example package with --install example_package\n\n");
         return_code = 1;
         return return_code;

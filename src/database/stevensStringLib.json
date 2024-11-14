@@ -1,0 +1,12 @@
+{
+    "stevensStringLib": {
+        "git_link": "git@github.com:Bucephalus-Studios/stevensStringLib.git",
+        "description": "An easy-to-use library of C++ string functions.",
+        "repository_url": "https://github.com/Bucephalus-Studios/stevensStringLib",
+        "repo_type": "header-only",
+        "tags": [
+            "strings",
+            "header-only"
+        ]
+    }
+}

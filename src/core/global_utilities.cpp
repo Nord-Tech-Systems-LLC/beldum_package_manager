@@ -14,7 +14,7 @@
 
 /**
  * Executes command and returns result
- * @param command
+ * @param command = command to be executed
  */
 std::string execute_command(std::string cmd) {
     // Define the specific function pointer type for the deleter
@@ -63,22 +63,10 @@ bool show_warning() {
     }
 }
 
+/**
+ * Returns boolean if directory / path exists
+ * @param name = name of path
+ */
 bool file_exists(const std::string &name) {
     return std::filesystem::exists(name.c_str());
-}
-
-std::string getLastPartOfUrl(const std::string &url) {
-    std::istringstream ss(url);
-    std::string segment;
-    std::vector<std::string> segments;
-
-    // Split the URL by '/'
-    while (std::getline(ss, segment, '/')) {
-        if (!segment.empty()) {
-            segments.push_back(segment);
-        }
-    }
-
-    // The last segment is the last part of the URL
-    return segments.back();
 }
