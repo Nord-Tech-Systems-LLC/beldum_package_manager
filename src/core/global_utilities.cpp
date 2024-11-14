@@ -7,8 +7,10 @@
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 /**
  * Executes command and returns result
@@ -63,4 +65,20 @@ bool show_warning() {
 
 bool file_exists(const std::string &name) {
     return std::filesystem::exists(name.c_str());
+}
+
+std::string getLastPartOfUrl(const std::string &url) {
+    std::istringstream ss(url);
+    std::string segment;
+    std::vector<std::string> segments;
+
+    // Split the URL by '/'
+    while (std::getline(ss, segment, '/')) {
+        if (!segment.empty()) {
+            segments.push_back(segment);
+        }
+    }
+
+    // The last segment is the last part of the URL
+    return segments.back();
 }
