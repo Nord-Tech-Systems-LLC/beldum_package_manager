@@ -11,9 +11,8 @@
 // libraries
 #include "headerfiles/package_manager.hpp"
 
-int main(int argc, char **argv)
-{
-    PackageManager& instance = PackageManager::getInstance();
+int main(int argc, char **argv) {
+    PackageManager &instance = PackageManager::getInstance();
     instance.parse_arguments(argc, argv);
 
     return 0;

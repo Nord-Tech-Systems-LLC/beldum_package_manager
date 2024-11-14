@@ -3,19 +3,18 @@
 #ifndef PACKAGE_MANAGER_H
 #define PACKAGE_MANAGER_H
 
-#include <cstring>
+#include "beldum_init.hpp"
+#include "beldum_logging.hpp"
 #include <cstdlib> // For getenv
+#include <cstring>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
 #include <limits>
 #include <map>
 #include <vector>
-#include "beldum_init.hpp"
-#include "beldum_logging.hpp"
 
-enum class PossibleOptions
-{
+enum class PossibleOptions {
     INIT,
     INSTALL,
     UNINSTALL,
@@ -25,20 +24,17 @@ enum class PossibleOptions
     LIST_AVAILABLE_PACKAGES
 };
 
-class Package
-{
-public:
+class Package {
+  public:
     std::string name;
     std::string version;
     std::string description;
     std::string repo_type;
 };
 
-class PackageManager
-{
-public:
-    static PackageManager &getInstance()
-    {
+class PackageManager {
+  public:
+    static PackageManager &getInstance() {
         static PackageManager instance;
         return instance;
     }
@@ -46,9 +42,8 @@ public:
     int parse_arguments(int argc, char **argv);
     int check_passed_shell_arguments(PossibleOptions options);
 
-private:
-    PackageManager() : logger()
-    {
+  private:
+    PackageManager() : logger() {
         // logger.log("PackageManager initialized.");
     }
 
@@ -56,7 +51,8 @@ private:
     PackageManager(const PackageManager &) = delete;
     PackageManager &operator=(const PackageManager &) = delete;
 
-    std::string available_packages_path = std::string(getenv("HOME")) + "/.beldum/packages/available_packages.json";
+    std::string available_packages_path =
+        std::string(getenv("HOME")) + "/.beldum/packages/available_packages.json";
     std::ifstream packages_file;
 
     std::string installed_packages_path = "installed_packages.json";
@@ -71,7 +67,8 @@ private:
     std::string cmakeHeaderOnlyCommand;
     std::vector<std::string> cmakeLines; // used for reading all lines
     std::string cmakeLine;               // used for single cmake line
-    bool cmakeRunNewLibrary = true;      // used to dictate if a package has been insertted yet during rotation
+    bool cmakeRunNewLibrary =
+        true; // used to dictate if a package has been insertted yet during rotation
 
     /**
      * GENERAL OUTPUT FOR SWITCH
@@ -80,7 +77,5 @@ private:
 
     BeldumLogging logger;
     BeldumInit beldum;
-
-    bool show_warning();
 };
 #endif

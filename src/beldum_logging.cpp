@@ -1,21 +1,21 @@
 #include "headerfiles/beldum_logging.hpp"
 
-#include <filesystem>
 #include <cstdlib>
+#include <filesystem>
 
 #ifndef SPDLOG_DEPENDENCY_EXIST
 #error("SPDLOG_DEPENDENCY_EXIST not defined");
 #endif
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
-
+#include <spdlog/spdlog.h>
 
 BeldumLogging::BeldumLogging() {
     initializeLogger();
 }
 
 void BeldumLogging::initializeLogger() {
-    std::string fullPath = std::filesystem::path(getenv("HOME")).string() + "/.beldum/logs/beldum.log";
+    std::string fullPath =
+        std::filesystem::path(getenv("HOME")).string() + "/.beldum/logs/beldum.log";
 
     // Ensure the log directory exists
     std::filesystem::create_directories(std::filesystem::path(fullPath).parent_path());
@@ -29,18 +29,18 @@ void BeldumLogging::initializeLogger() {
         logger->set_level(spdlog::level::info);
         logger->flush_on(spdlog::level::info);
     }
-    logger->set_level(spdlog::level::info);  // Set default log level
-    logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");  // Set log message format
+    logger->set_level(spdlog::level::info);             // Set default log level
+    logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v"); // Set log message format
 }
 
-void BeldumLogging::log(const std::string& message) {
+void BeldumLogging::log(const std::string &message) {
     logger->info(message);
 }
 
-void BeldumLogging::logWarning(const std::string& message) {
+void BeldumLogging::logWarning(const std::string &message) {
     logger->warn(message);
 }
 
-void BeldumLogging::logError(const std::string& message) {
+void BeldumLogging::logError(const std::string &message) {
     logger->error(message);
 }

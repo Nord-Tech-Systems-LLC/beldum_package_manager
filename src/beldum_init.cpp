@@ -1,9 +1,10 @@
+#include "headerfiles/beldum_init.hpp"
+#include "headerfiles/global_utilities.hpp"
+#include <cstdlib> // for std::system
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sys/stat.h> // for chmod
-#include <cstdlib>    // for std::system
-#include "headerfiles/beldum_init.hpp"
 
 #ifndef JSON_DEPENDENCY_EXIST
 #error("JSON_DEPENDENCY_EXIST not defined");
@@ -11,13 +12,32 @@
 
 #include "nlohmann/json.hpp"
 
-bool BeldumInit::file_exists(const std::string &name)
-{
-    return std::filesystem::exists(name.c_str());
+int beldum_init(std::string &installed_packages_path, std::string &available_packages_path) {
+    using json = nlohmann::json;
+    BeldumInit beldum;
+    json installed_data;
+    int return_code = 0;
+
+    // creates packages folder if it doesn't exist
+    std::cout << "\n";
+    if (file_exists(installed_packages_path) && file_exists(available_packages_path)) {
+        fmt::print("Available_packages.json and installed_packages.json already exist.\nTry "
+                   "installing an example package with --install example_package\n\n");
+        return_code = 1;
+        return return_code;
+    } else {
+        beldum.create_installed_packages(installed_data);
+        // beldum.create_package_json(package_data);
+        beldum.create_build_script();
+        beldum.create_src_and_main();
+        beldum.create_cmake_lists();
+    }
+
+    std::cout << "\n";
+    return return_code;
 }
 
-void BeldumInit::create_src_and_main()
-{
+void BeldumInit::create_src_and_main() {
     std::string mainCpp = R"(
 #include <iostream>
 
@@ -27,14 +47,12 @@ int main() {
 }
 )";
 
-    if (!file_exists("src/main.cpp"))
-    {
+    if (!file_exists("src/main.cpp")) {
         std::cout << "Creating src/main.cpp" << std::endl;
         std::filesystem::create_directory("src");
 
         output.open("src/main.cpp");
-        if (!output.is_open())
-        {
+        if (!output.is_open()) {
             logger.logError("Error: Failed to open build.sh file.");
         }
 
@@ -43,8 +61,7 @@ int main() {
     }
 }
 
-void BeldumInit::create_build_script()
-{
+void BeldumInit::create_build_script() {
     std::string script = R"(
 #!/bin/bash
 
@@ -75,12 +92,10 @@ cmake --build "$BUILD_DIR" --target all || error_exit "Build failed."
 echo "Build complete!"
 )";
 
-    if (!file_exists("build.sh"))
-    {
+    if (!file_exists("build.sh")) {
         std::cout << "Creating ./build.sh" << std::endl;
         output.open("build.sh");
-        if (!output.is_open())
-        {
+        if (!output.is_open()) {
             logger.logError("Error: Failed to open build.sh file.");
         }
 
@@ -88,15 +103,13 @@ echo "Build complete!"
         output.close(); // Close the file after writing
 
         // Make the file executable
-        if (std::system("chmod +x build.sh") != 0)
-        {
+        if (std::system("chmod +x build.sh") != 0) {
             std::cerr << "Failed to make build.sh executable." << std::endl;
         }
     }
 }
 
-void BeldumInit::create_cmake_lists()
-{
+void BeldumInit::create_cmake_lists() {
     std::string cMakeLists = R"(
 
 # CMake Gloabl Config
@@ -142,13 +155,11 @@ endforeach()
 message("\n\n")
 
 )";
-    if (!file_exists("CMakeLists.txt"))
-    {
+    if (!file_exists("CMakeLists.txt")) {
         std::cout << "Creating ./CMakeLists.txt" << std::endl;
 
         output.open("CMakeLists.txt");
-        if (!output.is_open())
-        {
+        if (!output.is_open()) {
             logger.logError("Error: Failed to open CMakeLists.txt file.");
         }
         output << cMakeLists;
@@ -156,19 +167,17 @@ message("\n\n")
     }
 }
 
-void BeldumInit::create_package_json(nlohmann::json &package_data)
-{
-    if (!file_exists("package.json"))
-    {
+void BeldumInit::create_package_json(nlohmann::json &package_data) {
+    if (!file_exists("package.json")) {
         std::cout << "Creating package.json" << std::endl;
         output.open("package.json");
-        if (!output.is_open())
-        {
+        if (!output.is_open()) {
             logger.logError("Error: Failed to open package.json file.");
         }
 
         package_data["packages"] = {
-            {"example_package", {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
+            {"example_package",
+             {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
 
         output << package_data.dump(4);
 
@@ -176,15 +185,12 @@ void BeldumInit::create_package_json(nlohmann::json &package_data)
     }
 }
 
-void BeldumInit::create_installed_packages(nlohmann::json &installed_data)
-{
-    if (!file_exists("installed_packages.json"))
-    {
+void BeldumInit::create_installed_packages(nlohmann::json &installed_data) {
+    if (!file_exists("installed_packages.json")) {
         std::cout << "Creating installed_packages.json" << std::endl;
 
         output.open("installed_packages.json");
-        if (!output.is_open())
-        {
+        if (!output.is_open()) {
             logger.logError("Error: Failed to open installed_packages.json file.");
         }
         installed_data["packages"] = {};

@@ -1,0 +1,12 @@
+# .clang-format
+BasedOnStyle: LLVM
+BreakBeforeBraces: Attach       # Keeps '{' on the same line
+IndentWidth: 4                  # Set indentation width
+TabWidth: 4                     # Tab width for indentation
+UseTab: Never                   # Use spaces instead of tabs
+AllowShortFunctionsOnASingleLine: None  # Prevents short functions on a single line
+ColumnLimit: 100                # Maximum line length (adjust as needed)
+PenaltyBreakBeforeFirstCallParameter: 0 # Forces each parameter on a new line
+PenaltyBreakParameter: 1        # Prioritizes breaking after each parameter
+BinPackParameters: false        # Forces each parameter on a separate line
+BinPackArguments: false         # Forces each argument on a separate line
