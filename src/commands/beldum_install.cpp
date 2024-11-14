@@ -134,16 +134,6 @@ int beldum_install(std::string &requested_package,
     logger.log("Executing command to clone repository into cache: " + clone_command);
     return_code = system(clone_command.c_str());
 
-    std::cout << std::endl;
-    fmt::print("Repo name: {}", repo_name);
-    std::cout << std::endl;
-    fmt::print("Repo URL: {}", repository_URL);
-    std::cout << std::endl;
-    fmt::print("Clone Command: {}", clone_command);
-    std::cout << std::endl;
-    fmt::print("Return code: {}", return_code);
-    std::cout << std::endl;
-
     if (return_code != 0) {
         logger.log("Error cloning repository.");
         return return_code;
