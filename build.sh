@@ -17,6 +17,7 @@ if [ ! -d "$BUILD_DIR" ]; then
 fi
 
 # Step 3: Get the Git version and write to version file
+git fetch --tags
 VERSION=$(git describe --tags --abbrev=0)
 if [ -z "$VERSION" ]; then
     VERSION="unknown"
