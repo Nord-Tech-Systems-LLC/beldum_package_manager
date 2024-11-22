@@ -1,5 +1,6 @@
 #include "header_files/beldum_init.hpp"
 #include "header_files/global_utilities.hpp"
+
 #include <cstdlib> // for std::system
 #include <filesystem>
 #include <fstream>
@@ -197,7 +198,7 @@ void BeldumInit::create_package_json(nlohmann::json &package_data, std::string &
             {"name", project_name},
             {"version", "1.0.0"},
             {"scripts",
-             {{"build", "cmake -S . -B build && cmake --build build"},
+             {{"build", "cmake -S . -B target/debug/build && \\\ncmake --build target/debug/build"},
               {"clean", "rm -rf build"},
               {"test", "./build/tests"}}},
             // {"dependencies", {{"fmt", "latest"}, {"spdlog", "1.11.0"}}}

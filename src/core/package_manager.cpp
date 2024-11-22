@@ -4,6 +4,7 @@
 #include "header_files/beldum_init.hpp"
 #include "header_files/beldum_install.hpp"
 #include "header_files/beldum_list.hpp"
+#include "header_files/beldum_run.hpp"
 #include "header_files/beldum_uninstall.hpp"
 #include "header_files/global_utilities.hpp"
 
@@ -91,6 +92,9 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
                               cmake_list_path,
                               cmakeStaticCommand,
                               cmakeHeaderOnlyCommand);
+
+    case PossibleOptions::RUN:
+        return execute_build_script(script_name);
 
     case PossibleOptions::UNINSTALL:
         return beldum_uninstall(requested_package,
@@ -190,6 +194,10 @@ int PackageManager::parse_arguments(int argc, char **argv) {
         }
         check_passed_shell_arguments(PossibleOptions::CLEAN);
     });
+
+    auto run_cmd = app.add_subcommand("run", "Run Beldum script");
+    run_cmd->add_option("script_name", script_name, "Run Beldum script");
+    run_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::RUN); });
 
     try {
         CLI11_PARSE(app, argc, argv);
