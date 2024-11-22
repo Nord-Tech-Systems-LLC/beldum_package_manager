@@ -28,13 +28,31 @@ int execute_build_script(std::string &script_name) {
         std::cout << "Running script: " << script_name << " -> " << command << std::endl;
 
         // Execute the command
-        int retCode = std::system(command.c_str());
-        if (retCode != 0) {
-            std::cerr << "Error: Script '" << script_name << "' failed with code " << retCode
-                      << std::endl;
-            return retCode;
+        // Check if the command refers to a file
+        if (std::filesystem::exists(command) && std::filesystem::is_regular_file(command)) {
+            std::cout << "Detected script as a file. Running it as a Bash script..." << std::endl;
+            // Run the file as a Bash script
+            std::string bash_command = "bash " + command;
+            int retCode = std::system(bash_command.c_str());
+            if (retCode != 0) {
+                std::cerr << "Error: Shell script '" << command << "' failed with code " << retCode
+                          << std::endl;
+                return retCode;
+            } else {
+                std::cout << "Shell script '" << command << "' completed successfully."
+                          << std::endl;
+            }
         } else {
-            std::cout << "Script '" << script_name << "' completed successfully." << std::endl;
+            std::cout << "Detected script as a command. Executing directly..." << std::endl;
+            // Run the command directly
+            int retCode = std::system(command.c_str());
+            if (retCode != 0) {
+                std::cerr << "Error: Command '" << command << "' failed with code " << retCode
+                          << std::endl;
+                return retCode;
+            } else {
+                std::cout << "Command '" << command << "' completed successfully." << std::endl;
+            }
         }
     } else {
         std::cerr << "Error: Script '" << script_name << "' not found in metadata." << std::endl;
