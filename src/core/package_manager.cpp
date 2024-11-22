@@ -47,6 +47,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     std::string repo_name;
     std::string repo_version;
     std::string repo_type;
+    std::string repo_cmake_alias;
 
     // instantiate json object
     using json = nlohmann::json;
@@ -80,6 +81,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     case PossibleOptions::INSTALL:
         return beldum_install(requested_package,
                               repo_name,
+                              repo_cmake_alias,
                               repo_version,
                               repository_URL,
                               repo_type,

@@ -6,6 +6,7 @@
 
 int beldum_install(std::string &requested_package,
                    std::string &repo_name,
+                   std::string &repo_cmake_alias,
                    std::string &repo_version,
                    std::string &repository_URL,
                    std::string &repo_type,

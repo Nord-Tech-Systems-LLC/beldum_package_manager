@@ -4,6 +4,7 @@
         "description": "A cool tool for various utilities.",
         "repository_url": "https://github.com/gabime/spdlog",
         "repo_type": "static",
+        "cmake_alias": "spdlog::spdlog",
         "tags": [
             "cpp",
             "logging",

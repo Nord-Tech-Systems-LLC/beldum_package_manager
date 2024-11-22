@@ -4,6 +4,7 @@
         "description": "A simple C++ map library.",
         "repository_url": "https://github.com/Bucephalus-Studios/stevensMapLib",
         "repo_type": "header-only",
+        "cmake_alias": "none",
         "tags": [
             "map",
             "header-only"

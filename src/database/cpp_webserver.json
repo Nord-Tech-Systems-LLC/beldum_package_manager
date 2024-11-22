@@ -4,6 +4,7 @@
         "description": "A C++ webserver for backend development.",
         "repository_url": "https://github.com/Nord-Tech-Systems-LLC/cpp_webserver",
         "repo_type": "static",
+        "cmake_alias": "cpp_webserver::cpp_webserver",
         "tags": [
             "webserver",
             "server"

@@ -4,6 +4,7 @@
         "description": "A C++ std::vector library that is simple and powerful.",
         "repository_url": "https://github.com/Bucephalus-Studios/stevensVectorLib",
         "repo_type": "header-only",
+        "cmake_alias": "none",
         "tags": [
             "vectors",
             "vector",

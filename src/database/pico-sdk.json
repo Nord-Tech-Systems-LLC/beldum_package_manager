@@ -4,6 +4,7 @@
         "description": "The SDK for pi-pico low level coding.",
         "repository_url": "https://github.com/raspberrypi/pico-sdk",
         "repo_type": "static",
+        "cmake_alias": "pico-sdk::pico-sdk",
         "tags": [
             "low-level",
             "header-only",

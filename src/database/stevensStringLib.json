@@ -4,6 +4,7 @@
         "description": "An easy-to-use library of C++ string functions.",
         "repository_url": "https://github.com/Bucephalus-Studios/stevensStringLib",
         "repo_type": "header-only",
+        "cmake_alias": "none",
         "tags": [
             "strings",
             "header-only"

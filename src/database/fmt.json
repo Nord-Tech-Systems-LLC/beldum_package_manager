@@ -4,6 +4,7 @@
         "description": "A modern formatting library.",
         "repository_url": "https://github.com/fmtlib/fmt",
         "repo_type": "static",
+        "cmake_alias": "fmt::fmt",
         "tags": [
             "format",
             "fmt",

@@ -11,6 +11,7 @@
 
 int beldum_install(std::string &requested_package,
                    std::string &repo_name,
+                   std::string &repo_cmake_alias,
                    std::string &repo_version,
                    std::string &repository_URL,
                    std::string &repo_type,
@@ -89,6 +90,7 @@ int beldum_install(std::string &requested_package,
         repo_name = requested_package;
         repository_URL = package_data[requested_package]["repository_url"];
         repo_type = package_data[requested_package]["repo_type"];
+        repo_cmake_alias = package_data[requested_package]["cmake_alias"];
         logger.log("Found package \"" + repo_name + "\" in package.json with repository URL: " +
                    repository_URL + " Type: " + repo_type);
     } else {
@@ -269,7 +271,7 @@ int beldum_install(std::string &requested_package,
                                       cmakeStaticCommand); // Insert the static library command
                     cmakeLines.insert(it + 2, "# BELDUM-LINKER"); // Used as a separator
                     cmakeLines.insert(it + 3, "set(MY_LIBRARIES # List your libraries to link");
-                    cmakeLines.insert(it + 4, "    " + repo_name + "::" + repo_name);
+                    cmakeLines.insert(it + 4, "    " + repo_cmake_alias);
                     cmakeLines.insert(it + 5, ")");
 
                     break;

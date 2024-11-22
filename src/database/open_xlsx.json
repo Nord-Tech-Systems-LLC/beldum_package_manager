@@ -1,0 +1,13 @@
+{
+    "open_xlsx": {
+        "git_link": "git@github.com:troldal/OpenXLSX.git",
+        "description": "A C++ library for reading, writing, creating and modifying Microsoft Excel® (.xlsx) files. ",
+        "repository_url": "https://github.com/troldal/OpenXLSX",
+        "repo_type": "static",
+        "cmake_alias": "OpenXLSX::OpenXLSX",
+        "tags": [
+            "excel",
+            "cpp17"
+        ]
+    }
+}
