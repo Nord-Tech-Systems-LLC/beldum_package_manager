@@ -75,10 +75,14 @@ int beldum_list_available(std::string &packages_path) {
                 const std::string &package_name = package_entry.key();
                 const json &package = package_entry.value();
 
+                std::string description = package["description"];
+                std::string truncatedDescription =
+                    description.length() > 37 ? description.substr(0, 36) + "..." : description;
+
                 // Retrieve package information -- print package details with alignment
                 fmt::print("{:<20} {:<40} {:<60}\n",
                            package_name,
-                           std::string(package["description"]),
+                           truncatedDescription,
                            std::string(package["repository_url"]));
 
                 // // Print tags as a comma-separated list, indented

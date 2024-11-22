@@ -94,6 +94,7 @@ set(AvailablePackagesDestination "$ENV{HOME}/.beldum/packages")
 # Custom command to create the destination directory and copy the JSON file
 add_custom_command(
     TARGET beldum POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "$ENV{HOME}/.beldum/packages"
     COMMAND ${CMAKE_COMMAND} -E make_directory "$ENV{HOME}/.beldum/packages"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${AvailablePackagesSource}" "${AvailablePackagesDestination}"
     COMMENT "Copying contents of src/database to ~/.beldum/packages/"
