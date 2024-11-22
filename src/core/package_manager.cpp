@@ -121,7 +121,7 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     app.footer("\n");
 
     // Define subcommands without any dependencies
-    auto init_cmd = app.add_subcommand("init", "Create new Beldum project");
+    auto init_cmd = app.add_subcommand("create", "Create new Beldum project");
     init_cmd->add_option("project_name", project_name, "Create a new project");
     init_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::CREATE); });
 
