@@ -3,11 +3,14 @@
 #include <iostream>
 #include <string>
 
+// TODO: clean script does not work, need to adjust to clean_up
+
 int execute_build_script(std::string &script_name) {
     std::string beldum_json_path = "beldum.json";
     std::ifstream beldum_json_file;
     using json = nlohmann::json;
 
+    std::cout << script_name << std::endl;
     json beldum_json_data;
 
     beldum_json_file.open(beldum_json_path);
@@ -16,6 +19,8 @@ int execute_build_script(std::string &script_name) {
         return 1;
     }
     beldum_json_data = json::parse(beldum_json_file);
+
+    beldum_json_file.close();
 
     // Check if the script exists
     if (beldum_json_data.contains("scripts") && beldum_json_data["scripts"].contains(script_name)) {

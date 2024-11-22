@@ -19,7 +19,7 @@ enum class PossibleOptions {
     CREATE,
     INSTALL,
     UNINSTALL,
-    CLEAN,
+    // CLEAN,
     VERSION,
     LIST_INSTALLED_PACKAGES,
     LIST_AVAILABLE_PACKAGES

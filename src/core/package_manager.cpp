@@ -112,8 +112,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     case PossibleOptions::LIST_AVAILABLE_PACKAGES:
         return beldum_list_available(packages_path);
 
-    case PossibleOptions::CLEAN:
-        return beldum_clean(command, installed_packages_path);
+        // case PossibleOptions::CLEAN:
+        //     return beldum_clean(command, installed_packages_path);
     }
     return return_code;
 }
@@ -185,15 +185,15 @@ int PackageManager::parse_arguments(int argc, char **argv) {
         }
     });
 
-    auto clean_cmd = app.add_subcommand("clean", "Clean build directory and dependencies");
-    clean_cmd->callback([this]() {
-        if (!file_exists(installed_packages_path) || !file_exists(packages_path)) {
-            std::cerr << "Error: Missing required files (installed_packages.json or "
-                         "available_packages.json). Please run 'beldum init' first.\n";
-            return;
-        }
-        check_passed_shell_arguments(PossibleOptions::CLEAN);
-    });
+    // auto clean_cmd = app.add_subcommand("clean", "Clean build directory and dependencies");
+    // clean_cmd->callback([this]() {
+    //     if (!file_exists(installed_packages_path) || !file_exists(packages_path)) {
+    //         std::cerr << "Error: Missing required files (installed_packages.json or "
+    //                      "available_packages.json). Please run 'beldum init' first.\n";
+    //         return;
+    //     }
+    //     check_passed_shell_arguments(PossibleOptions::CLEAN);
+    // });
 
     auto run_cmd = app.add_subcommand("run", "Run Beldum script");
     run_cmd->add_option("script_name", script_name, "Run Beldum script");
