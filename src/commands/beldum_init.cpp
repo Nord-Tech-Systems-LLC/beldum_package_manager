@@ -15,7 +15,6 @@
 int beldum_create_project(std::string &installed_packages_path,
                           std::string &packages_path,
                           std::string &project_name) {
-    std::cout << project_name;
     using json = nlohmann::json;
     BeldumInit beldum;
     json installed_data;
