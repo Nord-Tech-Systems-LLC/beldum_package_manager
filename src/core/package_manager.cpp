@@ -75,8 +75,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
 
         return return_code;
 
-    case PossibleOptions::INIT:
-        return beldum_init(installed_packages_path, packages_path);
+    case PossibleOptions::CREATE:
+        return beldum_create_project(installed_packages_path, packages_path, project_name);
 
     case PossibleOptions::INSTALL:
         return beldum_install(requested_package,
@@ -121,8 +121,9 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     app.footer("\n");
 
     // Define subcommands without any dependencies
-    auto init_cmd = app.add_subcommand("init", "Initialize the project");
-    init_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::INIT); });
+    auto init_cmd = app.add_subcommand("init", "Create new Beldum project");
+    init_cmd->add_option("project_name", project_name, "Create a new project");
+    init_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::CREATE); });
 
     auto version_cmd = app.add_subcommand("version", "Show version information");
     version_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::VERSION); });

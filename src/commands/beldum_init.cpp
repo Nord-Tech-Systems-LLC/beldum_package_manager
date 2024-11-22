@@ -12,11 +12,30 @@
 
 #include "nlohmann/json.hpp"
 
-int beldum_init(std::string &installed_packages_path, std::string &packages_path) {
+int beldum_create_project(std::string &installed_packages_path,
+                          std::string &packages_path,
+                          std::string &project_name) {
+    std::cout << project_name;
     using json = nlohmann::json;
     BeldumInit beldum;
     json installed_data;
+    json beldum_data;
     int return_code = 0;
+
+    // Create the project directory
+    if (std::filesystem::exists(project_name)) {
+        std::cerr << "Error: Project directory \"" << project_name << "\" already exists.\n";
+        return 1;
+    }
+    if (!std::filesystem::create_directory(project_name)) {
+        std::cerr << "Error: Failed to create project directory \"" << project_name << "\".\n";
+        return 1;
+    }
+    std::cout << "Created project directory: " << project_name << "\n";
+
+    // Change the working directory to the project directory
+    std::filesystem::current_path(project_name);
+    std::cout << "Changed working directory to: " << std::filesystem::current_path() << "\n";
 
     // creates packages folder if it doesn't exist
     std::cout << "\n";
@@ -27,7 +46,7 @@ int beldum_init(std::string &installed_packages_path, std::string &packages_path
         return return_code;
     } else {
         beldum.create_installed_packages(installed_data);
-        // beldum.create_package_json(package_data);
+        beldum.create_package_json(beldum_data, project_name);
         beldum.create_build_script();
         beldum.create_src_and_main();
         beldum.create_cmake_lists();
@@ -167,21 +186,28 @@ message("\n\n")
     }
 }
 
-void BeldumInit::create_package_json(nlohmann::json &package_data) {
-    if (!file_exists("package.json")) {
-        std::cout << "Creating package.json" << std::endl;
-        output.open("package.json");
+void BeldumInit::create_package_json(nlohmann::json &package_data, std::string &project_name) {
+    if (!file_exists("beldum.json")) {
+        std::cout << "Creating beldum.json" << std::endl;
+        output.open("beldum.json");
         if (!output.is_open()) {
-            logger.logError("Error: Failed to open package.json file.");
+            logger.logError("Error: Failed to open beldum.json file.");
         }
 
-        package_data["packages"] = {
-            {"example_package",
-             {{"git_link", "git@github.com:Nord-Tech-Systems-LLC/example_package.git"}}}};
+        package_data = {
+            {"name", project_name},
+            {"version", "1.0.0"},
+            {"scripts",
+             {{"build", "cmake -S . -B build && cmake --build build"},
+              {"clean", "rm -rf build"},
+              {"test", "./build/tests"}}},
+            // {"dependencies", {{"fmt", "latest"}, {"spdlog", "1.11.0"}}}
+        };
 
         output << package_data.dump(4);
 
         output.close();
+        std::cout << "beldum.json has been created successfully." << std::endl;
     }
 }
 

@@ -15,6 +15,7 @@
 
 enum class PossibleOptions {
     INIT,
+    CREATE,
     INSTALL,
     UNINSTALL,
     CLEAN,
@@ -52,6 +53,8 @@ class PackageManager {
 
     std::string packages_path = std::string(getenv("HOME")) + "/.beldum/packages/";
     std::ifstream packages_file;
+
+    std::string project_name;
 
     std::string installed_packages_path = "installed_packages.json";
     std::ifstream installed_packages_file;
