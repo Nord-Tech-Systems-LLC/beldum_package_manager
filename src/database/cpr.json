@@ -1,0 +1,10 @@
+{
+    "cpr": {
+        "git_link": "git@github.com:libcpr/cpr.git",
+        "description": "C++ Requests: Curl for People, a spiritual port of Python Requests. ",
+        "repository_url": "https://github.com/libcpr/cpr",
+        "repo_type": "static",
+        "cmake_alias": "cpr::cpr",
+        "tags": ["http", "requests", "libcurl"]
+    }
+}

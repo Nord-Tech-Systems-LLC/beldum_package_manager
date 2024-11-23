@@ -1,4 +1,4 @@
-#include "header_files/beldum_init.hpp"
+#include "header_files/beldum_setup.hpp"
 #include "header_files/global_utilities.hpp"
 
 #include <cstdlib> // for std::system
@@ -54,6 +54,31 @@ int beldum_create_project(std::string &installed_packages_path,
 
     std::cout << "\n";
     return return_code;
+}
+
+int beldum_init(std::string &installed_packages_path,
+                std::string &packages_path,
+                std::string &project_name) {
+    using json = nlohmann::json;
+    BeldumInit beldum;
+    json installed_data;
+    json beldum_data;
+    int return_code = 0;
+
+    if (file_exists(installed_packages_path) && file_exists(packages_path)) {
+        fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
+                   "installing an example package with --install example_package\n\n");
+        return_code = 1;
+        return return_code;
+    } else {
+        beldum.create_installed_packages(installed_data);
+        beldum.create_package_json(beldum_data, project_name);
+        beldum.create_build_script();
+        beldum.create_src_and_main();
+        beldum.create_cmake_lists();
+
+        return return_code;
+    }
 }
 
 void BeldumInit::create_src_and_main() {

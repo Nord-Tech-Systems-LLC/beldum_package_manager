@@ -1,10 +1,10 @@
 
 #include "header_files/package_manager.hpp"
 #include "header_files/beldum_clean.hpp"
-#include "header_files/beldum_init.hpp"
 #include "header_files/beldum_install.hpp"
 #include "header_files/beldum_list.hpp"
 #include "header_files/beldum_run.hpp"
+#include "header_files/beldum_setup.hpp"
 #include "header_files/beldum_uninstall.hpp"
 #include "header_files/global_utilities.hpp"
 
@@ -79,6 +79,9 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     case PossibleOptions::CREATE:
         return beldum_create_project(installed_packages_path, packages_path, project_name);
 
+    case PossibleOptions::INIT:
+        return beldum_init(installed_packages_path, packages_path, project_name);
+
     case PossibleOptions::INSTALL:
         return beldum_install(requested_package,
                               repo_name,
@@ -124,17 +127,23 @@ int PackageManager::parse_arguments(int argc, char **argv) {
 
     app.footer("\n");
 
-    // Define subcommands without any dependencies
-    auto init_cmd = app.add_subcommand("create", "Create new Beldum project");
-    init_cmd->add_option("project_name", project_name, "Create a new project");
-    init_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::CREATE); });
+    // initialize new project
+    auto init_cmd = app.add_subcommand("init", "Initialize new Beldum project");
+    init_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::INIT); });
 
+    // create new project
+    auto create_cmd = app.add_subcommand("create", "Create new Beldum project");
+    create_cmd->add_option("project_name", project_name, "Create a new project");
+    create_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::CREATE); });
+
+    // display version of beldum
     auto version_cmd = app.add_subcommand("version", "Show version information");
     version_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::VERSION); });
 
     // Define subcommands with file dependencies
     std::string package_name;
 
+    // install library
     auto install_cmd = app.add_subcommand("install", "Install a dependency");
     install_cmd->add_option("package_name", package_name, "Name of the package to install")
         ->required();
@@ -148,6 +157,7 @@ int PackageManager::parse_arguments(int argc, char **argv) {
         check_passed_shell_arguments(PossibleOptions::INSTALL);
     });
 
+    // uninstall library
     auto uninstall_cmd = app.add_subcommand("uninstall", "Uninstall a dependency");
     uninstall_cmd->add_option("package_name", package_name, "Name of the package to uninstall")
         ->required();
@@ -161,14 +171,12 @@ int PackageManager::parse_arguments(int argc, char **argv) {
         check_passed_shell_arguments(PossibleOptions::UNINSTALL);
     });
 
+    // list available and installed packages
     auto list_cmd = app.add_subcommand("list", "List installed packages");
-
-    // Define flags for installed and available options
-    bool list_installed = false;
-    bool list_available = false;
+    bool list_installed = false; // flag for installed
+    bool list_available = false; // flag for available
     list_cmd->add_flag("--installed", list_installed, "List installed packages");
     list_cmd->add_flag("--available", list_available, "List available packages");
-
     list_cmd->callback([this, &list_installed, &list_available]() {
         if (!file_exists(installed_packages_path) || !file_exists(packages_path)) {
             std::cerr << "Error: Missing required files (installed_packages.json or "
@@ -185,6 +193,11 @@ int PackageManager::parse_arguments(int argc, char **argv) {
         }
     });
 
+    // beldum command to run scripts
+    auto run_cmd = app.add_subcommand("run", "Run Beldum script");
+    run_cmd->add_option("script_name", script_name, "Run Beldum script");
+    run_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::RUN); });
+
     // auto clean_cmd = app.add_subcommand("clean", "Clean build directory and dependencies");
     // clean_cmd->callback([this]() {
     //     if (!file_exists(installed_packages_path) || !file_exists(packages_path)) {
@@ -194,10 +207,6 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     //     }
     //     check_passed_shell_arguments(PossibleOptions::CLEAN);
     // });
-
-    auto run_cmd = app.add_subcommand("run", "Run Beldum script");
-    run_cmd->add_option("script_name", script_name, "Run Beldum script");
-    run_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::RUN); });
 
     try {
         CLI11_PARSE(app, argc, argv);

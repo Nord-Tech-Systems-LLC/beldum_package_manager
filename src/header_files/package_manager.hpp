@@ -2,8 +2,8 @@
 #ifndef PACKAGE_MANAGER_H
 #define PACKAGE_MANAGER_H
 
-#include "header_files/beldum_init.hpp"
 #include "header_files/beldum_logging.hpp"
+#include "header_files/beldum_setup.hpp"
 #include <cstdlib> // For getenv
 #include <cstring>
 #include <fstream>

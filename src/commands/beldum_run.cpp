@@ -3,8 +3,6 @@
 #include <iostream>
 #include <string>
 
-// TODO: clean script does not work, need to adjust to clean_up
-
 int execute_build_script(std::string &script_name) {
     std::string beldum_json_path = "beldum.json";
     std::ifstream beldum_json_file;
