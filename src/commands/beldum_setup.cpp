@@ -13,75 +13,8 @@
 
 #include "nlohmann/json.hpp"
 
-int beldum_create_project(std::string &installed_packages_path,
-                          std::string &packages_path,
-                          std::string &project_name) {
-    using json = nlohmann::json;
-    BeldumInit beldum;
-    json installed_data;
-    json beldum_data;
-    int return_code = 0;
-
-    // Create the project directory
-    if (std::filesystem::exists(project_name)) {
-        std::cerr << "Error: Project directory \"" << project_name << "\" already exists.\n";
-        return 1;
-    }
-    if (!std::filesystem::create_directory(project_name)) {
-        std::cerr << "Error: Failed to create project directory \"" << project_name << "\".\n";
-        return 1;
-    }
-    std::cout << "Created project directory: " << project_name << "\n";
-
-    // Change the working directory to the project directory
-    std::filesystem::current_path(project_name);
-    std::cout << "Changed working directory to: " << std::filesystem::current_path() << "\n";
-
-    // creates packages folder if it doesn't exist
-    std::cout << "\n";
-    if (file_exists(installed_packages_path) && file_exists(packages_path)) {
-        fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
-                   "installing an example package with --install example_package\n\n");
-        return_code = 1;
-        return return_code;
-    } else {
-        beldum.create_installed_packages(installed_data);
-        beldum.create_package_json(beldum_data, project_name);
-        beldum.create_build_script();
-        beldum.create_src_and_main();
-        beldum.create_cmake_lists();
-    }
-
-    std::cout << "\n";
-    return return_code;
-}
-
-int beldum_init(std::string &installed_packages_path,
-                std::string &packages_path,
-                std::string &project_name) {
-    using json = nlohmann::json;
-    BeldumInit beldum;
-    json installed_data;
-    json beldum_data;
-    int return_code = 0;
-
-    if (file_exists(installed_packages_path) && file_exists(packages_path)) {
-        fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
-                   "installing an example package with --install example_package\n\n");
-        return_code = 1;
-        return return_code;
-    } else {
-        beldum.create_installed_packages(installed_data);
-        beldum.create_package_json(beldum_data, project_name);
-        beldum.create_build_script();
-        beldum.create_src_and_main();
-        beldum.create_cmake_lists();
-
-        return return_code;
-    }
-}
-
-void BeldumInit::create_src_and_main() {
+namespace beldum_setup {
+void create_src_and_main() {
     std::string mainCpp = R"(
 #include <iostream>
 
@@ -90,6 +23,9 @@ int main() {
     return 0;
 }
 )";
+
+    std::ofstream output;
+    BeldumLogging logger;
 
     if (!file_exists("src/main.cpp")) {
         std::cout << "Creating src/main.cpp" << std::endl;
@@ -105,7 +41,7 @@ int main() {
     }
 }
 
-void BeldumInit::create_build_script() {
+void create_build_script() {
     std::string script = R"(
 #!/bin/bash
 
@@ -135,6 +71,8 @@ cmake --build "$BUILD_DIR" --target all || error_exit "Build failed."
 
 echo "Build complete!"
 )";
+    std::ofstream output;
+    BeldumLogging logger;
 
     if (!file_exists("build.sh")) {
         std::cout << "Creating ./build.sh" << std::endl;
@@ -153,7 +91,7 @@ echo "Build complete!"
     }
 }
 
-void BeldumInit::create_cmake_lists() {
+void create_cmake_lists() {
     std::string cMakeLists = R"(
 
 # CMake Gloabl Config
@@ -199,6 +137,10 @@ endforeach()
 message("\n\n")
 
 )";
+
+    std::ofstream output;
+    BeldumLogging logger;
+
     if (!file_exists("CMakeLists.txt")) {
         std::cout << "Creating ./CMakeLists.txt" << std::endl;
 
@@ -211,7 +153,10 @@ message("\n\n")
     }
 }
 
-void BeldumInit::create_package_json(nlohmann::json &package_data, std::string &project_name) {
+void create_package_json(nlohmann::json &package_data, std::string &project_name) {
+    std::ofstream output;
+    BeldumLogging logger;
+
     if (!file_exists("beldum.json")) {
         std::cout << "Creating beldum.json" << std::endl;
         output.open("beldum.json");
@@ -238,7 +183,10 @@ void BeldumInit::create_package_json(nlohmann::json &package_data, std::string &
     }
 }
 
-void BeldumInit::create_installed_packages(nlohmann::json &installed_data) {
+void create_installed_packages(nlohmann::json &installed_data) {
+    std::ofstream output;
+    BeldumLogging logger;
+
     if (!file_exists("installed_packages.json")) {
         std::cout << "Creating installed_packages.json" << std::endl;
 
@@ -249,5 +197,72 @@ void BeldumInit::create_installed_packages(nlohmann::json &installed_data) {
         installed_data["packages"] = {};
         output << installed_data.dump(4);
         output.close();
+    }
+}
+} // namespace beldum_setup
+
+int beldum_create_project(std::string &installed_packages_path,
+                          std::string &packages_path,
+                          std::string &project_name) {
+    using json = nlohmann::json;
+    json installed_data;
+    json beldum_data;
+    int return_code = 0;
+
+    // Create the project directory
+    if (std::filesystem::exists(project_name)) {
+        std::cerr << "Error: Project directory \"" << project_name << "\" already exists.\n";
+        return 1;
+    }
+    if (!std::filesystem::create_directory(project_name)) {
+        std::cerr << "Error: Failed to create project directory \"" << project_name << "\".\n";
+        return 1;
+    }
+    std::cout << "Created project directory: " << project_name << "\n";
+
+    // Change the working directory to the project directory
+    std::filesystem::current_path(project_name);
+    std::cout << "Changed working directory to: " << std::filesystem::current_path() << "\n";
+
+    // creates packages folder if it doesn't exist
+    std::cout << "\n";
+    if (file_exists(installed_packages_path) && file_exists(packages_path)) {
+        fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
+                   "installing an example package with --install example_package\n\n");
+        return_code = 1;
+        return return_code;
+    } else {
+        beldum_setup::create_installed_packages(installed_data);
+        beldum_setup::create_package_json(beldum_data, project_name);
+        beldum_setup::create_build_script();
+        beldum_setup::create_src_and_main();
+        beldum_setup::create_cmake_lists();
+    }
+
+    std::cout << "\n";
+    return return_code;
+}
+
+int beldum_init(std::string &installed_packages_path,
+                std::string &packages_path,
+                std::string &project_name) {
+    using json = nlohmann::json;
+    json installed_data;
+    json beldum_data;
+    int return_code = 0;
+
+    if (file_exists(installed_packages_path) && file_exists(packages_path)) {
+        fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
+                   "installing an example package with --install example_package\n\n");
+        return_code = 1;
+        return return_code;
+    } else {
+        beldum_setup::create_installed_packages(installed_data);
+        beldum_setup::create_package_json(beldum_data, project_name);
+        beldum_setup::create_build_script();
+        beldum_setup::create_src_and_main();
+        beldum_setup::create_cmake_lists();
+
+        return return_code;
     }
 }

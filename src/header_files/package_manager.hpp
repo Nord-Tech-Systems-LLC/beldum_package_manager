@@ -77,8 +77,6 @@ class PackageManager {
      * GENERAL OUTPUT FOR SWITCH
      */
     std::ofstream output;
-
     BeldumLogging logger;
-    BeldumInit beldum;
 };
 #endif
