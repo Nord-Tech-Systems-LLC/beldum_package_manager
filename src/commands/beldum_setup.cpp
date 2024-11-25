@@ -106,7 +106,7 @@ link_directories(${BELDUM_LIB_DIR}) # Add the path to the linker
 
 # Create executeable
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/target/debug/build") # Set the output directory for the executable
-add_executable(MyExecutable src/main.cpp) # Add the executable
+add_executable(cpp_program_executable src/main.cpp) # Add the executable
 
 ##################################
 # TODO: Add libraries not managed by beldum
@@ -114,7 +114,7 @@ add_executable(MyExecutable src/main.cpp) # Add the executable
 ##################################
 
 # find_package(CURL REQUIRED)
-# target_link_libraries(MyExecutable PRIVATE CURL::libcurl)
+# target_link_libraries(cpp_program_executable PRIVATE CURL::libcurl)
 
 
 
@@ -132,7 +132,7 @@ add_executable(MyExecutable src/main.cpp) # Add the executable
 
 foreach(CPP_LIB ${MY_LIBRARIES})
     message("Library Name: ${BELDUM_LIB_DIR}")
-    target_link_libraries(MyExecutable PRIVATE ${CPP_LIB})
+    target_link_libraries(cpp_program_executable PRIVATE ${CPP_LIB})
 endforeach()
 message("\n\n")
 
@@ -168,11 +168,9 @@ void create_package_json(nlohmann::json &package_data, std::string &project_name
             {"name", project_name},
             {"version", "1.0.0"},
             {"scripts",
-             {
-                 {"build", "cmake -S . -B target/debug/build && cmake --build target/debug/build"},
-                 {"clean", "[ -d ./target/debug/build ] && rm -rf ./target/debug/build"},
-                 //   {"test", "./build/tests"}
-             }},
+             {{"build", "cmake -S . -B target/debug/build && cmake --build target/debug/build"},
+              {"clean", "[ -d ./target/debug/build ] && rm -rf ./target/debug/build"},
+              {"execute", "./target/debug/build/cpp_program_executable"}}},
             // {"dependencies", {{"fmt", "latest"}, {"spdlog", "1.11.0"}}}
         };
 

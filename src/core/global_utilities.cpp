@@ -70,3 +70,22 @@ bool show_warning() {
 bool file_exists(const std::string &name) {
     return std::filesystem::exists(name.c_str());
 }
+
+/**
+ * Returns if str ends with suffix
+ * @param str = string to check if contains suffix
+ * @param suffix = suffix (ends with)
+ */
+bool ends_with(std::string_view str, std::string_view suffix) {
+    return str.size() >= suffix.size() &&
+           str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+/**
+ * Returns if str starts with prefix
+ * @param str = string to check if contains prefix
+ * @param prefix = prefix (starts with)
+ */
+bool starts_with(std::string_view str, std::string_view prefix) {
+    return str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0;
+}
