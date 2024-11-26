@@ -1,6 +1,5 @@
 
 #include "header_files/package_manager.hpp"
-#include "header_files/beldum_clean.hpp"
 #include "header_files/beldum_install.hpp"
 #include "header_files/beldum_list.hpp"
 #include "header_files/beldum_run.hpp"
@@ -63,8 +62,8 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
         fmt::format("{}{}.json", available_packages_path, requested_package);
 
     // Get and log the current path
-    std::string testing = std::string(std::filesystem::current_path());
-    logger.log("Current directory path: " + testing);
+    std::string current_path = std::string(std::filesystem::current_path());
+    logger.log("Current directory path: " + current_path);
 
     std::string result_string;
     switch (options) {
