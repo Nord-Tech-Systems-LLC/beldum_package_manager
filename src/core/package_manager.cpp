@@ -145,8 +145,9 @@ int PackageManager::parse_arguments(int argc, char **argv) {
         ->required();
     install_cmd->callback([this, &package_name]() {
         if (!file_exists(beldum_json_path) || !file_exists(packages_path)) {
-            std::cerr << "Error: Missing required files (installed_packages.json or "
-                         "available_packages.json). Please run 'beldum init' first.\n";
+            fmt::print("Error: Missing required files ({} or available_packages.json). Please run "
+                       "'beldum init' first.\n",
+                       beldum_json_path);
             return;
         }
         individual_package.name = package_name;
@@ -159,8 +160,9 @@ int PackageManager::parse_arguments(int argc, char **argv) {
         ->required();
     uninstall_cmd->callback([this, &package_name]() {
         if (!file_exists(beldum_json_path) || !file_exists(packages_path)) {
-            std::cerr << "Error: Missing required files (installed_packages.json or "
-                         "available_packages.json). Please run 'beldum init' first.\n";
+            fmt::print("Error: Missing required files ({} or available_packages.json). Please run "
+                       "'beldum init' first.\n",
+                       beldum_json_path);
             return;
         }
         individual_package.name = package_name;
@@ -175,8 +177,9 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     list_cmd->add_flag("--available", list_available, "List available packages");
     list_cmd->callback([this, &list_installed, &list_available]() {
         if (!file_exists(beldum_json_path) || !file_exists(packages_path)) {
-            std::cerr << "Error: Missing required files (installed_packages.json or "
-                         "available_packages.json). Please run 'beldum init' first.\n";
+            fmt::print("Error: Missing required files ({} or available_packages.json). Please run "
+                       "'beldum init' first.\n",
+                       beldum_json_path);
             return;
         }
 
@@ -193,16 +196,6 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     auto run_cmd = app.add_subcommand("run", "Run Beldum script");
     run_cmd->add_option("script_name", script_name, "Run Beldum script");
     run_cmd->callback([this]() { check_passed_shell_arguments(PossibleOptions::RUN); });
-
-    // auto clean_cmd = app.add_subcommand("clean", "Clean build directory and dependencies");
-    // clean_cmd->callback([this]() {
-    //     if (!file_exists(beldum_json_path) || !file_exists(packages_path)) {
-    //         std::cerr << "Error: Missing required files (installed_packages.json or "
-    //                      "available_packages.json). Please run 'beldum init' first.\n";
-    //         return;
-    //     }
-    //     check_passed_shell_arguments(PossibleOptions::CLEAN);
-    // });
 
     try {
         CLI11_PARSE(app, argc, argv);

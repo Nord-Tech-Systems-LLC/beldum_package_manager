@@ -158,10 +158,11 @@ void create_package_json(nlohmann::ordered_json &package_data, std::string &proj
     BeldumLogging logger;
 
     if (!file_exists(beldum_json_path)) {
-        std::cout << "Creating beldum.json" << std::endl;
+        fmt::print("Creating {}", beldum_json_path);
+        std::cout << std::endl;
         output.open(beldum_json_path);
         if (!output.is_open()) {
-            logger.logError("Error: Failed to open beldum.json file.");
+            logger.logError("Error: Failed to open " + beldum_json_path + " file.");
         }
 
         package_data = {
@@ -176,7 +177,8 @@ void create_package_json(nlohmann::ordered_json &package_data, std::string &proj
         output << package_data.dump(4);
 
         output.close();
-        std::cout << "beldum.json has been created successfully." << std::endl;
+        fmt::print("{} has been created successfully.", beldum_json_path);
+        std::cout << std::endl;
     }
 }
 } // namespace beldum_setup
@@ -205,12 +207,12 @@ int beldum_create_project(std::string &packages_path, std::string &project_name)
     // creates packages folder if it doesn't exist
     std::cout << "\n";
     if (file_exists(beldum_json_path) && file_exists(packages_path)) {
-        fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
-                   "installing an example package with --install example_package\n\n");
+        fmt::print("~/.beldum/packages/ and {} already exist.\nTry "
+                   "installing an example package with --install example_package\n\n",
+                   beldum_json_path);
         return_code = 1;
         return return_code;
     } else {
-        // beldum_setup::create_installed_packages(installed_data);
         beldum_setup::create_package_json(beldum_data, project_name);
         beldum_setup::create_build_script();
         beldum_setup::create_src_and_main();
@@ -228,12 +230,12 @@ int beldum_init(std::string &packages_path, std::string &project_name) {
     int return_code = 0;
 
     if (file_exists(beldum_json_path) && file_exists(packages_path)) {
-        fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
-                   "installing an example package with --install example_package\n\n");
+        fmt::print("~/.beldum/packages/ and {} already exist.\nTry "
+                   "installing an example package with --install example_package\n\n",
+                   beldum_json_path);
         return_code = 1;
         return return_code;
     } else {
-        // beldum_setup::create_installed_packages(installed_data);
         beldum_setup::create_package_json(beldum_data, project_name);
         beldum_setup::create_build_script();
         beldum_setup::create_src_and_main();

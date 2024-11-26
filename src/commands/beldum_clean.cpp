@@ -21,11 +21,11 @@ int beldum_clean(std::string &command) {
 
         output.open(beldum_json_path);
         if (!output.is_open()) {
-            logger.logError("Error: Failed to open installed_packages.json file.");
+            logger.logError("Error: Failed to open " + beldum_json_path + " file.");
             return_code = 1;
             return return_code;
         }
-        logger.log("Opened installed_packages.json file.");
+        logger.log("Opened " + beldum_json_path + " file.");
         installed_data["packages"] = {};
         output << installed_data;
 

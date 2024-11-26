@@ -34,11 +34,11 @@ int beldum_uninstall(std::string &requested_package,
 
     installed_packages_file.open(beldum_json_path);
     if (!installed_packages_file.is_open()) {
-        logger.logError("Error: Failed to open installed_packages.json file.");
+        logger.logError("Error: Failed to open " + beldum_json_path + " file.");
         return_code = 1;
         return return_code;
     }
-    logger.log("Opened installed_packages.json file.");
+    logger.log("Opened " + beldum_json_path + " file.");
     installed_data = json::parse(installed_packages_file);
     installed_packages_file.close();
 
@@ -66,13 +66,13 @@ int beldum_uninstall(std::string &requested_package,
 
         output.open(beldum_json_path);
         if (!output.is_open()) {
-            logger.logError("Error: Failed to open installed_packages.json file.");
+            logger.logError("Error: Failed to open " + beldum_json_path + " file.");
             return_code = 1;
             return return_code;
         }
-        logger.log("Opened installed_packages.json file.");
+        logger.log("Opened " + beldum_json_path + " file.");
 
-        // Update installed_packages.json
+        // Update beldum.json
         installed_data["dependencies"].erase(requested_package);
 
         output << installed_data.dump(4);

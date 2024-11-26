@@ -46,7 +46,7 @@ int beldum_install(std::string &requested_package,
     logger.log("Current directory path: " + current_path);
     logger.log("Attempting to install package: " + requested_package);
 
-    // Parse package.json and installed_packages.json
+    // Parse package.json and beldum.json
     try {
         packages_file.open(single_package_directory_path);
         if (!packages_file.is_open()) {
@@ -61,11 +61,11 @@ int beldum_install(std::string &requested_package,
 
         installed_packages_file.open(beldum_json_path);
         if (!installed_packages_file.is_open()) {
-            logger.logError("Error: Failed to open installed_packages.json file.");
+            logger.logError("Error: Failed to open " + beldum_json_path + " file.");
             return_code = 1;
             return return_code;
         }
-        logger.log("Opened installed_packages.json file.");
+        logger.log("Opened " + beldum_json_path + " file.");
         installed_data = json::parse(installed_packages_file);
         installed_packages_file.close();
 
@@ -183,20 +183,20 @@ int beldum_install(std::string &requested_package,
     try {
         output.open(beldum_json_path);
         if (!output.is_open()) {
-            logger.logError("Error: Failed to open installed_packages.json file.");
+            logger.logError("Error: Failed to open " + beldum_json_path + " file.");
             return_code = 1;
             return return_code;
         }
-        logger.log("Opened installed_packages.json file.");
+        logger.log("Opened " + beldum_json_path + " file.");
 
         installed_data["dependencies"][repo_name] = repo_version;
 
         output << installed_data.dump(4);
         output.close();
 
-        logger.log("Successfully updated installed_packages.json with " + repo_name);
+        logger.log("Successfully updated " + beldum_json_path + " with " + repo_name);
     } catch (const std::exception &e) {
-        logger.logError("Failed to update installed_packages.json: " + std::string(e.what()));
+        logger.logError("Failed to update " + beldum_json_path + ": " + std::string(e.what()));
         return_code = 1;
         return return_code;
     }
@@ -292,7 +292,7 @@ int beldum_install(std::string &requested_package,
     }
     output.close();
 
-    logger.log("Successfully updated installed_packages.json with " + repo_name);
+    logger.log("Successfully updated " + beldum_json_path + " with " + repo_name);
     std::cout << std::endl;
     fmt::print("{} successfully installed.", repo_name);
     std::cout << std::endl;
