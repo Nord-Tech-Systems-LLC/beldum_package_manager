@@ -4,7 +4,7 @@
 
 #include "header_files/beldum_logging.hpp"
 #include "header_files/beldum_setup.hpp"
-#include <cstdlib> // For getenv
+
 #include <cstring>
 #include <fstream>
 #include <iomanip>
@@ -51,7 +51,6 @@ class PackageManager {
     PackageManager(const PackageManager &) = delete;
     PackageManager &operator=(const PackageManager &) = delete;
 
-    std::string packages_path = std::string(getenv("HOME")) + "/.beldum/packages/";
     std::ifstream packages_file;
 
     std::string project_name;

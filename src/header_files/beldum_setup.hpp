@@ -7,8 +7,8 @@
 #include <fstream>
 #include <iostream>
 
-int beldum_create_project(std::string &packages_path, std::string &project_name);
+int beldum_create_project(std::string &project_name);
 
-int beldum_init(std::string &packages_path, std::string &project_name);
+int beldum_init(std::string &project_name);
 
 #endif

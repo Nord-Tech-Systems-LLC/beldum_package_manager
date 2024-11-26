@@ -183,7 +183,7 @@ void create_package_json(nlohmann::ordered_json &package_data, std::string &proj
 }
 } // namespace beldum_setup
 
-int beldum_create_project(std::string &packages_path, std::string &project_name) {
+int beldum_create_project(std::string &project_name) {
     using json = nlohmann::ordered_json;
     json installed_data;
     json beldum_data;
@@ -206,7 +206,7 @@ int beldum_create_project(std::string &packages_path, std::string &project_name)
 
     // creates packages folder if it doesn't exist
     std::cout << "\n";
-    if (file_exists(beldum_json_path) && file_exists(packages_path)) {
+    if (file_exists(beldum_json_path) && file_exists(available_packages_path)) {
         fmt::print("~/.beldum/packages/ and {} already exist.\nTry "
                    "installing an example package with --install example_package\n\n",
                    beldum_json_path);
@@ -223,13 +223,13 @@ int beldum_create_project(std::string &packages_path, std::string &project_name)
     return return_code;
 }
 
-int beldum_init(std::string &packages_path, std::string &project_name) {
+int beldum_init(std::string &project_name) {
     using json = nlohmann::ordered_json;
     json installed_data;
     json beldum_data;
     int return_code = 0;
 
-    if (file_exists(beldum_json_path) && file_exists(packages_path)) {
+    if (file_exists(beldum_json_path) && file_exists(available_packages_path)) {
         fmt::print("~/.beldum/packages/ and {} already exist.\nTry "
                    "installing an example package with --install example_package\n\n",
                    beldum_json_path);

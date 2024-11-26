@@ -4,6 +4,7 @@
 #include "fmt/core.h"
 
 #include <array>
+#include <cstdlib> // For getenv
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -16,6 +17,7 @@
  * GLOBAL VARIABLES THROUGHOUT PACKAGE MANAGER
  */
 std::string beldum_json_path = "beldum.json";
+std::string available_packages_path = std::string(getenv("HOME")) + "/.beldum/packages/";
 
 /**
  * Executes command and returns result

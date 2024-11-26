@@ -60,7 +60,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     logger.log("Requested package to process: " + requested_package);
     // std::string packages_directory = std::string(getenv("HOME")) + "/.beldum/packages/";
     std::string single_package_directory_path =
-        fmt::format("{}{}.json", packages_path, requested_package);
+        fmt::format("{}{}.json", available_packages_path, requested_package);
 
     // Get and log the current path
     std::string testing = std::string(std::filesystem::current_path());
@@ -77,10 +77,10 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
         return return_code;
 
     case PossibleOptions::CREATE:
-        return beldum_create_project(packages_path, project_name);
+        return beldum_create_project(project_name);
 
     case PossibleOptions::INIT:
-        return beldum_init(packages_path, project_name);
+        return beldum_init(project_name);
 
     case PossibleOptions::INSTALL:
         return beldum_install(requested_package,
@@ -112,7 +112,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
         return beldum_list_installed();
 
     case PossibleOptions::LIST_AVAILABLE_PACKAGES:
-        return beldum_list_available(packages_path);
+        return beldum_list_available();
     }
     return return_code;
 }
@@ -144,10 +144,11 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     install_cmd->add_option("package_name", package_name, "Name of the package to install")
         ->required();
     install_cmd->callback([this, &package_name]() {
-        if (!file_exists(beldum_json_path) || !file_exists(packages_path)) {
-            fmt::print("Error: Missing required files ({} or available_packages.json). Please run "
+        if (!file_exists(beldum_json_path) || !file_exists(available_packages_path)) {
+            fmt::print("Error: Missing required files ({} or {}). Please run "
                        "'beldum init' first.\n",
-                       beldum_json_path);
+                       beldum_json_path,
+                       available_packages_path);
             return;
         }
         individual_package.name = package_name;
@@ -159,10 +160,11 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     uninstall_cmd->add_option("package_name", package_name, "Name of the package to uninstall")
         ->required();
     uninstall_cmd->callback([this, &package_name]() {
-        if (!file_exists(beldum_json_path) || !file_exists(packages_path)) {
-            fmt::print("Error: Missing required files ({} or available_packages.json). Please run "
+        if (!file_exists(beldum_json_path) || !file_exists(available_packages_path)) {
+            fmt::print("Error: Missing required files ({} or {}). Please run "
                        "'beldum init' first.\n",
-                       beldum_json_path);
+                       beldum_json_path,
+                       available_packages_path);
             return;
         }
         individual_package.name = package_name;
@@ -176,10 +178,11 @@ int PackageManager::parse_arguments(int argc, char **argv) {
     list_cmd->add_flag("--installed", list_installed, "List installed packages");
     list_cmd->add_flag("--available", list_available, "List available packages");
     list_cmd->callback([this, &list_installed, &list_available]() {
-        if (!file_exists(beldum_json_path) || !file_exists(packages_path)) {
-            fmt::print("Error: Missing required files ({} or available_packages.json). Please run "
+        if (!file_exists(beldum_json_path) || !file_exists(available_packages_path)) {
+            fmt::print("Error: Missing required files ({} or {}). Please run "
                        "'beldum init' first.\n",
-                       beldum_json_path);
+                       beldum_json_path,
+                       available_packages_path);
             return;
         }
 

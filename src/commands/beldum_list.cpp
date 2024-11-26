@@ -49,7 +49,7 @@ parse_all_json_files(const std::string &directoryPath) {
     return jsonFilesData;
 }
 
-int beldum_list_available(std::string &packages_path) {
+int beldum_list_available() {
     using json = nlohmann::ordered_json;
     BeldumLogging logger;
     std::ifstream packages_file;
@@ -58,9 +58,9 @@ int beldum_list_available(std::string &packages_path) {
     int return_code = 0;
 
     // Check if the available packages file exists
-    if (file_exists(packages_path)) {
+    if (file_exists(available_packages_path)) {
         // const std::string directoryPath = "."; // Use the current directory
-        auto jsonFilesData = parse_all_json_files(packages_path);
+        auto jsonFilesData = parse_all_json_files(available_packages_path);
 
         // Print header with alignment and divider
         fmt::print("\n{:<20} {:<40} {:<60}\n", "PACKAGE", "DESCRIPTION", "REPOSITORY URL");
@@ -99,8 +99,9 @@ int beldum_list_available(std::string &packages_path) {
         fmt::print("\n\n");
     } else {
         // Display error if the file is missing
-        std::cerr << "\nThe available_packages.json does not exist. Please ensure the file is "
-                     "available at ~/.beldum/packages/\n";
+        fmt::print("\nThe {} path does not exist. Please ensure {} exists.\n",
+                   available_packages_path,
+                   available_packages_path);
         return_code = 1;
         return return_code;
     }
