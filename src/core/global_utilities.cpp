@@ -13,6 +13,11 @@
 #include <vector>
 
 /**
+ * GLOBAL VARIABLES THROUGHOUT PACKAGE MANAGER
+ */
+std::string beldum_json_path = "beldum.json";
+
+/**
  * Executes command and returns result
  * @param command = command to be executed
  */

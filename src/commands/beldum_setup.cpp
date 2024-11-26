@@ -153,13 +153,13 @@ message("\n\n")
     }
 }
 
-void create_package_json(nlohmann::json &package_data, std::string &project_name) {
+void create_package_json(nlohmann::ordered_json &package_data, std::string &project_name) {
     std::ofstream output;
     BeldumLogging logger;
 
-    if (!file_exists("beldum.json")) {
+    if (!file_exists(beldum_json_path)) {
         std::cout << "Creating beldum.json" << std::endl;
-        output.open("beldum.json");
+        output.open(beldum_json_path);
         if (!output.is_open()) {
             logger.logError("Error: Failed to open beldum.json file.");
         }
@@ -169,10 +169,9 @@ void create_package_json(nlohmann::json &package_data, std::string &project_name
             {"version", "1.0.0"},
             {"scripts",
              {{"build", "cmake -S . -B target/debug/build && cmake --build target/debug/build"},
-              {"clean", "[ -d ./target/debug/build ] && rm -rf ./target/debug/build"},
+              {"clean", "rm -rf ./target/debug/build"},
               {"execute", "./target/debug/build/cpp_program_executable"}}},
-            // {"dependencies", {{"fmt", "latest"}, {"spdlog", "1.11.0"}}}
-        };
+            {"dependencies", {}}};
 
         output << package_data.dump(4);
 
@@ -180,29 +179,10 @@ void create_package_json(nlohmann::json &package_data, std::string &project_name
         std::cout << "beldum.json has been created successfully." << std::endl;
     }
 }
-
-void create_installed_packages(nlohmann::json &installed_data) {
-    std::ofstream output;
-    BeldumLogging logger;
-
-    if (!file_exists("installed_packages.json")) {
-        std::cout << "Creating installed_packages.json" << std::endl;
-
-        output.open("installed_packages.json");
-        if (!output.is_open()) {
-            logger.logError("Error: Failed to open installed_packages.json file.");
-        }
-        installed_data["packages"] = {};
-        output << installed_data.dump(4);
-        output.close();
-    }
-}
 } // namespace beldum_setup
 
-int beldum_create_project(std::string &installed_packages_path,
-                          std::string &packages_path,
-                          std::string &project_name) {
-    using json = nlohmann::json;
+int beldum_create_project(std::string &packages_path, std::string &project_name) {
+    using json = nlohmann::ordered_json;
     json installed_data;
     json beldum_data;
     int return_code = 0;
@@ -224,13 +204,13 @@ int beldum_create_project(std::string &installed_packages_path,
 
     // creates packages folder if it doesn't exist
     std::cout << "\n";
-    if (file_exists(installed_packages_path) && file_exists(packages_path)) {
+    if (file_exists(beldum_json_path) && file_exists(packages_path)) {
         fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
                    "installing an example package with --install example_package\n\n");
         return_code = 1;
         return return_code;
     } else {
-        beldum_setup::create_installed_packages(installed_data);
+        // beldum_setup::create_installed_packages(installed_data);
         beldum_setup::create_package_json(beldum_data, project_name);
         beldum_setup::create_build_script();
         beldum_setup::create_src_and_main();
@@ -241,21 +221,19 @@ int beldum_create_project(std::string &installed_packages_path,
     return return_code;
 }
 
-int beldum_init(std::string &installed_packages_path,
-                std::string &packages_path,
-                std::string &project_name) {
-    using json = nlohmann::json;
+int beldum_init(std::string &packages_path, std::string &project_name) {
+    using json = nlohmann::ordered_json;
     json installed_data;
     json beldum_data;
     int return_code = 0;
 
-    if (file_exists(installed_packages_path) && file_exists(packages_path)) {
+    if (file_exists(beldum_json_path) && file_exists(packages_path)) {
         fmt::print("~/.beldum/packages/ and installed_packages.json already exist.\nTry "
                    "installing an example package with --install example_package\n\n");
         return_code = 1;
         return return_code;
     } else {
-        beldum_setup::create_installed_packages(installed_data);
+        // beldum_setup::create_installed_packages(installed_data);
         beldum_setup::create_package_json(beldum_data, project_name);
         beldum_setup::create_build_script();
         beldum_setup::create_src_and_main();

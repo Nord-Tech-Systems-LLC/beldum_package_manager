@@ -1,4 +1,5 @@
 #include "header_files/beldum_logging.hpp"
+#include "header_files/global_utilities.hpp"
 #include "header_files/package_manager.hpp"
 
 #include "nlohmann/json.hpp"
@@ -9,17 +10,19 @@ int beldum_uninstall(std::string &requested_package,
                      std::string &repo_name,
                      std::string &repo_type,
                      std::string &command,
-                     std::string &installed_packages_path,
+                     std::string &single_package_directory_path,
                      const std::string &cmake_list_path,
                      std::string &cmakeStaticCommand,
                      std::string &cmakeHeaderOnlyCommand) {
-    using json = nlohmann::json;
+    using json = nlohmann::ordered_json;
     BeldumLogging logger;
 
+    std::ifstream packages_file;
     std::ifstream installed_packages_file;
     std::ofstream output;
 
     json installed_data;
+    json package_data;
     int return_code;
 
     /**
@@ -29,7 +32,7 @@ int beldum_uninstall(std::string &requested_package,
     std::vector<std::string> cmakeLines; // used for reading all lines
     std::string cmakeLine;               // used for single cmake line
 
-    installed_packages_file.open(installed_packages_path);
+    installed_packages_file.open(beldum_json_path);
     if (!installed_packages_file.is_open()) {
         logger.logError("Error: Failed to open installed_packages.json file.");
         return_code = 1;
@@ -39,17 +42,29 @@ int beldum_uninstall(std::string &requested_package,
     installed_data = json::parse(installed_packages_file);
     installed_packages_file.close();
 
-    if (installed_data["packages"].contains(requested_package)) {
+    if (installed_data["dependencies"].contains(requested_package)) {
         logger.log("Uninstalling package: " + requested_package);
         repo_name = requested_package;
-        repo_type = installed_data["packages"][requested_package]["repo_type"];
+
+        // parse packages_file to get repo_type
+        packages_file.open(single_package_directory_path);
+        if (!packages_file.is_open()) {
+            logger.logError("Error: Failed to open " + single_package_directory_path + " file.");
+            return_code = 1;
+            return return_code;
+        }
+        logger.log("Opened " + single_package_directory_path + " file.");
+
+        package_data = json::parse(packages_file);
+        packages_file.close();
+        repo_type = package_data[requested_package]["repo_type"];
 
         // Remove the repo
         command = "rm -rf target/debug/deps/" + std::string(requested_package);
         logger.log("Executing command: " + command);
         return_code = system(command.c_str());
 
-        output.open(installed_packages_path);
+        output.open(beldum_json_path);
         if (!output.is_open()) {
             logger.logError("Error: Failed to open installed_packages.json file.");
             return_code = 1;
@@ -58,7 +73,7 @@ int beldum_uninstall(std::string &requested_package,
         logger.log("Opened installed_packages.json file.");
 
         // Update installed_packages.json
-        installed_data["packages"].erase(requested_package);
+        installed_data["dependencies"].erase(requested_package);
 
         output << installed_data.dump(4);
         output.close();

@@ -17,12 +17,11 @@ int beldum_install(std::string &requested_package,
                    std::string &repo_type,
                    std::string &command,
                    std::string &single_package_directory_path,
-                   std::string &installed_packages_path,
                    const std::string &cmake_list_path,
                    std::string &cmakeStaticCommand,
                    std::string &cmakeHeaderOnlyCommand) {
 
-    using json = nlohmann::json;
+    using json = nlohmann::ordered_json;
     BeldumLogging logger;
     std::ifstream packages_file;
     std::ifstream installed_packages_file;
@@ -60,7 +59,7 @@ int beldum_install(std::string &requested_package,
         package_data = json::parse(packages_file);
         packages_file.close();
 
-        installed_packages_file.open(installed_packages_path);
+        installed_packages_file.open(beldum_json_path);
         if (!installed_packages_file.is_open()) {
             logger.logError("Error: Failed to open installed_packages.json file.");
             return_code = 1;
@@ -78,7 +77,7 @@ int beldum_install(std::string &requested_package,
     }
 
     // Check if package is already installed
-    if (installed_data["packages"].contains(requested_package)) {
+    if (installed_data["dependencies"].contains(requested_package)) {
         logger.logWarning("The package \"" + requested_package + "\" is already installed.");
         fmt::print("\nThe package \"{}\" is already installed...\n\n", requested_package);
         return_code = 1;
@@ -182,7 +181,7 @@ int beldum_install(std::string &requested_package,
     }
     // Update installed package manager
     try {
-        output.open(installed_packages_path);
+        output.open(beldum_json_path);
         if (!output.is_open()) {
             logger.logError("Error: Failed to open installed_packages.json file.");
             return_code = 1;
@@ -190,10 +189,7 @@ int beldum_install(std::string &requested_package,
         }
         logger.log("Opened installed_packages.json file.");
 
-        installed_data["packages"][repo_name] = {{"git_link", repository_URL},
-                                                 {"repo_name", repo_name},
-                                                 {"version", repo_version},
-                                                 {"repo_type", repo_type}};
+        installed_data["dependencies"][repo_name] = repo_version;
 
         output << installed_data.dump(4);
         output.close();

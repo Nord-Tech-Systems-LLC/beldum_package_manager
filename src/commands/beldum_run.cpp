@@ -24,9 +24,8 @@ ScriptType detect_script_type(std::string &script) {
 } // namespace beldum_run
 
 int execute_build_script(std::string &script_name) {
-    std::string beldum_json_path = "beldum.json";
     std::ifstream beldum_json_file;
-    using json = nlohmann::json;
+    using json = nlohmann::ordered_json;
     int return_code = 0;
 
     std::cout << script_name << std::endl;

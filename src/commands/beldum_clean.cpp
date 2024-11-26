@@ -6,8 +6,8 @@
 #include <iostream>
 #include <string>
 
-int beldum_clean(std::string &command, std::string &installed_packages_path) {
-    using json = nlohmann::json;
+int beldum_clean(std::string &command) {
+    using json = nlohmann::ordered_json;
     BeldumLogging logger;
     std::ofstream output;
 
@@ -19,7 +19,7 @@ int beldum_clean(std::string &command, std::string &installed_packages_path) {
         command =
             "sudo find target/debug/deps/* -maxdepth 0 -type d ! -name \"json\" -exec rm -r {} +";
 
-        output.open(installed_packages_path);
+        output.open(beldum_json_path);
         if (!output.is_open()) {
             logger.logError("Error: Failed to open installed_packages.json file.");
             return_code = 1;

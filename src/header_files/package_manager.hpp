@@ -19,7 +19,6 @@ enum class PossibleOptions {
     CREATE,
     INSTALL,
     UNINSTALL,
-    // CLEAN,
     VERSION,
     LIST_INSTALLED_PACKAGES,
     LIST_AVAILABLE_PACKAGES
@@ -58,7 +57,6 @@ class PackageManager {
     std::string project_name;
     std::string script_name;
 
-    std::string installed_packages_path = "installed_packages.json";
     std::ifstream installed_packages_file;
 
     /**

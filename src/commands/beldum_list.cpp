@@ -11,7 +11,7 @@
 #include <unordered_map>
 
 // Function to parse a single JSON file
-nlohmann::json parse_json_file(const std::string &filepath) {
+nlohmann::ordered_json parse_json_file(const std::string &filepath) {
     std::ifstream file(filepath);
     if (!file) {
         throw std::runtime_error("Could not open file: " + filepath);
@@ -28,9 +28,9 @@ nlohmann::json parse_json_file(const std::string &filepath) {
 }
 
 // Main function to parse all JSON files in a directory
-std::unordered_map<std::string, nlohmann::json>
+std::unordered_map<std::string, nlohmann::ordered_json>
 parse_all_json_files(const std::string &directoryPath) {
-    std::unordered_map<std::string, nlohmann::json> jsonFilesData;
+    std::unordered_map<std::string, nlohmann::ordered_json> jsonFilesData;
 
     for (const auto &entry : std::filesystem::directory_iterator(directoryPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".json") {
@@ -50,7 +50,7 @@ parse_all_json_files(const std::string &directoryPath) {
 }
 
 int beldum_list_available(std::string &packages_path) {
-    using json = nlohmann::json;
+    using json = nlohmann::ordered_json;
     BeldumLogging logger;
     std::ifstream packages_file;
     json package_data;
@@ -108,16 +108,16 @@ int beldum_list_available(std::string &packages_path) {
     return return_code;
 };
 
-int beldum_list_installed(std::string &installed_packages_path) {
-    using json = nlohmann::json;
+int beldum_list_installed() {
+    using json = nlohmann::ordered_json;
     BeldumLogging logger;
     std::ifstream installed_packages_file;
     json installed_data;
 
     int return_code = 1;
 
-    if (file_exists("installed_packages.json")) {
-        installed_packages_file.open(installed_packages_path);
+    if (file_exists(beldum_json_path)) {
+        installed_packages_file.open(beldum_json_path);
         if (!installed_packages_file.is_open()) {
             logger.logError("Error: Failed to open installed_packages.json file.");
             return_code = 1;
@@ -132,12 +132,10 @@ int beldum_list_installed(std::string &installed_packages_path) {
         fmt::print("{:<40} {:<20}\n", std::string(40, '-'), std::string(20, '-'));
 
         // Iterate over installed packages and display each one
-        for (const auto &package : installed_data["packages"]) {
+        for (const auto &package : installed_data["dependencies"].items()) {
             // std::string repo_name = package.value()["repo_name"];
             // std::string version = package.value()["version"];
-            fmt::print("{:<40} {:<20}\n",
-                       std::string(package["repo_name"]),
-                       std::string(package["version"]));
+            fmt::print("{:<40} {:<20}\n", std::string(package.key()), std::string(package.value()));
         }
 
         // Bottom spacing
