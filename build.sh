@@ -33,13 +33,11 @@ cmake --build "$BUILD_DIR" --target all || error_exit "Build failed."
 
 # Step 6: Optionally install the executable (requires sudo)
 read -p "Do you want to install the executable to /usr/local/bin? (y/n): " install_choice
-if [[ "$install_choice" == "y" || "$install_choice" == "Y" ]]; then
+if [[ "${install_choice@L}" == "y" ]]; then
     echo "Installing executable..."
     sudo cmake --install "$BUILD_DIR" || error_exit "Installation failed."
     echo "Build and installation complete! Version: $VERSION"
-fi
-
-if [[ "$install_choice" == "n" || "$install_choice" == "N" ]]; then
+elif [[ "${install_choice@L}"  ]]; then
     echo "Build complete, but not installed. Version: $VERSION"
     error_exit "Installation failed."
 fi
