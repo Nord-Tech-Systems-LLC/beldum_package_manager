@@ -1,7 +1,7 @@
 
 
-#ifndef EXEC_UTIL_H
-#define EXEC_UTIL_H
+#ifndef GLOBAL_UTIL_H
+#define GLOBAL_UTIL_H
 
 #include <string>
 

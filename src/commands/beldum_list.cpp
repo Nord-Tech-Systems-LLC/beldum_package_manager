@@ -30,23 +30,23 @@ nlohmann::ordered_json parse_json_file(const std::string &filepath) {
 // Main function to parse all JSON files in a directory
 std::unordered_map<std::string, nlohmann::ordered_json>
 parse_all_json_files(const std::string &directoryPath) {
-    std::unordered_map<std::string, nlohmann::ordered_json> jsonFilesData;
+    std::unordered_map<std::string, nlohmann::ordered_json> json_files_data;
 
     for (const auto &entry : std::filesystem::directory_iterator(directoryPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".json") {
             const std::string filename = entry.path().filename().string();
             try {
-                nlohmann::json jsonData = parse_json_file(entry.path().string());
+                nlohmann::json json_data = parse_json_file(entry.path().string());
 
                 // Add the parsed JSON to the map
-                jsonFilesData[filename] = jsonData;
+                json_files_data[filename] = json_data;
 
             } catch (const std::exception &e) {
                 std::cerr << "Error parsing " << filename << ": " << std::string(e.what()) << '\n';
             }
         }
     }
-    return jsonFilesData;
+    return json_files_data;
 }
 
 int beldum_list_available() {
@@ -60,7 +60,7 @@ int beldum_list_available() {
     // Check if the available packages file exists
     if (file_exists(available_packages_path)) {
         // const std::string directoryPath = "."; // Use the current directory
-        auto jsonFilesData = parse_all_json_files(available_packages_path);
+        auto json_files_data = parse_all_json_files(available_packages_path);
 
         // Print header with alignment and divider
         fmt::print("\n{:<20} {:<40} {:<60}\n", "PACKAGE", "DESCRIPTION", "REPOSITORY URL");
@@ -70,19 +70,19 @@ int beldum_list_available() {
                    std::string(60, '-'));
 
         // Example output of parsed data
-        for (const auto &[filename, jsonData] : jsonFilesData) {
-            for (const auto &package_entry : jsonData.items()) {
+        for (const auto &[filename, json_data] : json_files_data) {
+            for (const auto &package_entry : json_data.items()) {
                 const std::string &package_name = package_entry.key();
                 const json &package = package_entry.value();
 
                 std::string description = package["description"];
-                std::string truncatedDescription =
+                std::string truncated_description =
                     description.length() > 37 ? description.substr(0, 36) + "..." : description;
 
                 // Retrieve package information -- print package details with alignment
                 fmt::print("{:<20} {:<40} {:<60}\n",
                            package_name,
-                           truncatedDescription,
+                           truncated_description,
                            std::string(package["repository_url"]));
 
                 // // Print tags as a comma-separated list, indented
