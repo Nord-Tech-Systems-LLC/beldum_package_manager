@@ -8,7 +8,7 @@
 #include <cstdlib> // for std::system
 
 namespace beldum_run {
-enum ScriptType { BashScript, SystemCommand };
+enum ScriptType { BashScript, SystemCommand, Unknown };
 
 ScriptType detect_script_type(std::string &script) {
     // to check if script is BashScript
@@ -16,8 +16,10 @@ ScriptType detect_script_type(std::string &script) {
         if (std::filesystem::exists(script) && std::filesystem::is_regular_file(script)) {
             return BashScript;
         }
-    } else
+    } else {
         return SystemCommand;
+    }
+    return Unknown;
 }
 } // namespace beldum_run
 
@@ -25,6 +27,7 @@ int execute_build_script(std::string &script_name) {
     std::string beldum_json_path = "beldum.json";
     std::ifstream beldum_json_file;
     using json = nlohmann::json;
+    int return_code = 0;
 
     std::cout << script_name << std::endl;
     json beldum_json_data;
@@ -42,26 +45,40 @@ int execute_build_script(std::string &script_name) {
     if (beldum_json_data.contains("scripts") && beldum_json_data["scripts"].contains(script_name)) {
         std::string command = beldum_json_data["scripts"][script_name];
         beldum_run::ScriptType script_type = beldum_run::detect_script_type(command);
-        std::cout << "Running script: " << script_name << " -> " << command << std::endl;
 
         switch (script_type) {
         case beldum_run::BashScript:
             std::cout << "Detected Bash script. Executing with bash..." << std::endl;
-            std::system(("bash " + command).c_str());
+            return_code = std::system(("bash " + command).c_str());
             break;
 
         case beldum_run::SystemCommand:
             std::cout << "Detected system command. Executing directly..." << std::endl;
-            std::system(command.c_str());
-            break;
+            if (script_name == "clean") {
+                if (show_warning()) {
+                    std::cout << "Running script: " << script_name << " -> " << command
+                              << std::endl;
+                    return_code = std::system(command.c_str());
+                    break;
+                };
+            } else {
+                std::cout << "Running script: " << script_name << " -> " << command << std::endl;
+                return_code = std::system(command.c_str());
+                break;
+            }
+            return return_code;
+
         default:
             std::cerr << "Error: Unknown script type or command not found: " << command
                       << std::endl;
+            return_code = 1;
             break;
         }
+        return return_code;
     } else {
         std::cerr << "Error: Script '" << script_name << "' not found in metadata." << std::endl;
-        return 1;
+        return_code = 1;
+        return return_code;
     }
 
     return 0;

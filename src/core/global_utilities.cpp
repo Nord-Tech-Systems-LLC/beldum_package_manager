@@ -52,6 +52,10 @@ bool show_warning() {
 
     // verification
     fmt::print("You entered: {}\n", response);
+    if (response.length() > 1) {
+        fmt::print("You entered too many characters, please enter either 'y' or 'n'.\n");
+        return false;
+    }
 
     // check user response
     if (response == "y" || response == "Y") {
