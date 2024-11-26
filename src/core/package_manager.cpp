@@ -33,7 +33,7 @@
 #include "CLI/CLI.hpp"
 
 #ifndef PROJECT_VERSION
-#define PROJECT_VERSION "unknown" // Fallback in case it’s not defined
+#define PROJECT_VERSION "unknown" // fallback in case version isn't defined
 #endif
 
 Package individual_package;
@@ -54,15 +54,12 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     json package_data;
     json installed_data;
 
-    // Extract requested package details
-    std::string requested_package = individual_package.name;
-    logger.log("Requested package to process: " + requested_package);
-    // std::string packages_directory = std::string(getenv("HOME")) + "/.beldum/packages/";
+    std::string requested_package = individual_package.name; // extract requested package details
     std::string single_package_directory_path =
         fmt::format("{}{}.json", available_packages_path, requested_package);
+    std::string current_path = std::string(std::filesystem::current_path()); // get the current path
 
-    // Get and log the current path
-    std::string current_path = std::string(std::filesystem::current_path());
+    logger.log("Requested package to process: " + requested_package);
     logger.log("Current directory path: " + current_path);
 
     std::string result_string;

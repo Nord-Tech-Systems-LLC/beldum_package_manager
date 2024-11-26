@@ -14,8 +14,10 @@
 #include "nlohmann/json.hpp"
 
 namespace beldum_setup {
-void create_src_and_main() {
-    std::string mainCpp = R"(
+/**
+ * main.cpp that's created during setup
+ */
+const std::string main_cpp = R"(
 #include <iostream>
 
 int main() {
@@ -24,25 +26,10 @@ int main() {
 }
 )";
 
-    std::ofstream output;
-    BeldumLogging logger;
-
-    if (!file_exists("src/main.cpp")) {
-        std::cout << "Creating src/main.cpp" << std::endl;
-        std::filesystem::create_directory("src");
-
-        output.open("src/main.cpp");
-        if (!output.is_open()) {
-            logger.logError("Error: Failed to open build.sh file.");
-        }
-
-        output << mainCpp;
-        output.close();
-    }
-}
-
-void create_build_script() {
-    std::string script = R"(
+/**
+ * build script created during setup
+ */
+const std::string build_script = R"(
 #!/bin/bash
 
 # Define variables
@@ -71,28 +58,11 @@ cmake --build "$BUILD_DIR" --target all || error_exit "Build failed."
 
 echo "Build complete!"
 )";
-    std::ofstream output;
-    BeldumLogging logger;
 
-    if (!file_exists("build.sh")) {
-        std::cout << "Creating ./build.sh" << std::endl;
-        output.open("build.sh");
-        if (!output.is_open()) {
-            logger.logError("Error: Failed to open build.sh file.");
-        }
-
-        output << script;
-        output.close(); // Close the file after writing
-
-        // Make the file executable
-        if (std::system("chmod +x build.sh") != 0) {
-            std::cerr << "Failed to make build.sh executable." << std::endl;
-        }
-    }
-}
-
-void create_cmake_lists() {
-    std::string cMakeLists = R"(
+/**
+ * CMakeLists.txt that's created during setup
+ */
+const std::string c_make_lists = R"(
 
 # CMake Gloabl Config
 cmake_minimum_required(VERSION 3.10)
@@ -138,6 +108,49 @@ message("\n\n")
 
 )";
 
+void create_src_and_main() {
+
+    std::ofstream output;
+    BeldumLogging logger;
+
+    if (!file_exists("src/main.cpp")) {
+        std::cout << "Creating src/main.cpp" << std::endl;
+        std::filesystem::create_directory("src");
+
+        output.open("src/main.cpp");
+        if (!output.is_open()) {
+            logger.logError("Error: Failed to open build.sh file.");
+        }
+
+        output << main_cpp;
+        output.close();
+    }
+}
+
+void create_build_script() {
+
+    std::ofstream output;
+    BeldumLogging logger;
+
+    if (!file_exists("build.sh")) {
+        std::cout << "Creating ./build.sh" << std::endl;
+        output.open("build.sh");
+        if (!output.is_open()) {
+            logger.logError("Error: Failed to open build.sh file.");
+        }
+
+        output << build_script;
+        output.close(); // Close the file after writing
+
+        // Make the file executable
+        if (std::system("chmod +x build.sh") != 0) {
+            std::cerr << "Failed to make build.sh executable." << std::endl;
+        }
+    }
+}
+
+void create_cmake_lists() {
+
     std::ofstream output;
     BeldumLogging logger;
 
@@ -148,7 +161,7 @@ message("\n\n")
         if (!output.is_open()) {
             logger.logError("Error: Failed to open CMakeLists.txt file.");
         }
-        output << cMakeLists;
+        output << c_make_lists;
         output.close();
     }
 }

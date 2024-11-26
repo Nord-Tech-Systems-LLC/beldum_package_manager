@@ -24,20 +24,20 @@ std::string available_packages_path = std::string(getenv("HOME")) + "/.beldum/pa
  * @param command = command to be executed
  */
 std::string execute_command(std::string cmd) {
-    // Define the specific function pointer type for the deleter
+    // define the specific function pointer type for the deleter
     using PipeDeleter = int (*)(FILE *);
 
-    // Pipe command result to string for use
+    // pipe command result to string for use
     std::array<char, 1024> buffer;
     std::string result;
 
-    // Initialize pipe with popen and custom deleter
+    // initialize pipe with popen and custom deleter
     std::unique_ptr<FILE, PipeDeleter> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
         throw std::runtime_error("popen() failed!");
     }
 
-    // Read the output from the command
+    // read the output from the command
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
         result += buffer.data();
     }
