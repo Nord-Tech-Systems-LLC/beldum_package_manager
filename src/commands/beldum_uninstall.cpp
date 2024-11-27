@@ -62,7 +62,7 @@ int beldum_uninstall(std::string &requested_package,
         // Remove the repo
         command = "rm -rf target/debug/deps/" + std::string(requested_package);
         logger.log("Executing command: " + command);
-        return_code = system(command.c_str());
+        return_code = execute_command_with_spinner(command.c_str());
 
         output.open(beldum_json_path);
         if (!output.is_open()) {

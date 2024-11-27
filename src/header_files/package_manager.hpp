@@ -52,11 +52,10 @@ class PackageManager {
     PackageManager &operator=(const PackageManager &) = delete;
 
     std::ifstream packages_file;
+    std::ifstream installed_packages_file;
 
     std::string project_name;
     std::string script_name;
-
-    std::ifstream installed_packages_file;
 
     /**
      * CMAKE CONFIG

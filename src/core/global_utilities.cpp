@@ -4,6 +4,8 @@
 #include "fmt/core.h"
 
 #include <array>
+#include <atomic>
+#include <chrono>
 #include <cstdlib> // For getenv
 #include <filesystem>
 #include <iostream>
@@ -11,6 +13,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <vector>
 
 /**
@@ -99,4 +102,57 @@ bool ends_with(std::string_view str, std::string_view suffix) {
  */
 bool starts_with(std::string_view str, std::string_view prefix) {
     return str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0;
+}
+
+namespace progress_bar {
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+void printProgress(double percentage) {
+    int val = (int)(percentage * 100);
+    int lpad = (int)(percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush(stdout);
+}
+
+// Spinner function to display terminal animation
+void spinner(std::atomic<bool> &is_running) {
+    const char spinner_chars[] = {'|', '/', '-', '\\'};
+    size_t spinner_index = 0;
+
+    while (is_running) {
+        printf("\r%c", spinner_chars[spinner_index]);
+        fflush(stdout);
+        spinner_index = (spinner_index + 1) % 4;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+// Simulate a command execution with progress updates
+int simulate_command_with_progress(std::atomic<bool> &is_running, const std::string &command) {
+    for (int i = 1; i <= 100; ++i) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(5)); // Simulate work
+        printProgress(i / 100.0);                                  // Update progress bar
+    }
+    is_running = false;             // Stop spinner after progress is complete
+    return system(command.c_str()); // Execute the system command
+}
+} // namespace progress_bar
+// Function to execute the system command
+int execute_command_with_spinner(const std::string &command) {
+    std::atomic<bool> is_running(true);
+
+    // Start spinner in a separate thread
+    std::thread spinner_thread(progress_bar::spinner, std::ref(is_running));
+
+    // Simulate command execution with progress updates
+    int return_code = progress_bar::simulate_command_with_progress(is_running, command);
+
+    // Wait for the spinner to stop
+    spinner_thread.join();
+
+    // Finalize output
+    std::cout << "\nCommand completed with return code: " << return_code << std::endl;
+    return return_code;
 }

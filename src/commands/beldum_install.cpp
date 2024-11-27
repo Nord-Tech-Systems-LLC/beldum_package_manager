@@ -118,11 +118,25 @@ int beldum_install(std::string &requested_package,
         return_code = system(create_target_dir_command.c_str());
 
         // copy the repo from cache to the target directory
-        std::string copy_command = fmt::format("cp -vr {} {}", cache_path, target_path);
+        std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
         logger.log("Executing command to copy repository from cache: " + copy_command);
-        return_code = system(copy_command.c_str());
+        return_code = execute_command_with_spinner(copy_command.c_str());
 
-        if (return_code != 0) {
+        if (return_code != 0) { // If cache exists, ensure target directory exists
+            create_target_dir_command = fmt::format("mkdir -p {}", "target/debug/deps/");
+            return_code = system(create_target_dir_command.c_str());
+
+            // copy the repo from cache to the target directory
+            copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
+            logger.log("Executing command to copy repository from cache: " + copy_command);
+            return_code = system(copy_command.c_str());
+
+            if (return_code != 0) {
+                logger.log("Error copying repository from cache.");
+                return return_code;
+            } else {
+                logger.log("Repository copied successfully from cache.");
+            }
             logger.log("Error copying repository from cache.");
             return return_code;
         } else {
@@ -152,7 +166,7 @@ int beldum_install(std::string &requested_package,
     }
 
     // After cloning, copy from cache to target/debug/deps/
-    std::string copy_command = fmt::format("cp -vr {} {}", cache_path, target_path);
+    std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
     logger.log("Executing command to copy repository from cache: " + copy_command);
     return_code = system(copy_command.c_str());
 
