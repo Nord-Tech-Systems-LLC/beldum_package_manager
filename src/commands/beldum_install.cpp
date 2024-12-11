@@ -256,7 +256,7 @@ int beldum_install(std::string &requested_package,
         for (std::string &sentence : cmakeLines) {
             if (sentence.find("BELDUM-LINKER") != std::string::npos) {
                 auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                cmakeLines.insert(it + 2, "    " + repo_name + "::" + repo_name);
+                cmakeLines.insert(it + 2, "    " + repo_cmake_alias);
                 cmakeRunNewLibrary = false;
             }
         }

@@ -9,6 +9,7 @@
 int beldum_uninstall(std::string &requested_package,
                      std::string &repo_name,
                      std::string &repo_type,
+                     std::string &repo_cmake_alias,
                      std::string &command,
                      std::string &single_package_directory_path,
                      const std::string &cmake_list_path,
@@ -58,6 +59,7 @@ int beldum_uninstall(std::string &requested_package,
         package_data = json::parse(packages_file);
         packages_file.close();
         repo_type = package_data[requested_package]["repo_type"];
+        repo_cmake_alias = package_data[requested_package]["cmake_alias"];
 
         // Remove the repo
         command = "rm -rf target/debug/deps/" + std::string(requested_package);
@@ -127,7 +129,7 @@ int beldum_uninstall(std::string &requested_package,
             }
             // if beldum linker already exists, add to linker
             for (std::string &sentence : cmakeLines) {
-                if (sentence.find("    " + repo_name + "::" + repo_name) != std::string::npos) {
+                if (sentence.find("    " + repo_cmake_alias) != std::string::npos) {
                     auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
                     cmakeLines.erase(it);
                 }

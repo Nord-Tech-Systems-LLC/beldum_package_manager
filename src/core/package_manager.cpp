@@ -98,6 +98,7 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
         return beldum_uninstall(requested_package,
                                 repo_name,
                                 repo_type,
+                                repo_cmake_alias,
                                 command,
                                 single_package_directory_path,
                                 cmake_list_path,
