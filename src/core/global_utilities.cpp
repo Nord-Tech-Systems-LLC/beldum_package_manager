@@ -26,7 +26,7 @@ std::string available_packages_path = std::string(getenv("HOME")) + "/.beldum/pa
  * Executes command and returns result
  * @param command = command to be executed
  */
-std::string execute_command(std::string cmd) {
+std::string execute_command_return_result(std::string cmd) {
     // define the specific function pointer type for the deleter
     using PipeDeleter = int (*)(FILE *);
 
@@ -155,4 +155,13 @@ int execute_command_with_spinner(const std::string &command) {
     // Finalize output
     std::cout << "\nCommand completed with return code: " << return_code << std::endl;
     return return_code;
+}
+
+void execute_system_command(const std::string &command) {
+    BeldumLogging logger;
+    int result = std::system(command.c_str());
+    if (result != 0) {
+        throw std::runtime_error("Command failed: " + command);
+    }
+    logger.log("Executed command: " + command);
 }

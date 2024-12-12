@@ -9,6 +9,122 @@
 #include <fstream>
 #include <iostream>
 
+void process_static_lib(const std::string &package_name,
+                        const std::string &repository_URL,
+                        const std::string &package_cmake_alias,
+                        std::vector<std::string> &cmake_lines) {
+    std::string cache_path = std::string(getenv("HOME")) + "/.beldum/cache/" + package_name;
+    std::string dependency_path = "target/debug/deps/";
+    std::string target_path = dependency_path + package_name;
+
+    try {
+        // Step 1: Check if project dependency directory exists
+        std::string create_target_dir_command = fmt::format("mkdir -p {}", dependency_path);
+        execute_system_command(create_target_dir_command.c_str());
+
+        // Step 2: Check if static lib is downloaded in cache directory
+        if (file_exists(cache_path)) {
+
+            // Step 3: copy from cache directory into project deps directory
+            std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
+            execute_command_with_spinner(copy_command.c_str());
+
+        } else {
+            // Step 4: else if static lib is downloaded in cache directory
+
+            // Step 5: clone from git into cache directory
+            std::string clone_command = fmt::format("git clone {} {}", repository_URL, cache_path);
+            execute_system_command(clone_command.c_str());
+
+            // Step 6: copy from cache directory into project deps directory
+            std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
+            execute_system_command(copy_command.c_str());
+        }
+
+        // if beldum linker already exists, add to linker
+        for (std::string &sentence : cmake_lines) {
+            if (sentence.find("BELDUM-LINKER") != std::string::npos) {
+                auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
+                cmake_lines.insert(it + 1,
+                                   "target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
+                                       package_cmake_alias + ")");
+            }
+        }
+
+        // command to add sub directory
+        std::string cmake_static_command =
+            fmt::format("add_subdirectory(${{BELDUM_LIB_DIR}}/{})", package_name);
+
+        for (std::string &sentence : cmake_lines) {
+            if (sentence.find("BELDUM-STATIC-ONLY") != std::string::npos) {
+                auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
+                cmake_lines.insert(it + 1, cmake_static_command);
+                break;
+            }
+        }
+
+        std::cout << "Static library " << package_name << " installed successfully.\n";
+    } catch (const std::exception &ex) {
+        std::cerr << "Error installing static library: " << ex.what() << '\n';
+    }
+}
+
+void process_header_only_lib(const std::string &package_name,
+                             const std::string &repository_URL,
+                             const std::string &package_cmake_alias,
+                             std::vector<std::string> &cmake_lines) {
+    std::string cache_path = std::string(getenv("HOME")) + "/.beldum/cache/" + package_name;
+    std::string dependency_path = "target/debug/deps/";
+    std::string target_path = dependency_path + package_name;
+
+    try {
+        // Step 1: Check if project dependency directory exists
+        std::string create_target_dir_command = fmt::format("mkdir -p {}", dependency_path);
+        execute_system_command(create_target_dir_command.c_str());
+
+        // Step 2: Check if static lib is downloaded in cache directory
+        if (file_exists(cache_path)) {
+
+            // Step 3: copy from cache directory into project deps directory
+            std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
+            execute_command_with_spinner(copy_command.c_str());
+
+        } else {
+            // Step 4: else if static lib is downloaded in cache directory
+
+            // Step 5: clone from git into cache directory
+            std::string clone_command = fmt::format("git clone {} {}", repository_URL, cache_path);
+            execute_system_command(clone_command.c_str());
+
+            // Step 6: copy from cache directory into project deps directory
+            std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
+            execute_system_command(copy_command.c_str());
+        }
+
+        // command for adding header_only_library
+        std::string cmake_header_only_command =
+            fmt::format("include_directories(${{BELDUM_LIB_DIR}}/{})", package_name);
+        // if beldum header config is found in CMakeLists.txt
+        for (std::string &sentence : cmake_lines) {
+            if (sentence.find("BELDUM-HEADER-ONLY") != std::string::npos) {
+                // Insert after the current sentence in the vector
+                auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
+                cmake_lines.insert(it + 1,
+                                   cmake_header_only_command); // Insert after the found sentence
+                break;
+            }
+        }
+
+        std::cout << "Static library " << package_name << " installed successfully.\n";
+    } catch (const std::exception &ex) {
+        std::cerr << "Error installing static library: " << ex.what() << '\n';
+    }
+}
+
+int process_dynamic_lib() {
+    return 0;
+}
+
 int beldum_install(std::string &requested_package,
                    std::string &repo_name,
                    std::string &repo_cmake_alias,
@@ -38,8 +154,6 @@ int beldum_install(std::string &requested_package,
     std::ifstream cmake_list_file;
     std::vector<std::string> cmakeLines; // used for reading all lines
     std::string cmakeLine;               // used for single cmake line
-    bool cmakeRunNewLibrary =
-        true; // used to dictate if a package has been insertted yet during rotation
 
     // Get and log the current path
     std::string current_path = std::string(std::filesystem::current_path());
@@ -108,81 +222,55 @@ int beldum_install(std::string &requested_package,
     }
     logger.log("Cleaned directory path: " + result_string);
 
-    // if cache directory exists
-    std::string cache_path = std::string(getenv("HOME")) + "/.beldum/cache/" + repo_name;
-    std::string target_path = "target/debug/deps/" + repo_name;
-
-    if (file_exists(cache_path)) {
-        // If cache exists, ensure target directory exists
-        std::string create_target_dir_command = fmt::format("mkdir -p {}", "target/debug/deps/");
-        return_code = system(create_target_dir_command.c_str());
-
-        // copy the repo from cache to the target directory
-        std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
-        logger.log("Executing command to copy repository from cache: " + copy_command);
-        return_code = execute_command_with_spinner(copy_command.c_str());
-
-        if (return_code != 0) { // If cache exists, ensure target directory exists
-            create_target_dir_command = fmt::format("mkdir -p {}", "target/debug/deps/");
-            return_code = system(create_target_dir_command.c_str());
-
-            // copy the repo from cache to the target directory
-            copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
-            logger.log("Executing command to copy repository from cache: " + copy_command);
-            return_code = system(copy_command.c_str());
-
-            if (return_code != 0) {
-                logger.log("Error copying repository from cache.");
-                return return_code;
-            } else {
-                logger.log("Repository copied successfully from cache.");
-            }
-            logger.log("Error copying repository from cache.");
-            return return_code;
-        } else {
-            logger.log("Repository copied successfully from cache.");
-        }
-    } else {
-        // If cache doesn't exist, clone the repo into the cache directory
-        logger.log("Repository not found in cache, cloning repository.");
-
-        std::string clone_command = fmt::format("git clone {} {}", repository_URL, cache_path);
-        logger.log("Executing command to clone repository into cache: " + clone_command);
-        return_code = system(clone_command.c_str());
-
-        if (return_code != 0) {
-            logger.log("Error cloning repository.");
-            return return_code;
-        }
-    }
-
-    // Ensure target directory exists before copying
-    std::string create_target_dir_command = fmt::format("mkdir -p {}", "target/debug/deps/");
-    return_code = system(create_target_dir_command.c_str());
-
-    if (return_code != 0) {
-        logger.log("Error creating target directory.");
+    /**
+     * Read the file line by line
+     */
+    cmake_list_file.open(cmake_list_path);
+    if (!cmake_list_file.is_open()) {
+        logger.logError("Error: Failed to open CMakeLists.txt file for reading.");
+        return_code = 1;
         return return_code;
     }
+    logger.log("Opened CMakeLists.txt file for reading.");
 
-    // After cloning, copy from cache to target/debug/deps/
-    std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
-    logger.log("Executing command to copy repository from cache: " + copy_command);
-    return_code = system(copy_command.c_str());
+    while (std::getline(cmake_list_file, cmakeLine)) {
+        cmakeLines.push_back(cmakeLine); // Add the current line to the vector
+    }
+    cmake_list_file.close();
 
-    if (return_code != 0) {
-        logger.log("Error copying repository from cache.");
-        return return_code;
-    } else {
-
-        logger.log("Repository copied successfully from cache.");
+    /**
+     * Logic for when / where to insert in CMakeLists.txt
+     */
+    if (repo_type == "header-only") {
+        process_header_only_lib(repo_name, repository_URL, repo_cmake_alias, cmakeLines);
     }
 
-    // git version number
+    if (repo_type == "static") {
+        process_static_lib(repo_name, repository_URL, repo_cmake_alias, cmakeLines);
+    }
+
+    /**
+     * Write to CMakeLists.txt
+     */
+    output.open(cmake_list_path);
+    if (!output.is_open()) {
+        logger.logError("Error: Failed to open CMakeLists.txt file for writing.");
+        return_code = 1;
+        return return_code;
+    }
+    logger.log("Opened CMakeLists.txt file for writing.");
+    for (const auto &outputLine : cmakeLines) {
+        output << outputLine << '\n';
+    }
+    output.close();
+
+    /**
+     * Update version info in beldum.json
+     */
     command = fmt::format("cd {}/target/debug/deps/{} && git describe --tags --abbrev=0",
                           result_string,
                           std::string(repo_name));
-    repo_version = execute_command(command);
+    repo_version = execute_command_return_result(command);
     repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'),
                        repo_version.end()); // removes new line character from version
 
@@ -215,82 +303,7 @@ int beldum_install(std::string &requested_package,
         return return_code;
     }
 
-    /**
-     * Read the file line by line
-     */
-    cmake_list_file.open(cmake_list_path);
-    if (!cmake_list_file.is_open()) {
-        logger.logError("Error: Failed to open CMakeLists.txt file for reading.");
-        return_code = 1;
-        return return_code;
-    }
-    logger.log("Opened CMakeLists.txt file for reading.");
-
-    // commands for adding
-    cmakeStaticCommand = fmt::format("add_subdirectory(${{BELDUM_LIB_DIR}}/{})", repo_name);
-    cmakeHeaderOnlyCommand = fmt::format("include_directories(${{BELDUM_LIB_DIR}}/{})", repo_name);
-
-    //   findAndInsert(cmakeLines, "BELDUM-STATIC-ONLY", cmakeStaticCommand, repo_name);
-    while (std::getline(cmake_list_file, cmakeLine)) {
-        cmakeLines.push_back(cmakeLine); // Add the current line to the vector
-    }
-
-    /**
-     * Logic for when / where to insert in CMakeLists.txt
-     */
-    if (repo_type == "header-only") {
-        // if beldum header config is found in CMakeLists.txt
-        for (std::string &sentence : cmakeLines) {
-            if (sentence.find("BELDUM-HEADER-ONLY") != std::string::npos) {
-                // Insert after the current sentence in the vector
-                auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                cmakeLines.insert(it + 1,
-                                  cmakeHeaderOnlyCommand); // Insert after the found sentence
-                break; // Optional: if you only want to insert once, otherwise remove this line
-            }
-        }
-    }
-
-    if (repo_type == "static") {
-        // if beldum linker already exists, add to linker
-        for (std::string &sentence : cmakeLines) {
-            if (sentence.find("BELDUM-LINKER") != std::string::npos) {
-                auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                cmakeLines.insert(
-                    it + 1,
-                    "target_link_libraries(${EXECUTABLE_NAME} PRIVATE " + repo_cmake_alias + ")");
-            }
-        }
-
-        for (std::string &sentence : cmakeLines) {
-            if (sentence.find("BELDUM-STATIC-ONLY") != std::string::npos) {
-                auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                cmakeLines.insert(it + 1, cmakeStaticCommand);
-                break;
-            }
-        }
-    }
-    cmake_list_file.close();
-
-    /**
-     * Write to CMakeLists.txt
-     */
-    output.open(cmake_list_path);
-    if (!output.is_open()) {
-        logger.logError("Error: Failed to open CMakeLists.txt file for writing.");
-        return_code = 1;
-        return return_code;
-    }
-    logger.log("Opened CMakeLists.txt file for writing.");
-    for (const auto &outputLine : cmakeLines) {
-        output << outputLine << '\n';
-    }
-    output.close();
-
     logger.log("Successfully updated " + beldum_json_path + " with " + repo_name);
-    std::cout << std::endl;
-    fmt::print("{} successfully installed.", repo_name);
-    std::cout << std::endl;
 
     return 0;
 }
