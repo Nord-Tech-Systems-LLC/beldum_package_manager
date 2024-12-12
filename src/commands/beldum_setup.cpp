@@ -69,6 +69,7 @@ cmake_minimum_required(VERSION 3.10)
 project(MyProject) # Set the project name
 set(CMAKE_CXX_STANDARD 20) # Specify the C++ standard
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(EXECUTABLE_NAME cpp_program_executable)
 
 # Link Dependencies
 set(BELDUM_LIB_DIR "${CMAKE_SOURCE_DIR}/target/debug/deps") # Set the path to the C++ libraries
@@ -76,7 +77,7 @@ link_directories(${BELDUM_LIB_DIR}) # Add the path to the linker
 
 # Create executeable
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/target/debug/build") # Set the output directory for the executable
-add_executable(cpp_program_executable src/main.cpp) # Add the executable
+add_executable(${EXECUTABLE_NAME} src/main.cpp) # Add the executable
 
 ##################################
 # TODO: Add libraries not managed by beldum
@@ -84,7 +85,7 @@ add_executable(cpp_program_executable src/main.cpp) # Add the executable
 ##################################
 
 # find_package(CURL REQUIRED)
-# target_link_libraries(cpp_program_executable PRIVATE CURL::libcurl)
+# target_link_libraries(${EXECUTABLE_NAME} PRIVATE CURL::libcurl)
 
 
 
@@ -100,11 +101,7 @@ add_executable(cpp_program_executable src/main.cpp) # Add the executable
 
 # BELDUM-STATIC-ONLY static library
 
-foreach(CPP_LIB ${MY_LIBRARIES})
-    message("Library Name: ${BELDUM_LIB_DIR}")
-    target_link_libraries(cpp_program_executable PRIVATE ${CPP_LIB})
-endforeach()
-message("\n\n")
+# BELDUM-LINKER
 
 )";
 

@@ -256,36 +256,17 @@ int beldum_install(std::string &requested_package,
         for (std::string &sentence : cmakeLines) {
             if (sentence.find("BELDUM-LINKER") != std::string::npos) {
                 auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                cmakeLines.insert(it + 2, "    " + repo_cmake_alias);
-                cmakeRunNewLibrary = false;
+                cmakeLines.insert(
+                    it + 1,
+                    "target_link_libraries(${EXECUTABLE_NAME} PRIVATE " + repo_cmake_alias + ")");
             }
         }
-        // if beldum library isn't new
-        if (!cmakeRunNewLibrary) {
-            for (std::string &sentence : cmakeLines) {
-                if (sentence.find("BELDUM-STATIC-ONLY") != std::string::npos) {
-                    auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                    cmakeLines.insert(it + 1, cmakeStaticCommand);
-                    break;
-                }
-            }
-        }
-        // if beldum library is new
-        if (cmakeRunNewLibrary) {
-            for (std::string &sentence : cmakeLines) {
-                if (sentence.find("BELDUM-STATIC-ONLY") != std::string::npos) {
-                    // Insert after the current sentence in the vector
-                    auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
 
-                    cmakeLines.insert(it + 1,
-                                      cmakeStaticCommand); // Insert the static library command
-                    cmakeLines.insert(it + 2, "# BELDUM-LINKER"); // Used as a separator
-                    cmakeLines.insert(it + 3, "set(MY_LIBRARIES # List your libraries to link");
-                    cmakeLines.insert(it + 4, "    " + repo_cmake_alias);
-                    cmakeLines.insert(it + 5, ")");
-
-                    break;
-                }
+        for (std::string &sentence : cmakeLines) {
+            if (sentence.find("BELDUM-STATIC-ONLY") != std::string::npos) {
+                auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                cmakeLines.insert(it + 1, cmakeStaticCommand);
+                break;
             }
         }
     }

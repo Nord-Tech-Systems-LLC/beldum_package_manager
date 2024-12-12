@@ -129,22 +129,10 @@ int beldum_uninstall(std::string &requested_package,
             }
             // if beldum linker already exists, add to linker
             for (std::string &sentence : cmakeLines) {
-                if (sentence.find("    " + repo_cmake_alias) != std::string::npos) {
+                if (sentence.find("target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
+                                  repo_cmake_alias + ")") != std::string::npos) {
                     auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
                     cmakeLines.erase(it);
-                }
-            }
-            // if beldum linker MY_LIBRARIES variable
-            for (std::string &sentence : cmakeLines) {
-                if (sentence.find("# BELDUM-LINKER") != std::string::npos) {
-                    auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                    // if a library does not exist in the MY_LIBRARIES variable then erase the next
-                    // three lines
-                    if (it + 2 < cmakeLines.end() && (it + 2)->find("::") == std::string::npos) {
-                        cmakeLines.erase(it);
-                        cmakeLines.erase(it);
-                        cmakeLines.erase(it);
-                    }
                 }
             }
         }
