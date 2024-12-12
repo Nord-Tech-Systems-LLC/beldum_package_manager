@@ -1,0 +1,12 @@
+{
+    "mysql": {
+        "git_link": "No git link",
+        "description": "Mysql C++ dynamic library sudo apt install libmysqlclient-dev ",
+        "repository_url": "No git url",
+        "repo_type": "dynamic",
+        "cmake_alias": "mysqlclient",
+        "tags": [
+            null
+        ]
+    }
+}
