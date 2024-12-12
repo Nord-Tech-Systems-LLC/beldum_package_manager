@@ -5,6 +5,9 @@
         "repository_url": "https://github.com/raspberrypi/pico-sdk",
         "repo_type": "static",
         "cmake_alias": "pico-sdk::pico-sdk",
+        "install_instructions": [
+            null
+        ],
         "tags": [
             "low-level",
             "header-only",

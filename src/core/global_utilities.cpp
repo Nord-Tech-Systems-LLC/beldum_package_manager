@@ -23,6 +23,22 @@ std::string beldum_json_path = "beldum.json";
 std::string available_packages_path = std::string(getenv("HOME")) + "/.beldum/packages/";
 
 /**
+ * Builds cmake syntax for STATIC libraries inputting / removing into CMakeLists.txt
+ * @param package_name = name of specific package
+ */
+std::string build_static_library_cmake_input(std::string package_name) {
+    return fmt::format("add_subdirectory(${{BELDUM_LIB_DIR}}/{})", package_name);
+};
+
+/**
+ * Builds cmake syntax for HEADER ONLY libraries inputting / removing into CMakeLists.txt
+ * @param package_name = name of specific package
+ */
+std::string build_header_only_library_cmake_input(std::string package_name) {
+    return fmt::format("include_directories(${{BELDUM_LIB_DIR}}/{})", package_name);
+};
+
+/**
  * Executes command and returns result
  * @param command = command to be executed
  */

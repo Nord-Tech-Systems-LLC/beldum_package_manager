@@ -5,6 +5,9 @@
         "repository_url": "https://github.com/troldal/OpenXLSX",
         "repo_type": "static",
         "cmake_alias": "OpenXLSX::OpenXLSX",
+        "install_instructions": [
+            null
+        ],
         "tags": [
             "excel",
             "cpp17"

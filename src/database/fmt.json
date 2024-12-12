@@ -5,6 +5,9 @@
         "repository_url": "https://github.com/fmtlib/fmt",
         "repo_type": "static",
         "cmake_alias": "fmt::fmt",
+        "install_instructions": [
+            null
+        ],
         "tags": [
             "format",
             "fmt",

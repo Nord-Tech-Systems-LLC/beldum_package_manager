@@ -5,6 +5,9 @@
         "repository_url": "https://github.com/Bucephalus-Studios/stevensMapLib",
         "repo_type": "header-only",
         "cmake_alias": "none",
+        "install_instructions": [
+            null
+        ],
         "tags": [
             "map",
             "header-only"

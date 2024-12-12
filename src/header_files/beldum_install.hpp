@@ -5,15 +5,8 @@
 #define BELDUM_INSTALL_H
 
 int beldum_install(std::string &requested_package,
-                   std::string &repo_name,
-                   std::string &repo_cmake_alias,
                    std::string &repo_version,
-                   std::string &repository_URL,
-                   std::string &repo_type,
-                   std::string &command,
                    std::string &package_directory_path,
-                   const std::string &cmake_list_path,
-                   std::string &cmakeStaticCommand,
-                   std::string &cmakeHeaderOnlyCommand);
+                   const std::string &cmake_list_path);
 
 #endif

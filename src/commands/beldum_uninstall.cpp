@@ -7,20 +7,20 @@
 #include <iostream>
 
 int beldum_uninstall(std::string &requested_package,
-                     std::string &repo_name,
-                     std::string &repo_type,
-                     std::string &repo_cmake_alias,
-                     std::string &command,
                      std::string &single_package_directory_path,
-                     const std::string &cmake_list_path,
-                     std::string &cmakeStaticCommand,
-                     std::string &cmakeHeaderOnlyCommand) {
+                     const std::string &cmake_list_path) {
     using json = nlohmann::ordered_json;
     BeldumLogging logger;
 
     std::ifstream packages_file;
     std::ifstream installed_packages_file;
     std::ofstream output;
+
+    // values needed from json
+    std::string command;
+    std::string package_name;
+    std::string package_type;
+    std::string package_cmake_alias;
 
     json installed_data;
     json package_data;
@@ -45,7 +45,7 @@ int beldum_uninstall(std::string &requested_package,
 
     if (installed_data["dependencies"].contains(requested_package)) {
         logger.log("Uninstalling package: " + requested_package);
-        repo_name = requested_package;
+        package_name = requested_package;
 
         // parse packages_file to get repo_type
         packages_file.open(single_package_directory_path);
@@ -58,8 +58,8 @@ int beldum_uninstall(std::string &requested_package,
 
         package_data = json::parse(packages_file);
         packages_file.close();
-        repo_type = package_data[requested_package]["repo_type"];
-        repo_cmake_alias = package_data[requested_package]["cmake_alias"];
+        package_type = package_data[requested_package]["repo_type"];
+        package_cmake_alias = package_data[requested_package]["cmake_alias"];
 
         // Remove the repo
         command = "rm -rf target/debug/deps/" + std::string(requested_package);
@@ -91,11 +91,6 @@ int beldum_uninstall(std::string &requested_package,
         }
         logger.log("Opened CMakeLists.txt file for reading.");
 
-        // commands for adding
-        cmakeStaticCommand = fmt::format("add_subdirectory(${{BELDUM_LIB_DIR}}/{})", repo_name);
-        cmakeHeaderOnlyCommand =
-            fmt::format("include_directories(${{BELDUM_LIB_DIR}}/{})", repo_name);
-
         //   findAndInsert(cmakeLines, "BELDUM-STATIC-ONLY", cmakeStaticCommand, repo_name);
         while (std::getline(cmake_list_file, cmakeLine)) {
             cmakeLines.push_back(cmakeLine); // Add the current line to the vector
@@ -105,10 +100,11 @@ int beldum_uninstall(std::string &requested_package,
          * Logic for when / where to insert in CMakeLists.txt
          */
 
-        if (repo_type == "header-only") {
+        if (package_type == "header-only") {
             // if beldum header config is found in CMakeLists.txt
             for (std::string &sentence : cmakeLines) {
-                if (sentence.find(cmakeHeaderOnlyCommand) != std::string::npos) {
+                if (sentence.find(build_header_only_library_cmake_input(package_name)) !=
+                    std::string::npos) {
                     // Erase after the current sentence in the vector
                     auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
                     cmakeLines.erase(it); // Erase the found sentence
@@ -117,10 +113,11 @@ int beldum_uninstall(std::string &requested_package,
             }
         }
 
-        if (repo_type == "static") {
+        if (package_type == "static") {
             // if beldum static command config is found in CMakeLists.txt
             for (std::string &sentence : cmakeLines) {
-                if (sentence.find(cmakeStaticCommand) != std::string::npos) {
+                if (sentence.find(build_static_library_cmake_input(package_name)) !=
+                    std::string::npos) {
                     // Erase after the current sentence in the vector
                     auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
                     cmakeLines.erase(it); // Erase the found sentence
@@ -130,12 +127,24 @@ int beldum_uninstall(std::string &requested_package,
             // if beldum linker already exists, add to linker
             for (std::string &sentence : cmakeLines) {
                 if (sentence.find("target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
-                                  repo_cmake_alias + ")") != std::string::npos) {
+                                  package_cmake_alias + ")") != std::string::npos) {
                     auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
                     cmakeLines.erase(it);
                 }
             }
         }
+
+        if (package_type == "dynamic") {
+            // if beldum linker already exists, add to linker
+            for (std::string &sentence : cmakeLines) {
+                if (sentence.find("target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
+                                  package_cmake_alias + ")") != std::string::npos) {
+                    auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                    cmakeLines.erase(it);
+                }
+            }
+        }
+
         cmake_list_file.close();
 
         /**

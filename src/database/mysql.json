@@ -5,6 +5,10 @@
         "repository_url": "No git url",
         "repo_type": "dynamic",
         "cmake_alias": "mysqlclient",
+        "install_instructions": [
+            "sudo apt install libmysqlclient-dev",
+            "mysql_config --version"
+        ],
         "tags": [
             null
         ]

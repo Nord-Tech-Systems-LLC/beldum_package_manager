@@ -5,6 +5,13 @@
         "repository_url": "https://github.com/libcpr/cpr",
         "repo_type": "static",
         "cmake_alias": "cpr::cpr",
-        "tags": ["http", "requests", "libcurl"]
+        "install_instructions": [
+            null
+        ],
+        "tags": [
+            "http",
+            "requests",
+            "libcurl"
+        ]
     }
 }

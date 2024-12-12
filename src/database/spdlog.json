@@ -5,6 +5,9 @@
         "repository_url": "https://github.com/gabime/spdlog",
         "repo_type": "static",
         "cmake_alias": "spdlog::spdlog",
+        "install_instructions": [
+            null
+        ],
         "tags": [
             "cpp",
             "logging",

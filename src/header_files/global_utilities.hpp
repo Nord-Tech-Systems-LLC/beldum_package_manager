@@ -15,5 +15,7 @@ bool ends_with(std::string_view str, std::string_view suffix);
 bool starts_with(std::string_view str, std::string_view prefix);
 int execute_command_with_spinner(const std::string &command);
 void execute_system_command(const std::string &command);
+std::string build_static_library_cmake_input(std::string package_name);
+std::string build_header_only_library_cmake_input(std::string package_name);
 
 #endif
