@@ -42,12 +42,13 @@ OPTIONS:
   -h,     --help              Print this help message and exit
 
 SUBCOMMANDS:
-  init                        Initialize the project
+  init                        Initialize new Beldum project
+  create                      Create new Beldum project
   version                     Show version information
   install                     Install a dependency
   uninstall                   Uninstall a dependency
   list                        List installed packages
-  clean                       Clean build directory and dependencies
+  run                         Run Beldum script
 ```
 
 ### Example Usage:
@@ -55,7 +56,10 @@ SUBCOMMANDS:
 `beldum list --available` to list available packages  
 `beldum list --installed` to list installed packages  
 `beldum install package_name` to install packages  
-`beldum uninstall package_name` to uninstall packages   
+`beldum uninstall package_name` to uninstall packages
+`beldum run build` to build project based on beldum.json build script
+`beldum run execute` to execute / run project based on beldum.json
+`beldum run clean` to clean build directory based on beldum.json   
 `beldum init` to initialize new project  
 `beldum clean` to remove contents from cpp_libs folder
 `beldum --help` to show commands 
@@ -64,4 +68,6 @@ SUBCOMMANDS:
 
 1. Execute `beldum init` to initialize a project directory.
 2. Execute `beldum install example_package` to install the preferred package.
-3. Link the package in the `CMakeLists.txt` to import into the project using the template provided during `beldum init`
+3. Link the package in the `CMakeLists.txt` to import into the project using the template provided during `beldum init`.
+4. Execute `beldum run build` to build project.
+5. Execute `beldum run execute` to execute main program executable.
