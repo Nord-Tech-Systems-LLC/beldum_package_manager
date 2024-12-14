@@ -1,5 +1,17 @@
 
 # Create new project
+
+## Dependencies:
+- `sudo apt install mysql-server`
+- Verify mysql server is running: `sudo service mysql status`
+- Login as root into mysql server: `sudo mysql`
+- Create a new user `CREATE USER 'sammy'@'localhost' IDENTIFIED BY 'password';`
+- Grant privileges to new created user: `GRANT CREATE, ALTER, DROP, INSERT, UPDATE, DELETE, SELECT, REFERENCES, RELOAD on *.* TO 'sammy'@'localhost' WITH GRANT OPTION;`
+- Flush privileges: `FLUSH PRIVILEGES;`
+- Exit mysql with `exit`
+- Test login to new user with: `mysql -u sammy -p` and enter password you used to create
+- Exit mysql and use those credentials you used to create user to test mysql library below:
+
 ```
 beldum create mysql_test && cd mysql_test
 beldum install mysql
