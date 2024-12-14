@@ -5,6 +5,8 @@
 #include "nlohmann/json.hpp"
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
 
 int beldum_uninstall(std::string &requested_package,
                      std::string &single_package_directory_path,
@@ -21,6 +23,7 @@ int beldum_uninstall(std::string &requested_package,
     std::string package_name;
     std::string package_type;
     std::string package_cmake_alias;
+    std::vector<std::string> uninstall_instructions;
 
     json installed_data;
     json package_data;
@@ -60,6 +63,7 @@ int beldum_uninstall(std::string &requested_package,
         packages_file.close();
         package_type = package_data[requested_package]["repo_type"];
         package_cmake_alias = package_data[requested_package]["cmake_alias"];
+        uninstall_instructions = package_data[requested_package]["uninstall_instructions"];
 
         // Remove the repo
         command = "rm -rf target/debug/deps/" + std::string(requested_package);
@@ -135,14 +139,30 @@ int beldum_uninstall(std::string &requested_package,
         }
 
         if (package_type == "dynamic") {
-            // if beldum linker already exists, add to linker
-            for (std::string &sentence : cmakeLines) {
-                if (sentence.find("target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
-                                  package_cmake_alias + ")") != std::string::npos) {
-                    auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                    cmakeLines.erase(it);
+            // To remove dyamic library from OS system
+            if (show_warning("WARNING: This operation will remove the dynamic library from the "
+                             "system.\nAll libraries that depend on this library will stop "
+                             "working. \nSelect 'n' to just remove from current project.")) {
+                for (std::string &sentence : cmakeLines) {
+                    if (sentence.find("target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
+                                      package_cmake_alias + ")") != std::string::npos) {
+                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                        cmakeLines.erase(it);
+                    }
                 }
-            }
+                for (int i = 0; i < uninstall_instructions.size(); i++) {
+                    execute_system_command(uninstall_instructions[i].c_str());
+                }
+            } else {
+                // else remove just from CMakeLists.txt for current project
+                for (std::string &sentence : cmakeLines) {
+                    if (sentence.find("target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
+                                      package_cmake_alias + ")") != std::string::npos) {
+                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
+                        cmakeLines.erase(it);
+                    }
+                }
+            };
         }
 
         cmake_list_file.close();

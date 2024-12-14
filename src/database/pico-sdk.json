@@ -8,6 +8,9 @@
         "install_instructions": [
             null
         ],
+        "uninstall_instructions": [
+            null
+        ],
         "tags": [
             "low-level",
             "header-only",

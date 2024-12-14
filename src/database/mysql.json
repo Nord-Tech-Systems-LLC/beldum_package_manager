@@ -9,6 +9,9 @@
             "sudo apt install libmysqlclient-dev",
             "mysql_config --version"
         ],
+        "uninstall_instructions": [
+            "sudo apt remove libmysqlclient-dev"
+        ],
         "tags": [
             null
         ]

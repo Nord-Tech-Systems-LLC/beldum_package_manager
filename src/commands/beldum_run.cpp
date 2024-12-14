@@ -54,7 +54,7 @@ int execute_build_script(std::string &script_name) {
         case beldum_run::SystemCommand:
             std::cout << "Detected system command. Executing directly..." << std::endl;
             if (script_name == "clean") {
-                if (show_warning()) {
+                if (show_warning("WARNING: This operation may have consequences.")) {
                     std::cout << "Running script: " << script_name << " -> " << command
                               << std::endl;
                     return_code = std::system(command.c_str());

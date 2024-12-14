@@ -15,8 +15,6 @@
 #include <sstream>
 #include <string>
 
-// #define JSON_DEPENDENCY_EXIST # for vscode prettier, comment out when not coding
-
 #ifndef JSON_DEPENDENCY_EXIST
 #error("JSON_DEPENDENCY_EXIST not defined");
 #endif

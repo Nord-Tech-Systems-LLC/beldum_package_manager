@@ -9,7 +9,7 @@
 extern std::string beldum_json_path;
 extern std::string available_packages_path;
 std::string execute_command_return_result(std::string cmd);
-bool show_warning();
+bool show_warning(std::string warning_message);
 bool file_exists(const std::string &name);
 bool ends_with(std::string_view str, std::string_view suffix);
 bool starts_with(std::string_view str, std::string_view prefix);

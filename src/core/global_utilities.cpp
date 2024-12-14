@@ -67,9 +67,9 @@ std::string execute_command_return_result(std::string cmd) {
 /**
  * Shows warning and cancels if N is selected
  */
-bool show_warning() {
+bool show_warning(std::string warning_message) {
     // display the warning message
-    fmt::print("WARNING: This operation may have consequences.\n");
+    fmt::print("{}\n", warning_message);
     fmt::print("Do you want to proceed? (y/n)");
 
     // get user input
