@@ -19,72 +19,65 @@ beldum install mysql
 
 ### Paste the following in `main.cpp`:
 ```cpp
+#include <cppconn/driver.h>
+#include <cppconn/exception.h>
+#include <cppconn/resultset.h>
+#include <cppconn/statement.h>
 #include <iostream>
-#include <mysql/mysql.h>
-#include <vector>
+#include <mysql_connection.h>
 
 class DatabaseConnection {
   private:
-    MYSQL *conn = mysql_init(NULL);
+    sql::Driver *driver;
+    sql::Connection *connection;
 
   public:
-    DatabaseConnection() {
-
-        if (conn == NULL) {
-            throw std::runtime_error("Error initializing MySQL connection");
-        }
-
-        if (mysql_real_connect(
-                conn, "localhost", "username", "password", "database", 3306, NULL, 0) == NULL) {
-            mysql_close(conn);
-            throw std::runtime_error("Error connecting to MySQL database: " +
-                                     std::string(mysql_error(conn)));
+    DatabaseConnection(const std::string &host,
+                       const std::string &user,
+                       const std::string &password,
+                       const std::string &schema) {
+        try {
+            driver = get_driver_instance();
+            connection = driver->connect(host, user, password);
+            connection->setSchema(schema);
+        } catch (sql::SQLException &e) {
+            std::cerr << "Connection error: " << e.what() << std::endl;
+            throw;
         }
     }
 
     ~DatabaseConnection() {
-        if (conn) {
-            mysql_close(conn);
+        if (connection) {
+            delete connection;
         }
     }
 
-    std::vector<std::vector<std::string>> executeQuery(const std::string &query) {
-        std::vector<std::vector<std::string>> results;
-
-        if (mysql_query(conn, query.c_str())) {
-            throw std::runtime_error("Error executing query: " + std::string(mysql_error(conn)));
+    sql::ResultSet *executeQuery(const std::string &query) {
+        try {
+            sql::Statement *stmt = connection->createStatement();
+            sql::ResultSet *res = stmt->executeQuery(query);
+            delete stmt;
+            return res;
+        } catch (sql::SQLException &e) {
+            std::cerr << "Query error: " << e.what() << std::endl;
+            throw;
         }
-
-        MYSQL_RES *mysql_res = mysql_store_result(conn);
-        if (mysql_res == NULL) {
-            throw std::runtime_error("Error storing result: " + std::string(mysql_error(conn)));
-        }
-
-        unsigned int num_fields = mysql_num_fields(mysql_res);
-        MYSQL_ROW row;
-
-        while ((row = mysql_fetch_row(mysql_res)) != NULL) {
-            std::vector<std::string> current_row;
-            for (unsigned int i = 0; i < num_fields; i++) {
-                current_row.push_back(row[i] ? row[i] : "NULL");
-            }
-            results.push_back(current_row);
-        }
-
-        mysql_free_result(mysql_res);
-        return results;
     }
+
 };
 
+
 int main() {
-    DatabaseConnection db;
-    auto results = db.executeQuery("SELECT * FROM Persons");
+    DatabaseConnection db("tcp://127.0.0.1:3306", "username", "password", "database");
+    sql::ResultSet *results = db.executeQuery("SELECT * FROM Persons");
     // print values
-    for (const auto &innerVector : results) {
-        for (const auto &str : innerVector) {
-            std::cout << str << " ";
-        }
-        std::cout << std::endl; // newline after each inner vector
+    while (res->next()) {
+        cout << "\t... MySQL replies: ";
+        /* Access column data by alias or column name */
+        cout << res->getString("_message") << endl;
+        cout << "\t... MySQL says it again: ";
+        /* Access column data by numeric offset, 1 is the first column */
+        cout << res->getString(1) << endl;
     }
     return 0;
 }
