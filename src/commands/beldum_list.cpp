@@ -8,7 +8,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <unordered_map>
+#include <map>
 
 // Function to parse a single JSON file
 nlohmann::ordered_json parse_json_file(const std::string &filepath) {
@@ -28,9 +28,9 @@ nlohmann::ordered_json parse_json_file(const std::string &filepath) {
 }
 
 // Main function to parse all JSON files in a directory
-std::unordered_map<std::string, nlohmann::ordered_json>
+std::map<std::string, nlohmann::ordered_json>
 parse_all_json_files(const std::string &directoryPath) {
-    std::unordered_map<std::string, nlohmann::ordered_json> json_files_data;
+    std::map<std::string, nlohmann::ordered_json> json_files_data;
 
     for (const auto &entry : std::filesystem::directory_iterator(directoryPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".json") {
