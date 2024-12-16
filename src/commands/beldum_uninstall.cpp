@@ -25,7 +25,6 @@ int beldum_uninstall(std::string &requested_package,
     std::unordered_map<std::string, std::vector<std::string>> instructions;
 
     // cmake config
-    std::ifstream cmake_list_file;
     std::vector<std::string> cmake_lines; // used for reading all lines
 
     int return_code;
