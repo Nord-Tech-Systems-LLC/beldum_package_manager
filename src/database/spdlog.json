@@ -5,18 +5,17 @@
         "repository_url": "https://github.com/gabime/spdlog",
         "repo_type": "static",
         "cmake_alias": "spdlog::spdlog",
-        "install_instructions": [
-            null
-        ],
-        "uninstall_instructions": [
-            null
-        ],
-        "tags": [
-            "cpp",
-            "logging",
-            "cpp11",
-            "header-only",
-            "spdlog"
-        ]
+        "instructions": {
+            "install": [
+                "mkdir -p :target_path",
+                "git clone :git_link :cache_path",
+                "cp -r :cache_path :target_path"
+            ],
+            "uninstall": ["rm -rf target/debug/deps/:requested_package"],
+            "version": [
+                "cd :current_path/target/debug/deps/:package_name && git describe --tags --abbrev=0"
+            ]
+        },
+        "tags": ["cpp", "logging", "cpp11", "header-only", "spdlog"]
     }
 }

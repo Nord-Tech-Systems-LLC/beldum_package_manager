@@ -5,15 +5,11 @@
         "repository_url": "No git url",
         "repo_type": "dynamic",
         "cmake_alias": "mysqlclient",
-        "install_instructions": [
-            "sudo apt install libmysqlclient-dev",
-            "mysql_config --version"
-        ],
-        "uninstall_instructions": [
-            "sudo apt remove libmysqlclient-dev"
-        ],
-        "tags": [
-            null
-        ]
+        "instructions": {
+            "install": ["sudo apt install libmysqlclient-dev"],
+            "uninstall": ["sudo apt remove libmysqlclient-dev"],
+            "version": ["mysql_config --version"]
+        },
+        "tags": [null]
     }
 }

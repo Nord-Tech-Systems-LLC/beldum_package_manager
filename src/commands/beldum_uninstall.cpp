@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 int beldum_uninstall(std::string &requested_package,
@@ -23,7 +24,7 @@ int beldum_uninstall(std::string &requested_package,
     std::string package_name;
     std::string package_type;
     std::string package_cmake_alias;
-    std::vector<std::string> uninstall_instructions;
+    std::unordered_map<std::string, std::vector<std::string>> instructions;
 
     json installed_data;
     json package_data;
@@ -63,7 +64,8 @@ int beldum_uninstall(std::string &requested_package,
         packages_file.close();
         package_type = package_data[requested_package]["repo_type"];
         package_cmake_alias = package_data[requested_package]["cmake_alias"];
-        uninstall_instructions = package_data[requested_package]["uninstall_instructions"];
+        instructions = package_data[requested_package]["instructions"];
+        std::vector<std::string> uninstall_instructions = instructions["uninstall"];
 
         // Remove the repo
         command = "rm -rf target/debug/deps/" + std::string(requested_package);
