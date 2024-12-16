@@ -18,7 +18,7 @@ std::string replace_placeholders(const std::string &command_template,
     for (const auto &[key, value] : replacements) {
         std::string placeholder = ":" + key;
 
-        // Find and replace all occurrences of the placeholder
+        // find and replace all occurrences of the placeholder
         std::size_t pos = result.find(placeholder);
         while (pos != std::string::npos) {
             result.replace(pos, placeholder.length(), value);
@@ -52,7 +52,7 @@ void process_static_lib(const std::string &package_name,
             std::string create_target_dir_command = fmt::format("mkdir -p {}", dependency_path);
             execute_system_command(create_target_dir_command.c_str());
 
-            // else Step 3: copy from cache directory into project deps directory
+            // else Step 4: copy from cache directory into project deps directory
             std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
             execute_command_with_spinner(copy_command.c_str());
         }
@@ -84,7 +84,6 @@ void process_static_lib(const std::string &package_name,
 
 void process_header_only_lib(
     const std::string &package_name,
-    const std::string &package_cmake_alias,
     std::unordered_map<std::string, std::vector<std::string>> &instructions,
     std::unordered_map<std::string, std::string> instruction_key,
     std::vector<std::string> &cmake_lines) {
@@ -106,26 +105,16 @@ void process_header_only_lib(
             std::string create_target_dir_command = fmt::format("mkdir -p {}", dependency_path);
             execute_system_command(create_target_dir_command.c_str());
 
-            // else Step 3: copy from cache directory into project deps directory
+            // Step 4: copy from cache directory into project deps directory
             std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
             execute_command_with_spinner(copy_command.c_str());
         }
 
-        // if beldum linker already exists, add to linker
-        for (std::string &sentence : cmake_lines) {
-            if (sentence.find("BELDUM-LINKER") != std::string::npos) {
-                auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
-                cmake_lines.insert(it + 1,
-                                   "target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
-                                       package_cmake_alias + ")");
-            }
-        }
-
         // command to add sub directory
         for (std::string &sentence : cmake_lines) {
-            if (sentence.find("BELDUM-STATIC-ONLY") != std::string::npos) {
+            if (sentence.find("BELDUM-HEADER-ONLY") != std::string::npos) {
                 auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
-                cmake_lines.insert(it + 1, build_static_library_cmake_input(package_name));
+                cmake_lines.insert(it + 1, build_header_only_library_cmake_input(package_name));
                 break;
             }
         }
@@ -171,61 +160,29 @@ void process_dynamic_lib(const std::string &package_name,
     }
 }
 
-int open_file_parse_json(const std::string &file_path, nlohmann::ordered_json &out_json) {
-    BeldumLogging logger;
-    std::ifstream file_stream;
-    int return_code;
-
-    file_stream.open(file_path);
-    if (!file_stream.is_open()) {
-        logger.logError("Error: Failed to open " + file_path + " file.");
-        return_code = 1;
-        return return_code;
-    }
-    logger.log("Opened " + file_path + " file.");
-
-    try {
-        out_json = nlohmann::ordered_json::parse(file_stream);
-        logger.log("Parsed JSON data from " + file_path);
-    } catch (const nlohmann::json::parse_error &e) {
-        logger.logError("Failed to parse JSON data: " + std::string(e.what()));
-        return_code = 1;
-        return return_code;
-    }
-
-    file_stream.close();
-    return return_code;
-}
-
 int beldum_install(std::string &requested_package,
                    std::string &repo_version,
                    std::string &single_package_directory_path,
                    const std::string &cmake_list_path) {
 
     // init needed variables for switch
-    using json = nlohmann::ordered_json;
-    json package_data;
-    json installed_data;
+    nlohmann::ordered_json package_data;
+    nlohmann::ordered_json installed_data;
     BeldumLogging logger;
-    std::ifstream packages_file;
-    std::ifstream installed_packages_file;
-    std::ofstream output;
 
     // values needed from json
-    std::string command;
     std::string package_URL;
     std::string package_name;
     std::string package_type;
     std::string package_cmake_alias;
     std::unordered_map<std::string, std::vector<std::string>> instructions;
 
-    int return_code;
-    std::string result_string;
-
     // cmake config variables
     std::ifstream cmake_list_file;
     std::vector<std::string> cmake_lines; // used for reading all lines
-    std::string cmakeLine;                // used for single cmake line
+
+    int return_code;
+    std::string result_string;
 
     // Get and log the current path
     std::string current_path = std::string(std::filesystem::current_path());
@@ -239,7 +196,7 @@ int beldum_install(std::string &requested_package,
     logger.log("Cleaned directory path: " + result_string);
     logger.log("Attempting to install package: " + requested_package);
 
-    // Parse packages and beldum.json
+    // parse packages and beldum.json
     if (!open_file_parse_json(single_package_directory_path, package_data)) {
         return 1;
     }
@@ -248,7 +205,7 @@ int beldum_install(std::string &requested_package,
         return 1;
     }
 
-    // Check if package is already installed
+    // check if package is already installed
     if (installed_data["dependencies"].contains(requested_package)) {
         logger.logWarning("The package \"" + requested_package + "\" is already installed.");
         fmt::print("\nThe package \"{}\" is already installed...\n\n", requested_package);
@@ -278,6 +235,7 @@ int beldum_install(std::string &requested_package,
     std::string dependency_path = "target/debug/deps/";
     std::string target_path = dependency_path + package_name;
 
+    // key of values to replace database instructions
     std::unordered_map<std::string, std::string> instruction_key = {
         {"current_path", result_string},
         {"package_name", std::string(package_name)},
@@ -285,62 +243,39 @@ int beldum_install(std::string &requested_package,
         {"cache_path", cache_path},
         {"target_path", target_path}};
 
-    /**
-     * Read the file line by line
-     */
-    cmake_list_file.open(cmake_list_path);
-    if (!cmake_list_file.is_open()) {
-        logger.logError("Error: Failed to open CMakeLists.txt file for reading.");
-        return_code = 1;
-        return return_code;
-    }
-    logger.log("Opened CMakeLists.txt file for reading.");
+    // read CMakeLists.txt line by line and insert into vector
+    if (!read_file_to_vector(cmake_list_path, cmake_lines)) {
+        return 1;
+    };
 
-    while (std::getline(cmake_list_file, cmakeLine)) {
-        cmake_lines.push_back(cmakeLine); // Add the current line to the vector
-    }
-    cmake_list_file.close();
+    std::cout << "CMakeAlias: " << package_cmake_alias << std::endl;
 
-    /**
-     * Logic for when / where to insert in CMakeLists.txt
-     */
+    // install instructions for header libraries
     if (package_type == "header-only") {
+        process_header_only_lib(package_name, instructions, instruction_key, cmake_lines);
+    }
+    // install instructions for static libraries
+    if (package_type == "static") {
         process_static_lib(
             package_name, package_cmake_alias, instructions, instruction_key, cmake_lines);
     }
-
-    if (package_type == "static") {
-        process_header_only_lib(
-            package_name, package_cmake_alias, instructions, instruction_key, cmake_lines);
-    }
-
+    // install instructions for dynamic libraries
     if (package_type == "dynamic") {
         process_dynamic_lib(package_name, package_cmake_alias, instructions, cmake_lines);
     }
 
-    /**
-     * Write to CMakeLists.txt
-     */
-    output.open(cmake_list_path);
-    if (!output.is_open()) {
-        logger.logError("Error: Failed to open CMakeLists.txt file for writing.");
-        return_code = 1;
-        return return_code;
-    }
-    logger.log("Opened CMakeLists.txt file for writing.");
-    for (const auto &outputLine : cmake_lines) {
-        output << outputLine << '\n';
-    }
-    output.close();
+    // write to CMakeLists.txt
+    if (!write_vector_to_file(cmake_list_path, cmake_lines)) {
+        return 1;
+    };
 
-    /**
-     * Update version info in beldum.json
-     */
-    command = replace_placeholders(instructions["version"][0], instruction_key);
-
+    // update version info in beldum.json
+    std::string command = replace_placeholders(instructions["version"][0], instruction_key);
     repo_version = execute_command_return_result(command);
-    repo_version.erase(std::remove(repo_version.begin(), repo_version.end(), '\n'),
-                       repo_version.end()); // removes new line character from version
+
+    // removes new line character from version
+    repo_version.erase(
+        std::remove(repo_version.begin(), repo_version.end(), '\n'), repo_version.end());
 
     // assigning unknown if no version number exists in git repo
     if (repo_version.empty()) {
@@ -349,27 +284,12 @@ int beldum_install(std::string &requested_package,
     } else {
         logger.log("Retrieved version for " + package_name + ": " + repo_version);
     }
-    // Update installed package manager
-    try {
-        output.open(beldum_json_path);
-        if (!output.is_open()) {
-            logger.logError("Error: Failed to open " + beldum_json_path + " file.");
-            return_code = 1;
-            return return_code;
-        }
-        logger.log("Opened " + beldum_json_path + " file.");
 
-        installed_data["dependencies"][package_name] = repo_version;
-
-        output << installed_data.dump(4);
-        output.close();
-
-        logger.log("Successfully updated " + beldum_json_path + " with " + package_name);
-    } catch (const std::exception &e) {
-        logger.logError("Failed to update " + beldum_json_path + ": " + std::string(e.what()));
-        return_code = 1;
-        return return_code;
-    }
+    // write data to beldum json
+    installed_data["dependencies"][package_name] = repo_version;
+    if (!write_json_to_file(beldum_json_path, installed_data)) {
+        return 1;
+    };
 
     logger.log("Successfully updated " + beldum_json_path + " with " + package_name);
 

@@ -2,12 +2,14 @@
 
 #include "header_files/global_utilities.hpp"
 #include "fmt/core.h"
+#include "nlohmann/json.hpp"
 
 #include <array>
 #include <atomic>
 #include <chrono>
 #include <cstdlib> // For getenv
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -17,7 +19,9 @@
 #include <vector>
 
 /**
+ * #####################################################################
  * GLOBAL VARIABLES THROUGHOUT PACKAGE MANAGER
+ * #####################################################################
  */
 std::string beldum_json_path = "beldum.json";
 std::string available_packages_path = std::string(getenv("HOME")) + "/.beldum/packages/";
@@ -66,6 +70,7 @@ std::string execute_command_return_result(std::string cmd) {
 
 /**
  * Shows warning and cancels if N is selected
+ * @param warning_message = message to be printed for the warning
  */
 bool show_warning(std::string warning_message) {
     // display the warning message
@@ -119,6 +124,123 @@ bool ends_with(std::string_view str, std::string_view suffix) {
 bool starts_with(std::string_view str, std::string_view prefix) {
     return str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0;
 }
+
+/**
+ * #####################################################################
+ * READ / WRITE TO TEXT AND JSON FILES
+ * #####################################################################
+ */
+
+/**
+ * Open file and parse to json object for manipulating
+ * @param file_path = path of the json file to be manipulated
+ * @param out_json = json object to output to for manipulating
+ */
+int open_file_parse_json(const std::string &file_path, nlohmann::ordered_json &out_json) {
+    BeldumLogging logger;
+    std::ifstream file_stream;
+    int return_code;
+
+    file_stream.open(file_path);
+    if (!file_stream.is_open()) {
+        logger.logError("Error: Failed to open " + file_path + " file.");
+        return_code = 1;
+        return return_code;
+    }
+    logger.log("Opened " + file_path + " file.");
+
+    try {
+        out_json = nlohmann::ordered_json::parse(file_stream);
+        logger.log("Parsed JSON data from " + file_path);
+    } catch (const nlohmann::json::parse_error &e) {
+        logger.logError("Failed to parse JSON data: " + std::string(e.what()));
+        return_code = 1;
+        return return_code;
+    }
+
+    file_stream.close();
+    return return_code;
+}
+
+/**
+ * Write JSON to file using contents of JSON object
+ * @param file_path = path of the file to output
+ * @param out_vector = JSON data to insert into file
+ */
+int write_json_to_file(const std::string &file_path, const nlohmann::ordered_json &data_to_write) {
+    BeldumLogging logger;
+    std::ofstream output;
+    int return_code;
+
+    output.open(file_path);
+    if (!output.is_open()) {
+        logger.logError("Error: Failed to open " + file_path + " file.");
+        return_code = 1;
+        return return_code;
+    }
+    logger.log("Opened and wrote to " + file_path + " file.");
+
+    output << data_to_write.dump(4);
+    output.close();
+    return return_code;
+}
+
+/**
+ * Open file and push to vector for manipulating
+ * @param file_path = path of the file to be manipulated
+ * @param out_vector = vector to output to for manipulating
+ */
+int read_file_to_vector(const std::string &file_path, std::vector<std::string> &out_vector) {
+    BeldumLogging logger;
+    std::ifstream file_stream;
+    std::string end_of_line; // used for single cmake line
+    int return_code;
+
+    file_stream.open(file_path);
+    if (!file_stream.is_open()) {
+        logger.logError("Error: Failed to open " + file_path + " file for reading.");
+        return_code = 1;
+        return return_code;
+    }
+    logger.log("Opened " + file_path + " file for reading.");
+
+    while (std::getline(file_stream, end_of_line)) {
+        out_vector.push_back(end_of_line); // Add the current line to the vector
+    }
+    file_stream.close();
+    return return_code;
+}
+
+/**
+ * Write file using contents of vector
+ * @param file_path = path of the file to output
+ * @param out_vector = vector to insert into file
+ */
+int write_vector_to_file(const std::string &file_path, std::vector<std::string> &out_vector) {
+    BeldumLogging logger;
+    std::ofstream output;
+    int return_code;
+
+    output.open(file_path);
+    if (!output.is_open()) {
+        logger.logError("Error: Failed to open " + file_path + " file for writing.");
+        return_code = 1;
+        return return_code;
+    }
+    logger.log("Opened " + file_path + " file for writing.");
+    for (const auto &output_line : out_vector) {
+        output << output_line << '\n';
+    }
+    output.close();
+
+    return return_code;
+}
+
+/**
+ * #####################################################################
+ * PROGRESS BAR
+ * #####################################################################
+ */
 
 namespace progress_bar {
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"

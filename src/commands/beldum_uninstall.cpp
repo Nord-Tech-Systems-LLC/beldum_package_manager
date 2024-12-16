@@ -12,12 +12,10 @@
 int beldum_uninstall(std::string &requested_package,
                      std::string &single_package_directory_path,
                      const std::string &cmake_list_path) {
-    using json = nlohmann::ordered_json;
+    // init needed variables for switch
+    nlohmann::ordered_json installed_data;
+    nlohmann::ordered_json package_data;
     BeldumLogging logger;
-
-    std::ifstream packages_file;
-    std::ifstream installed_packages_file;
-    std::ofstream output;
 
     // values needed from json
     std::string command;
@@ -26,42 +24,26 @@ int beldum_uninstall(std::string &requested_package,
     std::string package_cmake_alias;
     std::unordered_map<std::string, std::vector<std::string>> instructions;
 
-    json installed_data;
-    json package_data;
+    // cmake config
+    std::ifstream cmake_list_file;
+    std::vector<std::string> cmake_lines; // used for reading all lines
+
     int return_code;
 
-    /**
-     * CMAKE CONFIG
-     */
-    std::ifstream cmake_list_file;
-    std::vector<std::string> cmakeLines; // used for reading all lines
-    std::string cmakeLine;               // used for single cmake line
-
-    installed_packages_file.open(beldum_json_path);
-    if (!installed_packages_file.is_open()) {
-        logger.logError("Error: Failed to open " + beldum_json_path + " file.");
-        return_code = 1;
-        return return_code;
-    }
-    logger.log("Opened " + beldum_json_path + " file.");
-    installed_data = json::parse(installed_packages_file);
-    installed_packages_file.close();
+    // parse beldum json file to get JSON data
+    if (!open_file_parse_json(beldum_json_path, installed_data)) {
+        return 1;
+    };
 
     if (installed_data["dependencies"].contains(requested_package)) {
         logger.log("Uninstalling package: " + requested_package);
         package_name = requested_package;
 
-        // parse packages_file to get repo_type
-        packages_file.open(single_package_directory_path);
-        if (!packages_file.is_open()) {
-            logger.logError("Error: Failed to open " + single_package_directory_path + " file.");
-            return_code = 1;
-            return return_code;
-        }
-        logger.log("Opened " + single_package_directory_path + " file.");
+        // parse packages_file to get data from JSON
+        if (!open_file_parse_json(single_package_directory_path, package_data)) {
+            return 1;
+        };
 
-        package_data = json::parse(packages_file);
-        packages_file.close();
         package_type = package_data[requested_package]["repo_type"];
         package_cmake_alias = package_data[requested_package]["cmake_alias"];
         instructions = package_data[requested_package]["instructions"];
@@ -72,84 +54,62 @@ int beldum_uninstall(std::string &requested_package,
         logger.log("Executing command: " + command);
         return_code = execute_command_with_spinner(command.c_str());
 
-        output.open(beldum_json_path);
-        if (!output.is_open()) {
-            logger.logError("Error: Failed to open " + beldum_json_path + " file.");
-            return_code = 1;
-            return return_code;
-        }
-        logger.log("Opened " + beldum_json_path + " file.");
-
-        // Update beldum.json
+        // Remove requested package from beldum.json
         installed_data["dependencies"].erase(requested_package);
+        if (!write_json_to_file(beldum_json_path, installed_data)) {
+            return 1;
+        };
 
-        output << installed_data.dump(4);
-        output.close();
+        // read the file line by line to vector for manipulating
+        if (!read_file_to_vector(cmake_list_path, cmake_lines)) {
+            return 1;
+        };
 
-        /**
-         * Read the file line by line
-         */
-        cmake_list_file.open(cmake_list_path);
-        if (!cmake_list_file.is_open()) {
-            logger.logError("Error: Failed to open CMakeLists.txt file for reading.");
-            return_code = 1;
-            return return_code;
-        }
-        logger.log("Opened CMakeLists.txt file for reading.");
-
-        //   findAndInsert(cmakeLines, "BELDUM-STATIC-ONLY", cmakeStaticCommand, repo_name);
-        while (std::getline(cmake_list_file, cmakeLine)) {
-            cmakeLines.push_back(cmakeLine); // Add the current line to the vector
-        }
-
-        /**
-         * Logic for when / where to insert in CMakeLists.txt
-         */
-
+        // uninstall instructions for header only
         if (package_type == "header-only") {
             // if beldum header config is found in CMakeLists.txt
-            for (std::string &sentence : cmakeLines) {
+            for (std::string &sentence : cmake_lines) {
                 if (sentence.find(build_header_only_library_cmake_input(package_name)) !=
                     std::string::npos) {
                     // Erase after the current sentence in the vector
-                    auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                    cmakeLines.erase(it); // Erase the found sentence
+                    auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
+                    cmake_lines.erase(it); // Erase the found sentence
                     break;
                 }
             }
         }
-
+        // uninstall instructions for static
         if (package_type == "static") {
             // if beldum static command config is found in CMakeLists.txt
-            for (std::string &sentence : cmakeLines) {
+            for (std::string &sentence : cmake_lines) {
                 if (sentence.find(build_static_library_cmake_input(package_name)) !=
                     std::string::npos) {
                     // Erase after the current sentence in the vector
-                    auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                    cmakeLines.erase(it); // Erase the found sentence
+                    auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
+                    cmake_lines.erase(it); // Erase the found sentence
                     break;
                 }
             }
             // if beldum linker already exists, add to linker
-            for (std::string &sentence : cmakeLines) {
+            for (std::string &sentence : cmake_lines) {
                 if (sentence.find("target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
                                   package_cmake_alias + ")") != std::string::npos) {
-                    auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                    cmakeLines.erase(it);
+                    auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
+                    cmake_lines.erase(it);
                 }
             }
         }
-
+        // uninstall instructions for dynamic
         if (package_type == "dynamic") {
             // To remove dyamic library from OS system
             if (show_warning("WARNING: This operation will remove the dynamic library from the "
                              "system.\nAll libraries that depend on this library will stop "
                              "working. \nSelect 'n' to just remove from current project.")) {
-                for (std::string &sentence : cmakeLines) {
+                for (std::string &sentence : cmake_lines) {
                     if (sentence.find("target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
                                       package_cmake_alias + ")") != std::string::npos) {
-                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                        cmakeLines.erase(it);
+                        auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
+                        cmake_lines.erase(it);
                     }
                 }
                 for (int i = 0; i < uninstall_instructions.size(); i++) {
@@ -157,32 +117,20 @@ int beldum_uninstall(std::string &requested_package,
                 }
             } else {
                 // else remove just from CMakeLists.txt for current project
-                for (std::string &sentence : cmakeLines) {
+                for (std::string &sentence : cmake_lines) {
                     if (sentence.find("target_link_libraries(${EXECUTABLE_NAME} PRIVATE " +
                                       package_cmake_alias + ")") != std::string::npos) {
-                        auto it = std::find(cmakeLines.begin(), cmakeLines.end(), sentence);
-                        cmakeLines.erase(it);
+                        auto it = std::find(cmake_lines.begin(), cmake_lines.end(), sentence);
+                        cmake_lines.erase(it);
                     }
                 }
             };
         }
 
-        cmake_list_file.close();
-
-        /**
-         * Write to CMakeLists.txt
-         */
-        output.open(cmake_list_path);
-        if (!output.is_open()) {
-            logger.logError("Error: Failed to open CMakeLists.txt file for writing.");
-            return_code = 1;
-            return return_code;
-        }
-        logger.log("Opened CMakeLists.txt file for writing.");
-        for (const auto &outputLine : cmakeLines) {
-            output << outputLine << '\n';
-        }
-        output.close();
+        // write to CMakeLists.txt
+        if (!write_vector_to_file(cmake_list_path, cmake_lines)) {
+            return 1;
+        };
 
         logger.log("Package " + requested_package + " successfully uninstalled.");
         fmt::print("\nPackage {} successfully uninstalled.\n\n", requested_package);
