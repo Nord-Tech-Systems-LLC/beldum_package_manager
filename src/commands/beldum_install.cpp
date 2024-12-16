@@ -29,14 +29,26 @@ std::string replace_placeholders(const std::string &command_template,
     return result;
 }
 
+void copy_project_from_cache_to_project(std::string package_name) {
+    std::string cache_path = std::string(getenv("HOME")) + "/.beldum/cache/" + package_name;
+    std::string dependency_path = "target/debug/deps/";
+    std::string target_path = dependency_path + package_name;
+
+    // Step 3: Check if project dependency directory exists
+    std::string create_target_dir_command = fmt::format("mkdir -p {}", dependency_path);
+    execute_system_command(create_target_dir_command.c_str());
+
+    // else Step 4: copy from cache directory into project deps directory
+    std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
+    execute_command_with_spinner(copy_command.c_str());
+}
+
 void process_static_lib(const std::string &package_name,
                         const std::string &package_cmake_alias,
                         std::unordered_map<std::string, std::vector<std::string>> &instructions,
                         std::unordered_map<std::string, std::string> instruction_key,
                         std::vector<std::string> &cmake_lines) {
     std::string cache_path = std::string(getenv("HOME")) + "/.beldum/cache/" + package_name;
-    std::string dependency_path = "target/debug/deps/";
-    std::string target_path = dependency_path + package_name;
 
     try {
         // Step 1: Check lib is NOT downloaded in cache directory
@@ -48,13 +60,8 @@ void process_static_lib(const std::string &package_name,
             }
 
         } else {
-            // Step 3: Check if project dependency directory exists
-            std::string create_target_dir_command = fmt::format("mkdir -p {}", dependency_path);
-            execute_system_command(create_target_dir_command.c_str());
-
-            // else Step 4: copy from cache directory into project deps directory
-            std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
-            execute_command_with_spinner(copy_command.c_str());
+            // Else copy from cache path to deps project directory
+            copy_project_from_cache_to_project(package_name);
         }
 
         // if beldum linker already exists, add to linker
@@ -88,8 +95,6 @@ void process_header_only_lib(
     std::unordered_map<std::string, std::string> instruction_key,
     std::vector<std::string> &cmake_lines) {
     std::string cache_path = std::string(getenv("HOME")) + "/.beldum/cache/" + package_name;
-    std::string dependency_path = "target/debug/deps/";
-    std::string target_path = dependency_path + package_name;
 
     try {
         // Step 1: Check lib is NOT downloaded in cache directory
@@ -101,13 +106,8 @@ void process_header_only_lib(
             }
 
         } else {
-            // Step 3: Check if project dependency directory exists
-            std::string create_target_dir_command = fmt::format("mkdir -p {}", dependency_path);
-            execute_system_command(create_target_dir_command.c_str());
-
-            // Step 4: copy from cache directory into project deps directory
-            std::string copy_command = fmt::format("cp -r {} {}", cache_path, target_path);
-            execute_command_with_spinner(copy_command.c_str());
+            // Else copy from cache path to deps project directory
+            copy_project_from_cache_to_project(package_name);
         }
 
         // command to add sub directory
