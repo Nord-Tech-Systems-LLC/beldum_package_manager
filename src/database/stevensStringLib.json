@@ -7,7 +7,6 @@
         "cmake_alias": "none",
         "instructions": {
             "install": [
-                "mkdir -p :target_path",
                 "git clone :git_link :cache_path",
                 "cp -r :cache_path :target_path"
             ],

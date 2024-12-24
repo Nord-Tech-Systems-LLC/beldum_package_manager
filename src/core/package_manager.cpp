@@ -71,15 +71,18 @@ int PackageManager::check_passed_shell_arguments(PossibleOptions options) {
     case PossibleOptions::INIT:
         return beldum_init(project_name);
 
-    case PossibleOptions::INSTALL:
-        return beldum_install(
-            requested_package, repo_version, single_package_directory_path, cmake_list_path);
+    case PossibleOptions::INSTALL_ALL:
+        return beldum_install_all();
+
+    case PossibleOptions::INSTALL_SINGLE:
+        return beldum_install_single(
+            requested_package, repo_version, single_package_directory_path);
 
     case PossibleOptions::RUN:
         return execute_build_script(script_name);
 
     case PossibleOptions::UNINSTALL:
-        return beldum_uninstall(requested_package, single_package_directory_path, cmake_list_path);
+        return beldum_uninstall(requested_package, single_package_directory_path);
 
     case PossibleOptions::LIST_INSTALLED_PACKAGES:
         return beldum_list_installed();
@@ -114,18 +117,23 @@ int PackageManager::parse_arguments(int argc, char **argv) {
 
     // install library
     auto install_cmd = app.add_subcommand("install", "Install a dependency");
-    install_cmd->add_option("package_name", package_name, "Name of the package to install")
-        ->required();
+    install_cmd->add_option("package_name", package_name, "Name of the package to install");
     install_cmd->callback([this, &package_name]() {
-        if (!file_exists(beldum_json_path) || !file_exists(available_packages_path)) {
-            fmt::print("Error: Missing required files ({} or {}). Please run "
-                       "'beldum init' first.\n",
-                       beldum_json_path,
-                       available_packages_path);
-            return;
+        if (package_name.empty()) {
+            // install all packages
+            check_passed_shell_arguments(PossibleOptions::INSTALL_ALL);
+        } else {
+            // install a single package
+            if (!file_exists(beldum_json_path) || !file_exists(available_packages_path)) {
+                fmt::print("Error: Missing required files ({} or {}). Please run "
+                           "'beldum init' first.\n",
+                           beldum_json_path,
+                           available_packages_path);
+                return;
+            }
+            individual_package.name = package_name;
+            check_passed_shell_arguments(PossibleOptions::INSTALL_SINGLE);
         }
-        individual_package.name = package_name;
-        check_passed_shell_arguments(PossibleOptions::INSTALL);
     });
 
     // uninstall library

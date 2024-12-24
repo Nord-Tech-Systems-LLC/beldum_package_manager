@@ -7,21 +7,14 @@
         "cmake_alias": "cpp_dotenv",
         "instructions": {
             "install": [
-                "mkdir -p :target_path",
                 "git clone :git_link :cache_path",
                 "cp -r :cache_path :target_path"
             ],
-            "uninstall": [
-                "rm -rf target/debug/deps/:requested_package"
-            ],
+            "uninstall": ["rm -rf target/debug/deps/:requested_package"],
             "version": [
                 "cd :current_path/target/debug/deps/:package_name && git describe --tags --abbrev=0"
             ]
         },
-        "tags": [
-            "dotenv",
-            "enviornment variables",
-            "dotenv-parser"
-        ]
+        "tags": ["dotenv", "enviornment variables", "dotenv-parser"]
     }
 }

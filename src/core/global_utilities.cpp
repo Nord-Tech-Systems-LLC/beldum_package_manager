@@ -25,6 +25,7 @@
  */
 std::string beldum_json_path = "beldum.json";
 std::string available_packages_path = std::string(getenv("HOME")) + "/.beldum/packages/";
+const std::string cmake_list_path = "CMakeLists.txt";
 
 /**
  * Builds cmake syntax for STATIC libraries inputting / removing into CMakeLists.txt

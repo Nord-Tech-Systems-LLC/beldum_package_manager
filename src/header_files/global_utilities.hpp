@@ -9,6 +9,7 @@
 
 extern std::string beldum_json_path;
 extern std::string available_packages_path;
+extern const std::string cmake_list_path;
 std::string execute_command_return_result(std::string cmd);
 bool show_warning(std::string warning_message);
 bool file_exists(const std::string &name);

@@ -9,9 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-int beldum_uninstall(std::string &requested_package,
-                     std::string &single_package_directory_path,
-                     const std::string &cmake_list_path) {
+int beldum_uninstall(std::string &requested_package, std::string &single_package_directory_path) {
     // init needed variables for switch
     nlohmann::ordered_json installed_data;
     nlohmann::ordered_json package_data;

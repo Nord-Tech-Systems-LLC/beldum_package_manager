@@ -160,10 +160,90 @@ void process_dynamic_lib(const std::string &package_name,
     }
 }
 
-int beldum_install(std::string &requested_package,
-                   std::string &repo_version,
-                   std::string &single_package_directory_path,
-                   const std::string &cmake_list_path) {
+int beldum_install_all() {
+    std::cout << "Install all packages!" << std::endl;
+    nlohmann::ordered_json installed_data;
+    nlohmann::ordered_json package_data;
+    BeldumLogging logger;
+
+    if (!open_file_parse_json(beldum_json_path, installed_data)) {
+        return 1;
+    }
+
+    for (auto &[name, version] : installed_data["dependencies"].items()) {
+
+        std::string cache_path = std::string(getenv("HOME")) + "/.beldum/cache/" + name;
+        std::string dependency_path = "target/debug/deps/";
+        std::string target_path = dependency_path + name;
+
+        if (file_exists(target_path)) {
+            std::cout << std::endl;
+            fmt::print("{} already exists, skipping install.", target_path);
+            std::cout << std::endl;
+            continue;
+        }
+
+        if (file_exists(cache_path)) {
+            // for copying from cache
+            copy_project_from_cache_to_project(name);
+        } else {
+            std::string individual_package_json =
+                fmt::format("{}{}.json", available_packages_path, name);
+
+            std::cout << individual_package_json << std::endl;
+            // else follow install instructions
+            if (!open_file_parse_json(individual_package_json, package_data)) {
+                return 1;
+            }
+
+            std::string package_type = package_data[name]["repo_type"];
+            std::string package_URL = package_data[name]["repository_url"];
+            std::unordered_map<std::string, std::vector<std::string>> instructions =
+                package_data[name]["instructions"];
+            ;
+            std::string package_cmake_alias;
+            std::vector<std::string> cmake_lines; // used for reading all lines
+            std::string result_string;
+
+            // Get and log the current path
+            std::string current_path = std::string(std::filesystem::current_path());
+            logger.log("Current directory path: " + current_path);
+            // strips quotes from directory
+            for (char c : current_path) {
+                if (c != '\"') {
+                    result_string += c;
+                }
+            }
+
+            // key of values to replace database instructions
+            std::unordered_map<std::string, std::string> instruction_key = {
+                {"current_path", result_string},
+                {"package_name", std::string(name)},
+                {"git_link", package_URL},
+                {"cache_path", cache_path},
+                {"target_path", target_path}};
+
+            // install instructions for header libraries
+            if (package_type == "header-only") {
+                process_header_only_lib(name, instructions, instruction_key, cmake_lines);
+            }
+            // install instructions for static libraries
+            if (package_type == "static") {
+                process_static_lib(
+                    name, package_cmake_alias, instructions, instruction_key, cmake_lines);
+            }
+            // install instructions for dynamic libraries
+            if (package_type == "dynamic") {
+                process_dynamic_lib(name, package_cmake_alias, instructions, cmake_lines);
+            }
+        }
+    }
+    return 0;
+};
+
+int beldum_install_single(std::string &requested_package,
+                          std::string &repo_version,
+                          std::string &single_package_directory_path) {
 
     // init needed variables for switch
     nlohmann::ordered_json package_data;
@@ -200,7 +280,6 @@ int beldum_install(std::string &requested_package,
     if (!open_file_parse_json(single_package_directory_path, package_data)) {
         return 1;
     }
-
     if (!open_file_parse_json(beldum_json_path, installed_data)) {
         return 1;
     }
@@ -252,16 +331,27 @@ int beldum_install(std::string &requested_package,
 
     // install instructions for header libraries
     if (package_type == "header-only") {
-        process_header_only_lib(package_name, instructions, instruction_key, cmake_lines);
+        process_header_only_lib(package_name,
+                                instructions,
+                                instruction_key,
+                                cmake_lines); // TODO: remove cmake_lines from input parameter
     }
     // install instructions for static libraries
     if (package_type == "static") {
         process_static_lib(
-            package_name, package_cmake_alias, instructions, instruction_key, cmake_lines);
+            package_name,
+            package_cmake_alias,
+            instructions,
+            instruction_key,
+            cmake_lines); // TODO: remove cmake_lines & package_cmake_alias from input parameter
     }
     // install instructions for dynamic libraries
     if (package_type == "dynamic") {
-        process_dynamic_lib(package_name, package_cmake_alias, instructions, cmake_lines);
+        process_dynamic_lib(
+            package_name,
+            package_cmake_alias,
+            instructions,
+            cmake_lines); // TODO: remove cmake_lines & package_cmake_alias from input parameter
     }
 
     // write to CMakeLists.txt
