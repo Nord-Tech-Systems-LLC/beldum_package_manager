@@ -1,0 +1,24 @@
+{
+    "glm": {
+        "git_link": "git@github.com:g-truc/glm.git",
+        "description": "OpenGL Mathematics (GLM) ",
+        "repository_url": "https://github.com/g-truc/glm",
+        "repo_type": "static",
+        "cmake_alias": "glm::glm",
+        "instructions": {
+            "install": [
+                "git clone :git_link :cache_path",
+                "cp -r :cache_path :target_path"
+            ],
+            "uninstall": [
+                "rm -rf target/debug/deps/:requested_package"
+            ],
+            "version": [
+                "cd :current_path/target/debug/deps/:package_name && git describe --tags --abbrev=0"
+            ]
+        },
+        "tags": [
+            "Mathematics"
+        ]
+    }
+}

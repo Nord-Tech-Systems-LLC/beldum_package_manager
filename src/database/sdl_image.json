@@ -1,0 +1,26 @@
+{
+    "sdl_image": {
+        "git_link": "git@github.com:libsdl-org/SDL_image.git",
+        "description": "SDL3 extension for image decoding with many popular formats for Simple Directmedia Layer. ",
+        "repository_url": "https://github.com/libsdl-org/SDL_image",
+        "repo_type": "static",
+        "cmake_alias": "SDL3_image::SDL3_image",
+        "instructions": {
+            "install": [
+                "git clone :git_link :cache_path",
+                "cp -r :cache_path :target_path"
+            ],
+            "uninstall": [
+                "rm -rf target/debug/deps/:requested_package"
+            ],
+            "version": [
+                "cd :current_path/target/debug/deps/:package_name && git describe --tags --abbrev=0"
+            ]
+        },
+        "tags": [
+            "Media",
+            "Layer",
+            "extension"
+        ]
+    }
+}
